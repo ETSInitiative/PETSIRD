@@ -47,6 +47,7 @@ int main()
     head.subject.id = "123456";
 
     std::string outfile = "test.h5";
+    std::remove(outfile.c_str());
     prd::hdf5::PrdExperimentWriter writer(outfile);
     writer.WriteHeader(head);
 
@@ -65,8 +66,8 @@ int main()
         events.push_back(e);
     }
     // Illustrates writing events from a buffer rather than individual events
-    writer.WriteSamples(events);
-    writer.EndSamples();
+    writer.WriteEvents(events);
+    writer.EndEvents();
 
     // Check that we have completed protocol
     writer.Close();

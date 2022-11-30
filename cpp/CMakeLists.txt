@@ -12,4 +12,7 @@ endif()
 add_executable(prd_generator prd_generator.cpp)
 target_link_libraries(prd_generator prd_generated)
 
+add_executable(prd_analysis prd_analysis.cpp)
+target_link_libraries(prd_analysis prd_generated)
+
 add_subdirectory(generated)

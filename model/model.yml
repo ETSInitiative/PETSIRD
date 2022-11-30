@@ -3,7 +3,7 @@
 PrdExperiment: !protocol
   sequence:
     header: Header
-    samples: !stream
+    events: !stream
       items: CoincidenceEvent
 
 Subject: !record
@@ -33,7 +33,6 @@ Header: !record
 
 CoincidenceEvent: !record
   fields:
-    timestamp: datetime
     detector1Id: uint
     detector2Id: uint
     deltaT: float
