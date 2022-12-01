@@ -37,6 +37,7 @@
 
         "cmake.sourceDirectory": "${workspaceFolder}/cpp",
         "cmake.buildDirectory": "${workspaceFolder}/cpp/build",
+        "cmake.configureOnOpen": false,
 
         // Python linting.
         "python.analysis.typeCheckingMode": "basic",

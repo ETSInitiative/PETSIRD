@@ -3,6 +3,7 @@ channels:
   - conda-forge
   - defaults
 dependencies:
+  - bash-completion=2.11
   - cmake=3.21.3
   - fmt=8.1.1
   - gcc_linux-64=11.2.0
