@@ -17,9 +17,6 @@
         "files.trimFinalNewlines": true,
         "files.trimTrailingWhitespace": true,
         "files.insertFinalNewline": true,
-        "go.toolsManagement.checkForUpdates": "local",
-        "go.useLanguageServer": true,
-        "gopls": { "ui.semanticTokens": true },
 
         "[cpp]": {
           "editor.formatOnSave": true
@@ -66,11 +63,19 @@
               "text": "-enable-pretty-printing",
               "ignoreFailures": true
             }
-          ]
+          ],
+
+          "gitlens.showWelcomeOnInstall": false,
+          "gitlens.showWhatsNewAfterUpgrades": false
         },
 
         "gcovViewer.gcovBinary": "/opt/conda/envs/prd/bin/x86_64-conda-linux-gnu-gcov",
-        "gcovViewer.buildDirectories": ["${workspaceFolder}/cpp/build"]
+        "gcovViewer.buildDirectories": ["${workspaceFolder}/cpp/build"],
+
+        "search.useIgnoreFiles": false,
+        "search.exclude": {
+          "**/cpp/build": true
+        }
       },
 
       // Add the IDs of extensions you want installed when the container is created.
@@ -79,7 +84,6 @@
         "eamodio.gitlens",
         "esbenp.prettier-vscode",
         "JacquesLucke.gcov-viewer",
-        "jinliming2.vscode-go-template",
         "matepek.vscode-catch2-test-adapter",
         "mhutchie.git-graph",
         "ms-python.python",
