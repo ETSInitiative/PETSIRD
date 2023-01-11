@@ -35,6 +35,6 @@ CoincidenceEvent: !record
   fields:
     detector1Id: uint
     detector2Id: uint
-    deltaT: float
-    energy1: float
-    energy2: float
+    deltaT: uint
+    energy1: uint
+    energy2: uint
