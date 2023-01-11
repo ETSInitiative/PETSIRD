@@ -51,7 +51,7 @@ ARG MAMBA_VERSION=0.22.1
 # Based on https://github.com/ContinuumIO/docker-images/blob/master/miniconda3/debian/Dockerfile.
 RUN wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh \
     && mkdir -p /opt \
-    && sh miniconda.sh -b -p /opt/conda \
+    && bash miniconda.sh -b -p /opt/conda \
     && ln -s /opt/conda/etc/profile.d/conda.sh /etc/profile.d/conda.sh \
     && find /opt/conda/ -follow -type f -name '*.a' -delete \
     && find /opt/conda/ -follow -type f -name '*.js.map' -delete \
