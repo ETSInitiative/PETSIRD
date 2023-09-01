@@ -1,2 +1,5 @@
 cpp/generated/
 cpp/build/
+
+python/prd/
+**/__pycache__/

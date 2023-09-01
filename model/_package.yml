@@ -2,3 +2,6 @@ namespace: Prd
 
 cpp:
   sourcesOutputDir: ../cpp/generated
+
+python:
+  outputDir: ../python

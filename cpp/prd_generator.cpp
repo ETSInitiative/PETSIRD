@@ -58,10 +58,10 @@ int main()
     {
         auto detectors = get_random_pair(head.NumberOfDetectors());
         prd::CoincidenceEvent e;
-        e.detector1_id = detectors.first;
-        e.detector2_id = detectors.second;
-        e.energy1 = get_random_float();
-        e.energy2 = get_random_float();
+        e.detector_1_id = detectors.first;
+        e.detector_2_id = detectors.second;
+        e.energy_1 = get_random_float();
+        e.energy_2 = get_random_float();
         e.delta_t = get_random_float();
         events.push_back(e);
     }
