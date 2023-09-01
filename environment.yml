@@ -11,11 +11,12 @@ dependencies:
   - h5py=3.7.0
   - hdf5=1.12.1
   - howardhinnant_date=3.0.1
-  - jupyter=1.0.0
+  - ipykernel=6.19.2 
   - ninja=1.11.0
-  - nlohmann_json=3.10.5
-  - python=3.10.5
+  - nlohmann_json=3.11.2
+  - numpy=1.24.3
+  - python=3.11.3
   - shellcheck=0.8.0
   - valgrind=3.18.1
-  - xtensor=0.24.2
   - xtensor-fftw=0.2.5
+  - xtensor=0.24.2
