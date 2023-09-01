@@ -32,15 +32,27 @@
           "editor.formatOnSave": true
         },
 
+        "[python]": {
+          "editor.defaultFormatter": "ms-python.black-formatter",
+          "editor.formatOnSave": true
+        },
+
         "cmake.sourceDirectory": "${workspaceFolder}/cpp",
         "cmake.buildDirectory": "${workspaceFolder}/cpp/build",
         "cmake.configureOnOpen": false,
 
-        // Python linting.
-        "python.analysis.typeCheckingMode": "basic",
-        "python.linting.ignorePatterns": ["**/conftest.py", "**/test_*.py"],
         "python.defaultInterpreterPath": "/opt/conda/envs/prd/bin/python",
-        "python.formatting.autopep8Path": "/opt/conda/envs/prd/bin/autopep8",
+        "python.analysis.typeCheckingMode": "strict",
+        "python.analysis.diagnosticMode": "workspace",
+        "python.analysis.diagnosticSeverityOverrides": {
+          "reportUnknownArgumentType": "none",
+          "reportUnknownLambdaType": "none",
+          "reportUnknownMemberType": "none",
+          "reportUnknownParameterType": "none",
+          "reportUnknownVariableType": "none",
+          "reportUnnecessaryIsInstance": "none",
+          "reportUnusedImport": "none"
+        },
         "python.terminal.activateEnvironment": false, // Disable the extension calling activate when the integrated terminal launches. We take care of this in ~/.bashrc.
 
         "testMate.cpp.test.executables": "cpp/{build,Build,BUILD,out,Out,OUT}/**/*{test,Test,TEST}*",
@@ -86,6 +98,7 @@
         "JacquesLucke.gcov-viewer",
         "matepek.vscode-catch2-test-adapter",
         "mhutchie.git-graph",
+        "ms-python.black-formatter",
         "ms-python.python",
         "ms-vscode.cmake-tools",
         "ms-vscode.cpptools",

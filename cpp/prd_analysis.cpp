@@ -23,21 +23,21 @@ int main(int argc, char *argv[])
     events.resize(100);
 
     // Process events in batches of up to 100
-    float energy1 = 0, energy2 = 0;
+    float energy_1 = 0, energy_2 = 0;
     int num_events = 0;
     while (reader.ReadEvents(events))
     {
         for (auto &event : events)
         {
-            energy1 += event.energy1;
-            energy2 += event.energy2;
+            energy_1 += static_cast<float>(event.energy_1);
+            energy_2 += static_cast<float>(event.energy_2);
             num_events++;
         }
     }
 
     std::cout << "Number of events: " << num_events << std::endl;
-    std::cout << "Average energy1: " << energy1 / num_events << std::endl;
-    std::cout << "Average energy2: " << energy2 / num_events << std::endl;
+    std::cout << "Average energy_1: " << energy_1 / num_events << std::endl;
+    std::cout << "Average energy_2: " << energy_2 / num_events << std::endl;
 
     return 0;
 }
