@@ -29,8 +29,8 @@ int main(int argc, char *argv[])
     {
         for (auto &event : events)
         {
-            energy_1 += event.energy_1;
-            energy_2 += event.energy_2;
+            energy_1 += static_cast<float>(event.energy_1);
+            energy_2 += static_cast<float>(event.energy_2);
             num_events++;
         }
     }
