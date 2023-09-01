@@ -4,6 +4,10 @@ import random
 
 import prd
 
+# these are constants for now
+NUMBER_OF_ENERGY_BINS = 100
+NUMBER_OF_TOF_BINS = 300
+
 
 def get_header():
     offsets = [0.0, 1.0, 2.0]
@@ -31,9 +35,9 @@ def get_events(header: prd.Header):
         yield prd.CoincidenceEvent(
             detector_1_id=random.randint(0, detector_count),
             detector_2_id=random.randint(0, detector_count),
-            energy_1=random.random(),
-            energy_2=random.random(),
-            delta_t=random.random(),
+            energy_1=random.randint(0, NUMBER_OF_ENERGY_BINS),
+            energy_2=random.randint(0, NUMBER_OF_ENERGY_BINS),
+            delta_t=random.randint(0, NUMBER_OF_TOF_BINS),
         )
 
 

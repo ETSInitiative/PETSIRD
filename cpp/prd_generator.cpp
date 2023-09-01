@@ -2,6 +2,10 @@
 
 #include "generated/hdf5/protocols.h"
 
+// these are constants for now
+const uint32_t NUMBER_OF_ENERGY_BINS = 100;
+const uint32_t NUMBER_OF_TOF_BINS = 300;
+
 // return pair of integers between 0 and max
 std::pair<int, int> get_random_pair(int max)
 {
@@ -10,10 +14,14 @@ std::pair<int, int> get_random_pair(int max)
     return std::make_pair(a, b);
 }
 
-// Random float between 0 and 1
-float get_random_float()
+uint32_t get_random_energy_value()
 {
-    return (float)rand() / (float)RAND_MAX;
+    return rand() % NUMBER_OF_ENERGY_BINS;
+}
+
+uint32_t get_random_delta_t_value()
+{
+    return rand() % NUMBER_OF_TOF_BINS;
 }
 
 int main()
@@ -25,7 +33,7 @@ int main()
     std::vector<float> angles;
     for (int i = 0; i < 10; ++i)
     {
-        angles.push_back(2 * M_PI * i / 10);
+        angles.push_back(static_cast<float>(2 * M_PI * i / 10));
     }
 
     int detector_id = 0;
@@ -60,9 +68,9 @@ int main()
         prd::CoincidenceEvent e;
         e.detector_1_id = detectors.first;
         e.detector_2_id = detectors.second;
-        e.energy_1 = get_random_float();
-        e.energy_2 = get_random_float();
-        e.delta_t = get_random_float();
+        e.energy_1 = get_random_energy_value();
+        e.energy_2 = get_random_energy_value();
+        e.delta_t = get_random_delta_t_value();
         events.push_back(e);
     }
     // Illustrates writing events from a buffer rather than individual events
