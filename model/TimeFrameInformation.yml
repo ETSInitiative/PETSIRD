@@ -1,0 +1,12 @@
+# Time interval in milliseconds since start of acquisition
+TimeInterval: !record
+  fields:
+     start: uint # Type could maybe be RelativeTime in the future
+     stop: uint
+
+# A sequence of time intervals (could be consecutive)
+TimeFrameInformation: !record
+  fields:
+     timeFrames: TimeInterval*
+  computedFields:
+    numberOfTimeFrames: size(timeFrames)

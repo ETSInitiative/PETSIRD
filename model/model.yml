@@ -3,11 +3,8 @@
 PrdExperiment: !protocol
   sequence:
     header: Header
-    # look-up table for time in the coincidence stream
-    # TODO this works great for post-processing, but can yardl do this "online"? (i.e. the events are coming in: grow coincidenceTimings as necessary)
-    coincidenceTimingLUT: CoincidenceTimingLUT
-    events: !stream
-      items: CoincidenceEvent
+    timeBlocks: !stream
+      items: TimeBlock
 
 Header: !record
   fields:
@@ -16,7 +13,6 @@ Header: !record
 
 # All information about a coincidence event specified as identifiers or indices (i.e. discretized).
 # TODO: this might take up too much space, so some/all of these could be combined in a single index if necessary.
-# TODO: Need to accomodate "delayed" events somewhere
 CoincidenceEvent: !record
   fields:
     detector1Id: uint
@@ -25,24 +21,13 @@ CoincidenceEvent: !record
     energy1Idx: uint
     energy2Idx: uint
 
-# Time interval in milliseconds since start of acquisition
-TimeInterval: !record
+TimeBlock: !record
   fields:
-     start: uint # Type could maybe be RelativeTime in the future
-     stop: uint
-
-# A sequence of time intervals (could be consecutive)
-TimeFrameInformation: !record
-  fields:
-     timeFrames: TimeInterval*
-  computedFields:
-    numberOfTimeFrames: size(timeFrames)
-
-CoincidenceTimingLUT: !record
-   fields:
-     # Timing information for listmode data, probably just a list of timeframes of 1 ms long, but could be non-uniform
-     timeFrames: TimeFrameInformation
-     # Look-up table with number of the event at the start of each time frame
-     # If there is no event within a time frame, the "number" will be the same for the next time frame
-     eventNumbersAtTimeFrameStart: uint64*
+   # number of the block. Multiply with listmodeTimeBlockDuration to get time since startOfAcquisition
+   id: uint
+   # list of prompts in this time block
+   # TODO might be better to use !array
+   promptEvents: CoincidenceEvent*
+   # list of delayed coincidences in this time block
+   delayedEvents: CoincidenceEvent*?
 
