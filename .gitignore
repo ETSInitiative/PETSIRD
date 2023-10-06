@@ -3,3 +3,8 @@ cpp/build/
 
 python/prd/
 **/__pycache__/
+
+# Common editor backups
+~$*
+*~
+*.bak
