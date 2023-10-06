@@ -6,7 +6,7 @@ import prd
 if __name__ == "__main__":
     with prd.BinaryPrdExperimentReader(sys.stdin.buffer) as reader:
         header = reader.read_header()
-        print(f"Subject ID: {header.subject.id}")
+        print(f"Subject ID: {header.exam.subject.id}")
         print(f"Number of detectors: {header.scanner.number_of_detectors()}")
 
         energy_bin_edges = header.scanner.energy_bin_edges

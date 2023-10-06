@@ -9,62 +9,8 @@ PrdExperiment: !protocol
     events: !stream
       items: CoincidenceEvent
 
-Subject: !record
-  fields:
-    name: string?
-    id: string
-
-Institution: !record
-  fields:
-    name: string
-    address: string
-
-# Detector ID and location. Units are in mm
-# TODO: this is currently just a sample implementation with "point" detectors.
-# We plan to have full shape information here.
-Detector: !record
-  fields:
-    id: uint
-    x: float
-    y: float
-    z: float
-
-ScannerInformation: !record
-  fields:
-    modelName: string?
-    detectors: Detector*
-
-    # edge information for TOF bins in mm
-    # TODO: this currently assumes equal size for each TOF bin, but some scanners "stretch" TOF bins depending on length of LOR
-    tofBinEdges: !array
-      items: float
-      dimensions: 1
-    # TOF resolution in mm
-    tofResolution: float
-
-    # edge information for energy windows in keV
-    energyBinEdges: !array
-      items: float
-      dimensions: 1
-    # FWHM of photopeak for incoming gamma of 511 keV, expressed as a ratio w.r.t. 511
-    energyResolutionAt511: float
-
-  computedFields:
-    numberOfDetectors: size(detectors)
-    # TODO: can we subtract 1 to get the number?
-    numberP1OfTOFBins: size(tofBinEdges)
-    numberP1OfEnergyBins: size(energyBinEdges)
-
-# Items describing the exam (incomplete)
-ExamInformation: !record
-  fields:
-    startOfAcquisition: datetime
-    protocol: string?
-
 Header: !record
   fields:
-    subject: Subject
-    institution: Institution
     scanner: ScannerInformation
     exam: ExamInformation?
 

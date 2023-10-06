@@ -34,12 +34,13 @@ def get_scanner_info():
     )
 
 def get_header():
+    subject=prd.Subject(id="123456")
+    institution=prd.Institution(
+        name="Diamond Light Source",
+        address="Harwell Science and Innovation Campus, Didcot, Oxfordshire, OX11 0DE, UK",
+        )
     return prd.Header(
-        subject=prd.Subject(id="123456"),
-        institution=prd.Institution(
-            name="Diamond Light Source",
-            address="Harwell Science and Innovation Campus, Didcot, Oxfordshire, OX11 0DE, UK",
-        ),
+        exam = prd.ExamInformation(subject=subject, institution=institution),
         scanner=get_scanner_info(),
     )
 
@@ -66,6 +67,7 @@ def get_events(header: prd.Header):
 
 if __name__ == "__main__":
     with prd.BinaryPrdExperimentWriter(sys.stdout.buffer) as writer:
+    #with prd.NDJsonPrdExperimentWriter(sys.stdout) as writer:
         header = get_header()
         writer.write_header(header)
         writer.write_coincidence_timing_lut(get_coincidence_timing_LUT())
