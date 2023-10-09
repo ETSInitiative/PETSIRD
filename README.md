@@ -15,11 +15,12 @@ The C++ code shows writing to and reading from an HDF5 file
 
 1. Compile the code:
     - `cd ../cpp && mkdir -p build && cd build`
-    - `cmake ..`
+    - `cmake -G Ninja -S ..` (if you installed HDF5 via `conda`, add `-DHDF5_ROOT=$CONDA_PREFIX`)
     - `ninja`
-1. Run the generator: `./prd_generator`
+1. Run the generator: `./prd_generator test.h5`
 1. Run the analyzer: `./prd_analysis test.h5`
 1. You can inspect the HDF5 file by running `h5dump test.h5`
+
 
 ### Python
 
