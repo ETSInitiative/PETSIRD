@@ -1,0 +1,58 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - '**/*.md'
+  pull_request:
+    branches: [main]
+
+defaults:
+  run:
+    # See https://github.com/marketplace/actions/setup-miniconda#important
+    shell: bash -el {0}
+
+jobs:
+  validate:
+    strategy:
+      matrix:
+        cppVersion: [17]
+
+    name: Validate C++${{ matrix.cppVersion }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Configure environment
+        uses: ./.github/actions/configure-environment
+
+      - name: Install yardl
+        run: |
+          YARDL_DIR=${{github.workspace}}/yardl
+          mkdir ${YARDL_DIR}
+          cd ${YARDL_DIR}
+          echo "${{github.workspace}}/yardl" >> $GITHUB_PATH
+          YARDL_VERSION=0.3.0
+          wget --quiet "https://github.com/microsoft/yardl/releases/download/v${YARDL_VERSION}/yardl_${YARDL_VERSION}_linux_x86_64.tar.gz"
+          tar -xzf "yardl_${YARDL_VERSION}_linux_x86_64.tar.gz"
+          rm "yardl_${YARDL_VERSION}_linux_x86_64.tar.gz"
+
+       - name: Build model
+         run: |
+           cd model
+           yardl generate
+
+        - name: Python
+          run: |
+            cd python
+            python prd_generator.py | python prd_analysis.py
+
+        - name: Cpp
+          run: |
+            cd cpp && mkdir -p build && cd build
+            cmake -G Ninja -S .. -DHDF5_ROOT="$CONDA_PREFIX"
+            ninja
+            ./prd_generator test.h5
+            ./prd_analysis test.h5
