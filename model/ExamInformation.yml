@@ -1,0 +1,17 @@
+Subject: !record
+  fields:
+    name: string?
+    id: string
+
+Institution: !record
+  fields:
+    name: string
+    address: string
+
+# Items describing the exam (incomplete)
+ExamInformation: !record
+  fields:
+    subject: Subject
+    institution: Institution
+    protocol: string?
+    startOfAcquisition: datetime?

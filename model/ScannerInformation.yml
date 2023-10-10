@@ -1,0 +1,39 @@
+
+# Detector ID and location. Units are in mm
+# TODO: this is currently just a sample implementation with "point" detectors.
+# We plan to have full shape information here.
+Detector: !record
+  fields:
+    id: uint
+    x: float
+    y: float
+    z: float
+
+ScannerInformation: !record
+  fields:
+    modelName: string?
+    detectors: Detector*
+
+    # edge information for TOF bins in mm (given as from first to last edge, so there is one more edge than the number of bins)
+    # TODO: this currently assumes equal size for each TOF bin, but some scanners "stretch" TOF bins depending on length of LOR
+    tofBinEdges: !array
+      items: float
+      dimensions: 1
+    # TOF resolution in mm
+    tofResolution: float
+
+    # edge information for energy windows in keV (given as from first to last edge, so there is one more edge than the number of bins)
+    energyBinEdges: !array
+      items: float
+      dimensions: 1
+    # FWHM of photopeak for incoming gamma of 511 keV, expressed as a ratio w.r.t. 511
+    energyResolutionAt511: float
+
+    # duration of each time block in ms
+    listmodeTimeBlockDuration: uint
+
+  computedFields:
+    numberOfDetectors: size(detectors)
+    # TODO: can we subtract 1 to get the number?
+    numberP1OfTOFBins: size(tofBinEdges)
+    numberP1OfEnergyBins: size(energyBinEdges)

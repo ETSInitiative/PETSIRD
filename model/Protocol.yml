@@ -1,0 +1,23 @@
+# You can read more about the yardl syntax here: https://aka.ms/yardl/docs
+
+PrdExperiment: !protocol
+  sequence:
+    header: Header
+    timeBlocks: !stream
+      items: TimeBlock
+
+Header: !record
+  fields:
+    scanner: ScannerInformation
+    exam: ExamInformation?
+
+TimeBlock: !record
+  fields:
+   # number of the block. Multiply with listmodeTimeBlockDuration to get time since startOfAcquisition
+   id: uint
+   # list of prompts in this time block
+   # TODO might be better to use !array
+   promptEvents: CoincidenceEvent*
+   # list of delayed coincidences in this time block
+   delayedEvents: CoincidenceEvent*?
+

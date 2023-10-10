@@ -1,5 +1,5 @@
-cmake_minimum_required(VERSION 3.0.0)
-project(prd VERSION 0.0.1)
+cmake_minimum_required(VERSION 3.12.0) # older would work, but could give warnings on policy CMP0074
+project(prd VERSION 0.0.2)
 
 set(CMAKE_CXX_STANDARD 17)
 
