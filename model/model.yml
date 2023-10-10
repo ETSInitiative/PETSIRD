@@ -11,16 +11,6 @@ Header: !record
     scanner: ScannerInformation
     exam: ExamInformation?
 
-# All information about a coincidence event specified as identifiers or indices (i.e. discretized).
-# TODO: this might take up too much space, so some/all of these could be combined in a single index if necessary.
-CoincidenceEvent: !record
-  fields:
-    detector1Id: uint
-    detector2Id: uint
-    tofIdx: uint
-    energy1Idx: uint
-    energy2Idx: uint
-
 TimeBlock: !record
   fields:
    # number of the block. Multiply with listmodeTimeBlockDuration to get time since startOfAcquisition
