@@ -8,6 +8,8 @@ if __name__ == "__main__":
         header = reader.read_header()
         print(f"Subject ID: {header.exam.subject.id}")
         print(f"Number of detectors: {header.scanner.number_of_detectors()}")
+        print(f"Number of TOF bins: {header.scanner.number_of_tof_bins()}")
+        print(f"Number of energy bins: {header.scanner.number_of_energy_bins()}")
 
         energy_bin_edges = header.scanner.energy_bin_edges
         print(f"Energy bin edges: {energy_bin_edges}")
