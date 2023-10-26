@@ -34,6 +34,5 @@ ScannerInformation: !record
 
   computedFields:
     numberOfDetectors: size(detectors)
-    # TODO: can we subtract 1 to get the number?
-    numberP1OfTOFBins: size(tofBinEdges)
-    numberP1OfEnergyBins: size(energyBinEdges)
+    numberOfTOFBins: size(tofBinEdges)-1
+    numberOfEnergyBins: size(energyBinEdges)-1
