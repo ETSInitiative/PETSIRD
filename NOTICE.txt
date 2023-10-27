@@ -1,0 +1,14 @@
+Copyright 2023 University College London (UCL)
+Copyright 2022-2023 Microsoft Corporation
+
+This software product is developed for the Emission Tomography Standardization
+Initiative (ETSI), https://etisinitiative.org.
+
+Main contributors:
+Kris Thielemans (UCL)
+John Stairs (Microsoft Corporation)
+Michael Hansen (Microsoft Corporation)
+
+### Apache License ###
+
+All documents are covered by the Apache 2.0 license, unless specified.
