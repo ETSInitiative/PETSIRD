@@ -87,4 +87,4 @@ of the copied code is (and follow its terms of course).
 
 [issue-tracker]: https://github.com/ETSInitiative/PRDdefinition/issues
 [submodules]: https://git-scm.com/docs/gitsubmodules
-[pull-requests]: https://github.com/SyneRBI/SIRF/pulls
+[pull-requests]: https://github.com/ETSInitiative/PRDdefinition/pulls

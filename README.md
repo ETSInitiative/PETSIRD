@@ -1,4 +1,4 @@
-# PETSIRF draft data model and examples
+# PETSIRD draft data model and examples
 
 The purpose of this repo is to have a simple working example of a data model for PET imaging (list mode data). This is **not complete**, and aspects do not follow the actual proposal of PETSIRD yet.
 
