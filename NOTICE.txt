@@ -11,4 +11,4 @@ Michael Hansen (Microsoft Corporation)
 
 ### Apache License ###
 
-All documents are covered by the Apache 2.0 license, unless specified.
+All documents are covered by the Apache 2.0 license, unless otherwise specified.

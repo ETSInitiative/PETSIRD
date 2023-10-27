@@ -30,8 +30,8 @@ This is our recommended process. If it sounds too daunting, ask for help.
 3. Create a branch in your fork with a descriptive name and put your fixes there. If your fix is
 simple you could do it on github by editing a file, otherwise clone your project (or add a remote
 to your current git clone) and work as usual.
-4. If your change is important, add yourself to `NOTICE.txt` <!-- it to [CHANGES.md](https://github.com/SyneRBI/SIRF/blob/master/CHANGES.md)
-and even [UserGuide.md](https://github.com/SyneRBI/SIRF/blob/master/doc/UserGuide.md) or other documentation files.-->
+4. If your change is important, add yourself to `NOTICE.txt`, describe it in `CHANGES.md` (if it exists)
+and other documentation files.
 5. Use [well-formed commit messages](http://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html)
 for each change (in particular with a single "subject" line
 followed by an empty line and then more details).
@@ -52,7 +52,14 @@ https://help.github.com/articles/fork-a-repo/, https://git-scm.com/book/en/v2/Gi
 
 ### A note on copyright dates and notices (and licenses)
 
-(Almost) all SIRF files start with a copyright and license header. Please do this for your files as well.
+We recommend adding a brief copyright and license header to new files, e.g. in C++
+```c++
+/*
+  Copyright (C) 2023 University College London
+
+  SPDX-License-Identifier: Apache-2.0
+*/
+```
 If you modify an existing file, you need to make sure the copyright header is up-to-date for your changes
 (unless it's a trivial change).
 
