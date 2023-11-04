@@ -45,24 +45,24 @@ main(int argc, char* argv[])
 
   // Process events in batches of up to 100
   float energy_1 = 0, energy_2 = 0;
-  std::size_t num_events = 0;
+  std::size_t num_prompts = 0;
   float last_time = 0.F;
   while (reader.ReadTimeBlocks(time_block))
     {
       last_time = time_block.id * header.scanner.listmode_time_block_duration;
+      num_prompts += time_block.prompt_events.size();
 
       for (auto& event : time_block.prompt_events)
         {
           energy_1 += energy_mid_points[event.energy_1_idx];
           energy_2 += energy_mid_points[event.energy_2_idx];
-          num_events++;
         }
     }
 
   std::cout << "Last time block at " << last_time << " ms\n";
-  std::cout << "Number of events: " << num_events << std::endl;
-  std::cout << "Average energy_1: " << energy_1 / num_events << std::endl;
-  std::cout << "Average energy_2: " << energy_2 / num_events << std::endl;
+  std::cout << "Number of prompt events: " << num_prompts << std::endl;
+  std::cout << "Average energy_1: " << energy_1 / num_prompts << std::endl;
+  std::cout << "Average energy_2: " << energy_2 / num_prompts << std::endl;
 
   return 0;
 }

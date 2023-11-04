@@ -17,16 +17,16 @@ if __name__ == "__main__":
         print(f"Energy mid points: {energy_mid_points}")
 
         energy_1, energy_2 = 0.0, 0.0
-        num_events = 0
+        num_prompts = 0
         last_time = 0
         for time_block in reader.read_time_blocks():
             last_time = time_block.id * header.scanner.listmode_time_block_duration
+            num_prompts += len(time_block.prompt_events)
             for event in time_block.prompt_events:
                 energy_1 += energy_mid_points[event.energy_1_idx]
                 energy_2 += energy_mid_points[event.energy_2_idx]
-                num_events += 1
 
         print(f"Last time block at {last_time} ms")
-        print(f"Number of events: {num_events}")
-        print(f"Average energy_1: {energy_1 / num_events}")
-        print(f"Average energy_2: {energy_2 / num_events}")
+        print(f"Number of prompt events: {num_prompts}")
+        print(f"Average energy_1: {energy_1 / num_prompts}")
+        print(f"Average energy_2: {energy_2 / num_prompts}")
