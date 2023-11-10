@@ -1,0 +1,4 @@
+# Shell scripts should have LF
+*.bashrc text eol=lf
+*.sh text eol=lf
+*.csh text eol=lf
