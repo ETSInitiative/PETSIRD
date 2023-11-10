@@ -1,3 +1,5 @@
+ARG DEVCONTAINER_BASE=mcr.microsoft.com/devcontainers/base:1.0.9-ubuntu-22.04
+
 #########################################################
 # file-normalizer stage
 # In order to use BuildKit remote caching, input files must have
@@ -7,7 +9,7 @@
 # subsequent stage and normalize the permissions.
 #########################################################
 
-FROM mcr.microsoft.com/oss/busybox/busybox:1.33.1 as file-normalizer
+FROM --platform=linux/amd64 ${DEVCONTAINER_BASE} as file-normalizer
 
 COPY environment.yml \
      .devcontainer/devcontainer.bashrc  \
@@ -20,7 +22,7 @@ RUN chmod -R 555 /data/
 # Installs all dependencies and tooling for development.
 #########################################################
 
-FROM mcr.microsoft.com/vscode/devcontainers/base:0.201.8-focal AS devcontainer
+FROM --platform=linux/amd64 ${DEVCONTAINER_BASE} AS devcontainer
 
 # Install needed packages and setup non-root user.
 ARG USERNAME="vscode"
@@ -89,7 +91,7 @@ RUN mkdir -p /home/vscode/.local/share/CMakeTools \
     && chown vscode:conda /home/vscode/.local/share/CMakeTools/cmake-tools-kits.json
 
 # Install the yardl tool
-ARG YARDL_VERSION=0.3.1
+ARG YARDL_VERSION=0.3.2
 RUN wget --quiet "https://github.com/microsoft/yardl/releases/download/v${YARDL_VERSION}/yardl_${YARDL_VERSION}_linux_x86_64.tar.gz" \
     && tar -xzf "yardl_${YARDL_VERSION}_linux_x86_64.tar.gz" \
     && mv yardl "/opt/conda/envs/${CONDA_ENVIRONMENT_NAME}/bin/" \
