@@ -36,7 +36,7 @@ jobs:
           mkdir ${YARDL_DIR}
           cd ${YARDL_DIR}
           echo "${{github.workspace}}/yardl" >> $GITHUB_PATH
-          YARDL_VERSION=0.3.1
+          YARDL_VERSION=0.3.2
           wget --quiet "https://github.com/microsoft/yardl/releases/download/v${YARDL_VERSION}/yardl_${YARDL_VERSION}_linux_x86_64.tar.gz"
           tar -xzf "yardl_${YARDL_VERSION}_linux_x86_64.tar.gz"
           rm "yardl_${YARDL_VERSION}_linux_x86_64.tar.gz"
