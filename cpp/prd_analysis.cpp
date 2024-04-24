@@ -54,8 +54,8 @@ main(int argc, char* argv[])
 
       for (auto& event : time_block.prompt_events)
         {
-          energy_1 += energy_mid_points[event.energy_1_idx];
-          energy_2 += energy_mid_points[event.energy_2_idx];
+          energy_1 += energy_mid_points[event.energy_indices[0]];
+          energy_2 += energy_mid_points[event.energy_indices[1]];
         }
     }
 

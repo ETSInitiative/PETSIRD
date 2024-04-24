@@ -9,12 +9,25 @@ Detector: !record
     y: float
     z: float
 
+# Type definition for how to encode how the scanner handles multiple coincidences
+MultipleCoincidenceStrategy: !enum
+  values:
+    - rejectMultiples          # multiples will be rejected
+    - storeMultiplesAsPairs    # multiples will be stored as a sequence of pairs, e.g. a triple leads to 3 pairs
+
+
 ScannerInformation: !record
   fields:
     modelName: string?
+
+    # list of geometric information for all detector elements
+    # TODO will be adjusted when properly encoding geometry
     detectors: Detector*
 
     # edge information for TOF bins in mm (given as from first to last edge, so there is one more edge than the number of bins)
+    # 0 corresponds to the same arrival time. Negative numbers indicate that the first detector detected first.
+    # For instance, a coincidence event is stored as 2 detectorIds, denoting the arrival time at the first
+    # detector t1 and the arrival time at the second detector t2, we store (t1-t2)*c/2.
     # TODO: this currently assumes equal size for each TOF bin, but some scanners "stretch" TOF bins depending on length of LOR
     tofBinEdges: !array
       items: float
@@ -31,6 +44,9 @@ ScannerInformation: !record
 
     # duration of each time block in ms
     listmodeTimeBlockDuration: uint
+
+    # encode how the scanner handles multiple coincidences
+    multipleCoincidenceStrategy: MultipleCoincidenceStrategy
 
   computedFields:
     numberOfDetectors: size(detectors)

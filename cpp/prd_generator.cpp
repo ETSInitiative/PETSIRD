@@ -107,10 +107,10 @@ get_events(const prd::Header& header, std::size_t num_events)
     {
       const auto detectors = get_random_pair(header.scanner.NumberOfDetectors());
       prd::CoincidenceEvent e;
-      e.detector_1_id = detectors.first;
-      e.detector_2_id = detectors.second;
-      e.energy_1_idx = get_random_energy_value();
-      e.energy_2_idx = get_random_energy_value();
+      e.detector_ids[0] = detectors.first;
+      e.detector_ids[1] = detectors.second;
+      e.energy_indices[0] = get_random_energy_value();
+      e.energy_indices[1] = get_random_energy_value();
       e.tof_idx = get_random_tof_value();
       events.push_back(e);
     }

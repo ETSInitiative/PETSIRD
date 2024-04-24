@@ -57,10 +57,10 @@ def get_events(header: prd.Header, num_events: int) -> Iterator[prd.CoincidenceE
     detector_count = header.scanner.number_of_detectors()
     for _ in range(num_events):
         yield prd.CoincidenceEvent(
-            detector_1_id=random.randrange(0, detector_count),
-            detector_2_id=random.randrange(0, detector_count),
-            energy_1_idx=random.randrange(0, NUMBER_OF_ENERGY_BINS),
-            energy_2_idx=random.randrange(0, NUMBER_OF_ENERGY_BINS),
+            detector_ids = [random.randrange(0, detector_count),
+                           random.randrange(0, detector_count)],
+            energy_indices = [random.randrange(0, NUMBER_OF_ENERGY_BINS),
+                          random.randrange(0, NUMBER_OF_ENERGY_BINS)],
             tof_idx=random.randrange(0, NUMBER_OF_TOF_BINS),
         )
 
