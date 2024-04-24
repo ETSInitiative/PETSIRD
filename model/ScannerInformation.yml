@@ -12,8 +12,11 @@ Detector: !record
 # Type definition for how to encode how the scanner handles multiple coincidences
 MultipleCoincidenceStrategy: !enum
   values:
-    - rejectMultiples          # multiples will be rejected
-    - storeMultiplesAsPairs    # multiples will be stored as a sequence of pairs, e.g. a triple leads to 3 pairs
+    # multiples will be rejected
+    - rejectMultiples
+
+    # multiples will be stored as a sequence of pairs, e.g. a triple leads to 3 pairs
+    - storeMultiplesAsPairs
 
 
 ScannerInformation: !record
