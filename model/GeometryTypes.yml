@@ -1,0 +1,24 @@
+# Type definitions related to geometry and coordinates
+
+# 3D coordinates (in mm)
+Coordinate: !record
+  fields:
+    c: float*3
+
+# 3D direction vector (normalized to 1)
+Direction: !record
+  fields:
+    c: float[3]
+
+# Orthonormal matrix
+# direction_of_first_axis = matrix * [1, 0 ,0] (as a column vector)
+DirectionMatrix: !record
+  fields:
+    matrix: float[3, 3]
+
+# rigid transformation, encoded via homogenous transformation
+# transformed_coord = matrix * [c, 1] (where [c,1] is a column vector)
+# with `c` of type `Coordinate`
+RigidTransformation: !record
+  fields:
+    matrix: float[3, 4]

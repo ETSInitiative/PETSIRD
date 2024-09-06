@@ -1,0 +1,27 @@
+# Atom definition in terms of Z and A
+Atom: !record
+  fields:
+    # A
+    massNumber: uint
+    # Z
+    atomicNumber: uint
+
+AtomAndFraction: !record
+  fields:
+    atom: Atom
+    massFraction: float
+
+BulkMaterial: !record
+  fields:
+    # unique id that can be used to refer to the material in voxelised maps etc
+    id: uint
+    # informative string, not standardised
+    name: string?
+    # density of the material
+    # TODO specify units
+    density: float
+    # List of atoms and their respective mass fractions
+    # sum of massFractions should be 1
+    # This list should be reasonably accurate to be useful for Monte Carlo simulations
+    atoms: AtomAndFraction*
+    

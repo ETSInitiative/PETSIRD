@@ -1,7 +1,7 @@
 
 # Detector ID and location. Units are in mm
 # TODO: this is currently just a sample implementation with "point" detectors.
-# We plan to have full shape information here.
+# Will be obsolete
 Detector: !record
   fields:
     id: uint
@@ -30,7 +30,7 @@ ScannerInformation: !record
     modelName: string?
 
     # list of geometric information for all detector elements
-    # TODO will be adjusted when properly encoding geometry
+    # TODO replace with ScannerGeometry
     detectors: Detector*
 
     # edge information for TOF bins in mm (given as from first to last edge, so there is one more edge than the number of bins)

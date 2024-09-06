@@ -1,0 +1,34 @@
+# A box-shape specified by 8 corners (e.g. cuboid, wedge, etc.)
+# TODO need to think about a clear definition of planes
+# We do not want to have to check about intersection planes
+# Potential mechanisms:
+# - lexicographical ordering of corner coordinates?
+# - first 4 coordinates give first plane, 5th and 6th need to define plane with first 2, etc.
+BoxShape: !record
+  fields:
+    corners: Coordinate*8
+
+# annulus of certain thickness oriented along the last axis of `orientation`
+# TODO define angles
+AnnulusShape: !record
+  fields:
+    # inner radius (in mm)
+    innerRadius: float
+    # outer radius (in mm)
+    outerRadius: float
+    # thickness of the annulus, i.e. length along the axis (in mm)
+    thickness: float
+    # start-stop angle (in radians)
+    angularRange: float*2
+    # center point of the cylinder defining the annulus
+    center: Coordinate
+    # matrix defining the axes
+    # last row is the direction of the axis of the annulus
+    # first row
+    orientation: DirectionMatrix
+
+GeometricShape: !record
+  fields:
+    # union of different shape types
+    shape: [BoxShape, AnnulusShape]
+    # TODO could have rigidTransformation field here. If we do, the `center` and `orientation` fields in `AnnulusShape` should be deleted
