@@ -18,6 +18,7 @@ TimeBlock: !record
    # list of prompts in this time block
    # TODO might be better to use !array
    promptEvents: CoincidenceEvent*
-   # list of delayed coincidences in this time block
+   # optional list of delayed coincidences in this time block
    delayedEvents: CoincidenceEvent*?
-
+   # optional list of triple coincidences in this time block
+   tripleEvents: TripleEvent*?

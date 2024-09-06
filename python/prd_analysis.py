@@ -23,8 +23,8 @@ if __name__ == "__main__":
             last_time = time_block.id * header.scanner.listmode_time_block_duration
             num_prompts += len(time_block.prompt_events)
             for event in time_block.prompt_events:
-                energy_1 += energy_mid_points[event.energy_1_idx]
-                energy_2 += energy_mid_points[event.energy_2_idx]
+                energy_1 += energy_mid_points[event.energy_indices[0]]
+                energy_2 += energy_mid_points[event.energy_indices[1]]
 
         print(f"Last time block at {last_time} ms")
         print(f"Number of prompt events: {num_prompts}")

@@ -9,12 +9,34 @@ Detector: !record
     y: float
     z: float
 
+# Type definition for how to encode how the scanner handles multiple coincidences when recording the prompts.
+# Due to various effects (such as high count rate, prompt gammas), it is possible that multiple single
+# events are detected within the coincidence window. This type encodes some different ways
+# that this multiple events are handled, and recorded in the coincidence stream.
+CoincidencePolicy: !enum
+  values:
+    # multiples will be rejected
+    - rejectMultiples
+
+    # multiples will be stored as a sequence of pairs, e.g. a triple leads to 3 pairs
+    - storeMultiplesAsPairs
+
+    # other options, to be listed in the future
+    - other
+
+
 ScannerInformation: !record
   fields:
     modelName: string?
+
+    # list of geometric information for all detector elements
+    # TODO will be adjusted when properly encoding geometry
     detectors: Detector*
 
     # edge information for TOF bins in mm (given as from first to last edge, so there is one more edge than the number of bins)
+    # 0 corresponds to the same arrival time. Negative numbers indicate that the first detector detected first.
+    # For instance, a coincidence event is stored as 2 detectorIds, denoting the arrival time at the first
+    # detector t1 and the arrival time at the second detector t2, we store (t1-t2)*c/2.
     # TODO: this currently assumes equal size for each TOF bin, but some scanners "stretch" TOF bins depending on length of LOR
     tofBinEdges: !array
       items: float
@@ -31,6 +53,9 @@ ScannerInformation: !record
 
     # duration of each time block in ms
     listmodeTimeBlockDuration: uint
+
+    # encode how the scanner handles multiple coincidences
+    coincidencePolicy: CoincidencePolicy
 
   computedFields:
     numberOfDetectors: size(detectors)
