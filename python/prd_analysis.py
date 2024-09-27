@@ -7,13 +7,25 @@ if __name__ == "__main__":
     with prd.BinaryPrdExperimentReader(sys.stdin.buffer) as reader:
         header = reader.read_header()
         print(f"Subject ID: {header.exam.subject.id}")
-        print(f"Number of detectors: {header.scanner.number_of_detectors()}")
+        print(f"Scanner name: { header.scanner.model_name}")
+        print(
+            f"Types of modules: {len(header.scanner.scanner_geometry.replicated_modules)}"
+        )
+        print(
+            f"Number of modules of first type: {len(header.scanner.scanner_geometry.replicated_modules[0].transforms)}"
+        )
+        print(
+            f"Number of types of detecting elements in modules of first type: {len(header.scanner.scanner_geometry.replicated_modules[0].module.detecting_elements)}"
+        )
+        print(
+            f"Number of elements of first type in modules of first type: {len(header.scanner.scanner_geometry.replicated_modules[0].module.detecting_elements[0].transforms)}"
+        )
         print(f"Number of TOF bins: {header.scanner.number_of_tof_bins()}")
         print(f"Number of energy bins: {header.scanner.number_of_energy_bins()}")
 
         energy_bin_edges = header.scanner.energy_bin_edges
         print(f"Energy bin edges: {energy_bin_edges}")
-        energy_mid_points = (energy_bin_edges[:-1] + energy_bin_edges[1:])/2
+        energy_mid_points = (energy_bin_edges[:-1] + energy_bin_edges[1:]) / 2
         print(f"Energy mid points: {energy_mid_points}")
 
         energy_1, energy_2 = 0.0, 0.0

@@ -1,6 +1,6 @@
 /*
   Copyright (C) 2022-2023 Microsoft Corporation
-  Copyright (C) 2023 University College London
+  Copyright (C) 2023-2024 University College London
 
   SPDX-License-Identifier: Apache-2.0
 */
@@ -14,6 +14,7 @@
 const uint32_t NUMBER_OF_ENERGY_BINS = 3;
 const uint32_t NUMBER_OF_TOF_BINS = 300;
 const float RADIUS = 400.F;
+const std::array<float, 3> CRYSTAL_LENGTH{ 4.F, 4.F, 20.F };
 const uint32_t NUMBER_OF_TIME_BLOCKS = 6;
 const float COUNT_RATE = 500.F;
 
@@ -21,42 +22,91 @@ const float COUNT_RATE = 500.F;
 prd::ScannerInformation
 get_scanner_info()
 {
-  float radius = RADIUS;
-  std::vector<float> angles;
-  for (int i = 0; i < 10; ++i)
+  prd::DetectorModule detector_module;
+  {
+    // Define a cuboid
+    using prd::Coordinate;
+    prd::BoxShape crystal_shape{ Coordinate{ 0, 0, 0 },
+                                 Coordinate{ 0, 0, CRYSTAL_LENGTH[2] },
+                                 Coordinate{ 0, CRYSTAL_LENGTH[1], CRYSTAL_LENGTH[2] },
+                                 Coordinate{ 0, CRYSTAL_LENGTH[1], 0 },
+                                 Coordinate{ CRYSTAL_LENGTH[0], 0, 0 },
+                                 Coordinate{ CRYSTAL_LENGTH[0], 0, CRYSTAL_LENGTH[2] },
+                                 Coordinate{ CRYSTAL_LENGTH[0], CRYSTAL_LENGTH[1], CRYSTAL_LENGTH[2] },
+                                 Coordinate{ CRYSTAL_LENGTH[0], CRYSTAL_LENGTH[1], 0 } };
+
+    prd::SolidVolume crystal{ crystal_shape, /* material_id */ 1 };
+
+    // Define a module of 1x2 cuboids
+    prd::ReplicatedSolidVolume rep_volume;
     {
-      angles.push_back(static_cast<float>(2 * M_PI * i / 10));
-    }
-  std::vector<prd::Detector> detectors;
-  int detector_id = 0;
-  for (auto angle : angles)
-    {
-      // Create a new detector
-      prd::Detector d;
-      d.x = radius * std::sin(angle);
-      d.y = radius * std::cos(angle);
-      d.z = 0.;
-      d.id = detector_id++;
-      detectors.push_back(d);
+      rep_volume.solid_volume = crystal;
+      // translate along first axis
+      prd::RigidTransformation transform{ { { 1.F, 0.F, 0.F, RADIUS }, { 0.F, 1.F, 0.F, 0.F }, { 0.F, 0.F, 1.F, 0.F } } };
+      rep_volume.transforms.push_back(transform);
+      rep_volume.ids.push_back(0);
+      // and along second axis
+      // TODO error: no match for ‘operator[]’ (operand types are ‘prd::RigidTransformation’ and ‘int’)
+      transform[1][3] = CRYSTAL_LENGTH[1];
+      rep_volume.transforms.push_back(transform);
+      rep_volume.ids.push_back(1);
     }
 
-  typedef yardl::NDArray<float, 1> FArray1D;
-  // TOF info (in mm)
-  FArray1D::shape_type tof_bin_edges_shape = { NUMBER_OF_TOF_BINS + 1 };
-  FArray1D tof_bin_edges(tof_bin_edges_shape);
-  for (std::size_t i = 0; i < tof_bin_edges.size(); ++i)
-    tof_bin_edges[i] = (i - NUMBER_OF_TOF_BINS / 2.F) / NUMBER_OF_TOF_BINS * 2 * radius;
-  FArray1D::shape_type energy_bin_edges_shape = { NUMBER_OF_ENERGY_BINS + 1 };
-  FArray1D energy_bin_edges(energy_bin_edges_shape);
-  for (std::size_t i = 0; i < energy_bin_edges.size(); ++i)
-    energy_bin_edges[i] = 430.F + i * (650.F - 430.F) / NUMBER_OF_ENERGY_BINS;
+    detector_module.detecting_elements.push_back(rep_volume);
+    detector_module.detecting_element_ids.push_back(0);
+
+  } // end detector_module
+
   prd::ScannerInformation scanner_info;
-  scanner_info.detectors = detectors;
-  scanner_info.tof_bin_edges = tof_bin_edges;
-  scanner_info.tof_resolution = 9.4F; // in mm
-  scanner_info.energy_bin_edges = energy_bin_edges;
-  scanner_info.energy_resolution_at_511 = .11F;    // as fraction of 511
-  scanner_info.listmode_time_block_duration = 1.F; // ms
+  {
+    // fill in geometry
+    {
+      prd::ReplicatedDetectorModule rep_module;
+      {
+        // TODO why module_field?
+        rep_module.module_field = detector_module;
+        int module_id = 0;
+        std::vector<float> angles;
+        for (int i = 0; i < 10; ++i)
+          {
+            angles.push_back(static_cast<float>(2 * M_PI * i / 10));
+          }
+        for (auto angle : angles)
+          {
+            prd::RigidTransformation transform{ { { std::cos(angle), std::sin(angle), 0.F, 0.F },
+                                                  { -std::sin(angle), std::cos(angle), 0.F, 0.F },
+                                                  { 0.F, 0.F, 1.F, 0.F } } };
+            rep_module.ids.push_back(module_id++);
+            rep_module.transforms.push_back(transform);
+          }
+      }
+
+      scanner_info.model_name = "PETSIRD_TEST";
+
+      scanner_info.scanner_geometry.replicated_modules.push_back(rep_module);
+      scanner_info.scanner_geometry.ids.push_back(0);
+      // TODO scanner_info.bulk_materials
+
+      // TOF and energy information
+      {
+        typedef yardl::NDArray<float, 1> FArray1D;
+        // TOF info (in mm)
+        FArray1D::shape_type tof_bin_edges_shape = { NUMBER_OF_TOF_BINS + 1 };
+        FArray1D tof_bin_edges(tof_bin_edges_shape);
+        for (std::size_t i = 0; i < tof_bin_edges.size(); ++i)
+          tof_bin_edges[i] = (i - NUMBER_OF_TOF_BINS / 2.F) / NUMBER_OF_TOF_BINS * 2 * RADIUS;
+        FArray1D::shape_type energy_bin_edges_shape = { NUMBER_OF_ENERGY_BINS + 1 };
+        FArray1D energy_bin_edges(energy_bin_edges_shape);
+        for (std::size_t i = 0; i < energy_bin_edges.size(); ++i)
+          energy_bin_edges[i] = 430.F + i * (650.F - 430.F) / NUMBER_OF_ENERGY_BINS;
+        scanner_info.tof_bin_edges = tof_bin_edges;
+        scanner_info.tof_resolution = 9.4F; // in mm
+        scanner_info.energy_bin_edges = energy_bin_edges;
+        scanner_info.energy_resolution_at_511 = .11F;    // as fraction of 511
+        scanner_info.listmode_time_block_duration = 1.F; // ms
+      }
+    }
+  }
   return scanner_info;
 }
 
@@ -99,13 +149,13 @@ get_random_tof_value()
 }
 
 std::vector<prd::CoincidenceEvent>
-get_events(const prd::Header& header, std::size_t num_events)
+get_events(const prd::Header&, std::size_t num_events)
 {
   std::vector<prd::CoincidenceEvent> events;
   events.reserve(num_events);
   for (std::size_t i = 0; i < num_events; ++i)
     {
-      const auto detectors = get_random_pair(header.scanner.NumberOfDetectors());
+      const auto detectors = get_random_pair(1); // TODO header.scanner.NumberOfDetectors());
       prd::CoincidenceEvent e;
       e.detector_ids[0] = detectors.first;
       e.detector_ids[1] = detectors.second;

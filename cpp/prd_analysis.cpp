@@ -28,9 +28,9 @@ main(int argc, char* argv[])
   std::cout << "Processing file: " << argv[1] << std::endl;
   if (header.exam) // only do this if present
     std::cout << "Subject ID: " << header.exam->subject.id << std::endl;
-  std::cout << "Number of detectors: " << header.scanner.NumberOfDetectors() << std::endl;
+  // TODO std::cout << "Number of detectors: " << header.scanner.NumberOfDetectors() << std::endl;
   std::cout << "Number of TOF bins: " << header.scanner.NumberOfTOFBins() << std::endl;
-  std::cout << "Number of energy bins: " <<header.scanner.NumberOfEnergyBins() << std::endl;
+  std::cout << "Number of energy bins: " << header.scanner.NumberOfEnergyBins() << std::endl;
 
   const auto& tof_bin_edges = header.scanner.tof_bin_edges;
   std::cout << "TOF bin edges: " << tof_bin_edges << std::endl;
