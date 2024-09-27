@@ -10,6 +10,9 @@ NUMBER_OF_ENERGY_BINS = 3
 NUMBER_OF_TOF_BINS = 300
 RADIUS = 400
 CRYSTAL_LENGTH = (4, 4, 20)
+# num crystals in a module
+NUM_CRYSTALS_PER_MODULE = (5, 6, 2)
+NUM_MODULES = 20
 NUMBER_OF_TIME_BLOCKS = 6
 NUMBER_OF_EVENTS = 1000
 COUNT_RATE = 500
@@ -35,29 +38,33 @@ def get_scanner_info() -> prd.ScannerInformation:
     )
     crystal = prd.SolidVolume(shape=crystal_shape, material_id=1)
 
-    # Define a module of 1x2 cuboids
+    # Define a module of N0xN1xN2 cuboids
     rep_volume = prd.ReplicatedSolidVolume(solid_volume=crystal)
-    # translate along first axis
-    transform = prd.RigidTransformation(
-        matrix=numpy.array(
-            ((1.0, 0.0, 0.0, RADIUS), (0.0, 1.0, 0.0, 0.0), (0.0, 0.0, 1.0, 0.0)),
-            dtype="float32",
-        )
-    )
-    rep_volume.transforms.append(transform)
-    rep_volume.ids.append(0)
-    # and along second axis
-    # TODO does not work: TypeError: 'RigidTransformation' object does not support item assignment
-    # transform[1, 3] = CRYSTAL_LENGTH[1]
-    rep_volume.transforms.append(transform)
-    rep_volume.ids.append(1)
+    N0 = NUM_CRYSTALS_PER_MODULE[0]
+    N1 = NUM_CRYSTALS_PER_MODULE[1]
+    N2 = NUM_CRYSTALS_PER_MODULE[2]
+    for rep0 in range(N0):
+        for rep1 in range(N1):
+            for rep2 in range(N2):
+                transform = prd.RigidTransformation(
+                    matrix=numpy.array(
+                        (
+                            (1.0, 0.0, 0.0, RADIUS + rep0 * CRYSTAL_LENGTH[0]),
+                            (0.0, 1.0, 0.0, rep1 * CRYSTAL_LENGTH[1]),
+                            (0.0, 0.0, 1.0, rep2 * CRYSTAL_LENGTH[2]),
+                        ),
+                        dtype="float32",
+                    )
+                )
+                rep_volume.transforms.append(transform)
+            rep_volume.ids.append(rep0 + N0 * (rep1 + N1 * rep2))
 
     detector_module = prd.DetectorModule(
         detecting_elements=[rep_volume], detecting_element_ids=[0]
     )
 
     radius = RADIUS
-    angles = [2 * math.pi * i / 10 for i in range(10)]
+    angles = [2 * math.pi * i / NUM_MODULES for i in range(NUM_MODULES)]
 
     rep_module = prd.ReplicatedDetectorModule(module=detector_module)
     module_id = 0
