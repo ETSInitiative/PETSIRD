@@ -1,12 +1,4 @@
 
-# Will be obsolete
-Detector: !record
-  fields:
-    id: uint
-    x: float
-    y: float
-    z: float
-
 # Type definition for how to encode how the scanner handles multiple coincidences when recording the prompts.
 # Due to various effects (such as high count rate, prompt gammas), it is possible that multiple single
 # events are detected within the coincidence window. This type encodes some different ways
@@ -25,10 +17,10 @@ CoincidencePolicy: !enum
 
 ScannerInformation: !record
   fields:
-    modelName: string?
+    modelName: string
 
     # list of geometric information for all detector elements
-    scanner_geometry: ScannerGeometry
+    scannerGeometry: ScannerGeometry
  
     # list of materials present in the scanner geometry. The `material_id`s there will refer to the
     # identifiers in this list below.
@@ -59,6 +51,5 @@ ScannerInformation: !record
     coincidencePolicy: CoincidencePolicy
 
   computedFields:
-    numberOfDetectors: size(detectors)
     numberOfTOFBins: size(tofBinEdges)-1
     numberOfEnergyBins: size(energyBinEdges)-1

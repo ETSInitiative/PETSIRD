@@ -3,7 +3,7 @@ SolidVolume: !record
   fields:
     shape: GeometricShape
     # identified referring to `BulkMaterial` list in `ScannerInformation`
-    material_id: uint
+    materialId: uint
 
 # A list of identical SolidVolumes at different locations
 ReplicatedSolidVolume: !record
