@@ -8,7 +8,7 @@ BoxShape: !record
   fields:
     corners: Coordinate*8
 
-# annulus of certain thickness oriented along the [0,0,1] axis
+# annulus of certain thickness centered at [0,0,0] and oriented along the [0,0,1] axis
 # in radians. An angle of 0 corresponds to the [1,0,0] axis, Pi/2 corresponds to the [0,1,0] axis.
 AnnulusShape: !record
   fields:
@@ -21,11 +21,6 @@ AnnulusShape: !record
     # start-stop angle (in radians)
     angularRange: float*2
     # center point of the cylinder defining the annulus
-    center: Coordinate
-    # matrix defining the axes
-    # last row is the direction of the axis of the annulus
-    # first row
-    orientation: DirectionMatrix
 
 GeometricShape: !record
   fields:
