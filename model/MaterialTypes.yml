@@ -15,13 +15,16 @@ BulkMaterial: !record
   fields:
     # unique id that can be used to refer to the material in voxelised maps etc
     id: uint
-    # informative string, not standardised
-    name: string?
+    # informative string, not standardised.
+    # Expected examples: BGO, LSO, LYSO, LaBr, GAGG, plastic
+    name: string
     # density of the material
-    # TODO specify units
+    # Units: g/cc
+    # TODO agree with vendors if this information can be supplied and to what accuracy
     density: float
     # List of atoms and their respective mass fractions
     # sum of massFractions should be 1
-    # This list should be reasonably accurate to be useful for Monte Carlo simulations
+    # TODO agree with vendors if this information can be supplied and to what accuracy
+    # Ideally this list should be reasonably accurate to be useful for Monte Carlo simulations, but can be approximate.
     atoms: AtomAndFraction*
     

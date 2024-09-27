@@ -1,6 +1,4 @@
 
-# Detector ID and location. Units are in mm
-# TODO: this is currently just a sample implementation with "point" detectors.
 # Will be obsolete
 Detector: !record
   fields:
@@ -30,8 +28,11 @@ ScannerInformation: !record
     modelName: string?
 
     # list of geometric information for all detector elements
-    # TODO replace with ScannerGeometry
-    detectors: Detector*
+    scanner_geometry: ScannerGeometry
+ 
+    # list of materials present in the scanner geometry. The `material_id`s there will refer to the
+    # identifiers in this list below.
+    bulkMaterials: BulkMaterial*
 
     # edge information for TOF bins in mm (given as from first to last edge, so there is one more edge than the number of bins)
     # 0 corresponds to the same arrival time. Negative numbers indicate that the first detector detected first.
