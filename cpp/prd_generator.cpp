@@ -9,6 +9,7 @@
 #include <cmath>
 #include <random>
 #include "generated/hdf5/protocols.h"
+#include <xtensor/xindex_view.hpp>
 
 // these are constants for now
 const uint32_t NUMBER_OF_ENERGY_BINS = 3;
@@ -46,8 +47,7 @@ get_scanner_info()
       rep_volume.transforms.push_back(transform);
       rep_volume.ids.push_back(0);
       // and along second axis
-      // TODO error: no match for ‘operator[]’ (operand types are ‘prd::RigidTransformation’ and ‘int’)
-      transform[1][3] = CRYSTAL_LENGTH[1];
+      transform.matrix(1,3) = CRYSTAL_LENGTH[1];
       rep_volume.transforms.push_back(transform);
       rep_volume.ids.push_back(1);
     }
