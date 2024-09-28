@@ -8,105 +8,132 @@
 #include <iostream>
 #include <cmath>
 #include <random>
-#include "generated/hdf5/protocols.h"
-#include <xtensor/xindex_view.hpp>
+
+// (un)comment if you want HDF5 or binary output
+#define USE_HDF5
+
+#ifdef USE_HDF5
+#  include "generated/hdf5/protocols.h"
+using prd::hdf5::PrdExperimentWriter;
+#else
+#  include "generated/binary/protocols.h"
+using prd::binary::PrdExperimentWriter;
+#endif
 
 // these are constants for now
-const uint32_t NUMBER_OF_ENERGY_BINS = 3;
-const uint32_t NUMBER_OF_TOF_BINS = 300;
-const float RADIUS = 400.F;
-const std::array<float, 3> CRYSTAL_LENGTH{ 4.F, 4.F, 20.F };
-const uint32_t NUMBER_OF_TIME_BLOCKS = 6;
-const float COUNT_RATE = 500.F;
+constexpr uint32_t NUMBER_OF_ENERGY_BINS = 3;
+constexpr uint32_t NUMBER_OF_TOF_BINS = 300;
+constexpr float RADIUS = 400.F;
+constexpr std::array<float, 3> CRYSTAL_LENGTH{ 4.F, 4.F, 20.F };
+constexpr std::array<float, 3> NUM_CRYSTALS_PER_MODULE{ 5, 6, 2 };
+constexpr uint32_t NUMBER_OF_TIME_BLOCKS = 6;
+constexpr float COUNT_RATE = 500.F;
 
-// single ring as example
+//! return a cuboid volume
+prd::SolidVolume
+get_crystal()
+{
+  using prd::Coordinate;
+  prd::BoxShape crystal_shape{ Coordinate{ 0, 0, 0 },
+                               Coordinate{ 0, 0, CRYSTAL_LENGTH[2] },
+                               Coordinate{ 0, CRYSTAL_LENGTH[1], CRYSTAL_LENGTH[2] },
+                               Coordinate{ 0, CRYSTAL_LENGTH[1], 0 },
+                               Coordinate{ CRYSTAL_LENGTH[0], 0, 0 },
+                               Coordinate{ CRYSTAL_LENGTH[0], 0, CRYSTAL_LENGTH[2] },
+                               Coordinate{ CRYSTAL_LENGTH[0], CRYSTAL_LENGTH[1], CRYSTAL_LENGTH[2] },
+                               Coordinate{ CRYSTAL_LENGTH[0], CRYSTAL_LENGTH[1], 0 } };
+
+  prd::SolidVolume crystal{ crystal_shape, /* material_id */ 1 };
+  return crystal;
+}
+
+//! return a module of NUM_CRYSTALS_PER_MODULE cuboids
+prd::DetectorModule
+get_detector_module()
+{
+  prd::ReplicatedSolidVolume rep_volume;
+  {
+    rep_volume.solid_volume = get_crystal();
+    constexpr auto N0 = NUM_CRYSTALS_PER_MODULE[0];
+    constexpr auto N1 = NUM_CRYSTALS_PER_MODULE[1];
+    constexpr auto N2 = NUM_CRYSTALS_PER_MODULE[2];
+    for (int rep0 = 0; rep0 < N0; ++rep0)
+      for (int rep1 = 0; rep1 < N1; ++rep1)
+        for (int rep2 = 0; rep2 < N2; ++rep2)
+          {
+            prd::RigidTransformation transform{ { { 1.0, 0.0, 0.0, RADIUS + rep0 * CRYSTAL_LENGTH[0] },
+                                                  { 0.0, 1.0, 0.0, rep1 * CRYSTAL_LENGTH[1] },
+                                                  { 0.0, 0.0, 1.0, rep2 * CRYSTAL_LENGTH[2] } } };
+            rep_volume.transforms.push_back(transform);
+            rep_volume.ids.push_back(rep0 + N0 * (rep1 + N1 * rep2));
+          }
+  }
+
+  prd::DetectorModule detector_module;
+  detector_module.detecting_elements.push_back(rep_volume);
+  detector_module.detecting_element_ids.push_back(0);
+
+  return detector_module;
+}
+
+//! return scanner build by rotating a module around the (0,0,1) axis
+prd::ScannerGeometry
+get_scanner_geometry()
+{
+  prd::ReplicatedDetectorModule rep_module;
+  {
+    // TODO why module_field?
+    rep_module.module_field = get_detector_module();
+    int module_id = 0;
+    std::vector<float> angles;
+    for (int i = 0; i < 10; ++i)
+      {
+        angles.push_back(static_cast<float>(2 * M_PI * i / 10));
+      }
+    for (auto angle : angles)
+      {
+        prd::RigidTransformation transform{ { { std::cos(angle), std::sin(angle), 0.F, 0.F },
+                                              { -std::sin(angle), std::cos(angle), 0.F, 0.F },
+                                              { 0.F, 0.F, 1.F, 0.F } } };
+        rep_module.ids.push_back(module_id++);
+        rep_module.transforms.push_back(transform);
+      }
+  }
+  prd::ScannerGeometry scanner_geometry;
+  scanner_geometry.replicated_modules.push_back(rep_module);
+  scanner_geometry.ids.push_back(0);
+  return scanner_geometry;
+}
+
 prd::ScannerInformation
 get_scanner_info()
 {
-  prd::DetectorModule detector_module;
-  {
-    // Define a cuboid
-    using prd::Coordinate;
-    prd::BoxShape crystal_shape{ Coordinate{ 0, 0, 0 },
-                                 Coordinate{ 0, 0, CRYSTAL_LENGTH[2] },
-                                 Coordinate{ 0, CRYSTAL_LENGTH[1], CRYSTAL_LENGTH[2] },
-                                 Coordinate{ 0, CRYSTAL_LENGTH[1], 0 },
-                                 Coordinate{ CRYSTAL_LENGTH[0], 0, 0 },
-                                 Coordinate{ CRYSTAL_LENGTH[0], 0, CRYSTAL_LENGTH[2] },
-                                 Coordinate{ CRYSTAL_LENGTH[0], CRYSTAL_LENGTH[1], CRYSTAL_LENGTH[2] },
-                                 Coordinate{ CRYSTAL_LENGTH[0], CRYSTAL_LENGTH[1], 0 } };
-
-    prd::SolidVolume crystal{ crystal_shape, /* material_id */ 1 };
-
-    // Define a module of 1x2 cuboids
-    prd::ReplicatedSolidVolume rep_volume;
-    {
-      rep_volume.solid_volume = crystal;
-      // translate along first axis
-      prd::RigidTransformation transform{ { { 1.F, 0.F, 0.F, RADIUS }, { 0.F, 1.F, 0.F, 0.F }, { 0.F, 0.F, 1.F, 0.F } } };
-      rep_volume.transforms.push_back(transform);
-      rep_volume.ids.push_back(0);
-      // and along second axis
-      transform.matrix(1,3) = CRYSTAL_LENGTH[1];
-      rep_volume.transforms.push_back(transform);
-      rep_volume.ids.push_back(1);
-    }
-
-    detector_module.detecting_elements.push_back(rep_volume);
-    detector_module.detecting_element_ids.push_back(0);
-
-  } // end detector_module
-
   prd::ScannerInformation scanner_info;
+  scanner_info.model_name = "PETSIRD_TEST";
+
+  scanner_info.scanner_geometry = get_scanner_geometry();
+
+  // TODO scanner_info.bulk_materials
+
+  // TOF and energy information
   {
-    // fill in geometry
-    {
-      prd::ReplicatedDetectorModule rep_module;
-      {
-        // TODO why module_field?
-        rep_module.module_field = detector_module;
-        int module_id = 0;
-        std::vector<float> angles;
-        for (int i = 0; i < 10; ++i)
-          {
-            angles.push_back(static_cast<float>(2 * M_PI * i / 10));
-          }
-        for (auto angle : angles)
-          {
-            prd::RigidTransformation transform{ { { std::cos(angle), std::sin(angle), 0.F, 0.F },
-                                                  { -std::sin(angle), std::cos(angle), 0.F, 0.F },
-                                                  { 0.F, 0.F, 1.F, 0.F } } };
-            rep_module.ids.push_back(module_id++);
-            rep_module.transforms.push_back(transform);
-          }
-      }
-
-      scanner_info.model_name = "PETSIRD_TEST";
-
-      scanner_info.scanner_geometry.replicated_modules.push_back(rep_module);
-      scanner_info.scanner_geometry.ids.push_back(0);
-      // TODO scanner_info.bulk_materials
-
-      // TOF and energy information
-      {
-        typedef yardl::NDArray<float, 1> FArray1D;
-        // TOF info (in mm)
-        FArray1D::shape_type tof_bin_edges_shape = { NUMBER_OF_TOF_BINS + 1 };
-        FArray1D tof_bin_edges(tof_bin_edges_shape);
-        for (std::size_t i = 0; i < tof_bin_edges.size(); ++i)
-          tof_bin_edges[i] = (i - NUMBER_OF_TOF_BINS / 2.F) / NUMBER_OF_TOF_BINS * 2 * RADIUS;
-        FArray1D::shape_type energy_bin_edges_shape = { NUMBER_OF_ENERGY_BINS + 1 };
-        FArray1D energy_bin_edges(energy_bin_edges_shape);
-        for (std::size_t i = 0; i < energy_bin_edges.size(); ++i)
-          energy_bin_edges[i] = 430.F + i * (650.F - 430.F) / NUMBER_OF_ENERGY_BINS;
-        scanner_info.tof_bin_edges = tof_bin_edges;
-        scanner_info.tof_resolution = 9.4F; // in mm
-        scanner_info.energy_bin_edges = energy_bin_edges;
-        scanner_info.energy_resolution_at_511 = .11F;    // as fraction of 511
-        scanner_info.listmode_time_block_duration = 1.F; // ms
-      }
-    }
+    typedef yardl::NDArray<float, 1> FArray1D;
+    // TOF info (in mm)
+    FArray1D::shape_type tof_bin_edges_shape = { NUMBER_OF_TOF_BINS + 1 };
+    FArray1D tof_bin_edges(tof_bin_edges_shape);
+    for (std::size_t i = 0; i < tof_bin_edges.size(); ++i)
+      tof_bin_edges[i] = (i - NUMBER_OF_TOF_BINS / 2.F) / NUMBER_OF_TOF_BINS * 2 * RADIUS;
+    FArray1D::shape_type energy_bin_edges_shape = { NUMBER_OF_ENERGY_BINS + 1 };
+    FArray1D energy_bin_edges(energy_bin_edges_shape);
+    for (std::size_t i = 0; i < energy_bin_edges.size(); ++i)
+      energy_bin_edges[i] = 430.F + i * (650.F - 430.F) / NUMBER_OF_ENERGY_BINS;
+    scanner_info.tof_bin_edges = tof_bin_edges;
+    scanner_info.tof_resolution = 9.4F; // in mm
+    scanner_info.energy_bin_edges = energy_bin_edges;
+    scanner_info.energy_resolution_at_511 = .11F;    // as fraction of 511
+    scanner_info.listmode_time_block_duration = 1.F; // ms
   }
+
   return scanner_info;
 }
 
@@ -179,7 +206,7 @@ main(int argc, char* argv[])
 
   std::string outfile = argv[1];
   std::remove(outfile.c_str());
-  prd::hdf5::PrdExperimentWriter writer(outfile);
+  PrdExperimentWriter writer(outfile);
 
   const auto header = get_header();
   writer.WriteHeader(header);

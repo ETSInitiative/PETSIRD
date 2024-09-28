@@ -1,3 +1,8 @@
+#  Copyright (C) 2022-2023 Microsoft Corporation
+#  Copyright (C) 2023-2024 University College London
+#
+#  SPDX-License-Identifier: Apache-2.0
+
 import sys
 import math
 import random
@@ -18,8 +23,8 @@ NUMBER_OF_EVENTS = 1000
 COUNT_RATE = 500
 
 
-# single ring as example
-def get_scanner_info() -> prd.ScannerInformation:
+def get_crystal() -> prd.SolidVolume:
+    """return a cuboid volume"""
     crystal_shape = prd.BoxShape(
         corners=[
             prd.Coordinate(c=(0, 0, 0)),
@@ -36,9 +41,12 @@ def get_scanner_info() -> prd.ScannerInformation:
     crystal_shape = prd.GeometricShape(
         shape=prd.BoxShapeOrAnnulusShape.BoxShape(crystal_shape)
     )
-    crystal = prd.SolidVolume(shape=crystal_shape, material_id=1)
+    return prd.SolidVolume(shape=crystal_shape, material_id=1)
 
-    # Define a module of N0xN1xN2 cuboids
+
+def get_detector_module() -> prd.DetectorModule:
+    """return a module of NUM_CRYSTALS_PER_MODULE cuboids"""
+    crystal = get_crystal()
     rep_volume = prd.ReplicatedSolidVolume(solid_volume=crystal)
     N0 = NUM_CRYSTALS_PER_MODULE[0]
     N1 = NUM_CRYSTALS_PER_MODULE[1]
@@ -59,10 +67,14 @@ def get_scanner_info() -> prd.ScannerInformation:
                 rep_volume.transforms.append(transform)
             rep_volume.ids.append(rep0 + N0 * (rep1 + N1 * rep2))
 
-    detector_module = prd.DetectorModule(
+    return prd.DetectorModule(
         detecting_elements=[rep_volume], detecting_element_ids=[0]
     )
 
+
+def get_scanner_geometry() -> prd.ScannerGeometry:
+    """return a scanner build by rotating a module around the (0,0,1) axis"""
+    detector_module = get_detector_module()
     radius = RADIUS
     angles = [2 * math.pi * i / NUM_MODULES for i in range(NUM_MODULES)]
 
@@ -83,7 +95,13 @@ def get_scanner_info() -> prd.ScannerInformation:
         module_id += 1
         rep_module.transforms.append(transform)
 
-    scanner_geometry = prd.ScannerGeometry(replicated_modules=[rep_module], ids=[0])
+    return prd.ScannerGeometry(replicated_modules=[rep_module], ids=[0])
+
+
+def get_scanner_info() -> prd.ScannerInformation:
+
+    scanner_geometry = get_scanner_geometry()
+
     # TODO scanner_info.bulk_materials
 
     # TOF info (in mm)

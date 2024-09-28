@@ -1,3 +1,8 @@
+#  Copyright (C) 2022-2023 Microsoft Corporation
+#  Copyright (C) 2023-2024 University College London
+#
+#  SPDX-License-Identifier: Apache-2.0
+
 import sys
 import numpy
 import prd
