@@ -58,3 +58,9 @@ jobs:
           ninja
           ./prd_generator test.h5
           ./prd_analysis test.h5
+
+      - name: Publish to TestPyPI
+        run: |
+          cd python
+          python -m build
+          twine upload --repository-url https://test.pypi.org/legacy/ dist/* -u __token__ -p ${{ secrets.TEST_PYPI_TOKEN }}
