@@ -19,21 +19,21 @@ ScannerInformation: !record
   fields:
     modelName: string
 
-    # list of geometric information for all detector elements
+    # Geometric information for all detector elements
     # All coordinates are in the PET gantry coordinate system.
     scannerGeometry: ScannerGeometry
  
-    # list of materials present in the scanner geometry. The `material_id`s there will refer to the
+    # List of materials present in the scanner geometry. The `material_id`s there will refer to the
     # identifiers in this list below.
     bulkMaterials: BulkMaterial*
 
-    # fixed transformation to reference location for this scanner.
+    # Fixed transformation to reference location for this scanner.
     # This field can be used to encode alignment with the CT or MRI gantry for instance.
     # The transformation should convert from the PET gantry coordinate system to the reference.
     # An empty field implies the identity transformation.
     gantryAlignment: RigidTransformation?
 
-    # edge information for TOF bins in mm (given as from first to last edge, so there is one more edge than the number of bins)
+    # Edge information for TOF bins in mm (given as from first to last edge, so there is one more edge than the number of bins)
     # 0 corresponds to the same arrival time. Negative numbers indicate that the first detector detected first.
     # For instance, a coincidence event is stored as 2 detectorIds, denoting the arrival time at the first
     # detector t1 and the arrival time at the second detector t2, we store (t1-t2)*c/2.
@@ -44,7 +44,7 @@ ScannerInformation: !record
     # TOF resolution in mm
     tofResolution: float
 
-    # edge information for energy windows in keV (given as from first to last edge, so there is one more edge than the number of bins)
+    # Edge information for energy windows in keV (given as from first to last edge, so there is one more edge than the number of bins)
     energyBinEdges: !array
       items: float
       dimensions: 1
@@ -54,7 +54,7 @@ ScannerInformation: !record
     # duration of each time block in ms
     listmodeTimeBlockDuration: uint
 
-    # encode how the scanner handles multiple coincidences
+    # Encode how the scanner handles multiple coincidences
     coincidencePolicy: CoincidencePolicy
 
   computedFields:

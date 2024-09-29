@@ -2,7 +2,7 @@
 SolidVolume: !record
   fields:
     shape: GeometricShape
-    # identified referring to `BulkMaterial` list in `ScannerInformation`
+    # identifier referring to `BulkMaterial` list in `ScannerInformation`
     materialId: uint
 
 # A list of identical SolidVolumes at different locations
@@ -48,6 +48,3 @@ ScannerGeometry: !record
     ids: uint*
     # shielding etc
     nonDetectingVolumes: SolidVolume*?
-
-# need to provide functionality to create unique id for detector element: (rep_module_id, module_id, detel_id)
-# and associated LUT

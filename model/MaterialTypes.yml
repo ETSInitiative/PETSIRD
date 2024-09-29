@@ -16,7 +16,9 @@ BulkMaterial: !record
     # unique id that can be used to refer to the material in voxelised maps etc
     id: uint
     # informative string, not standardised.
-    # Expected examples: BGO, LSO, LYSO, LaBr, GAGG, plastic
+    # Expected examples:
+    # detecting: BGO, LSO, LYSO, LaBr, GAGG, plastic
+    # non-detecting: tungsten, lead
     name: string
     # density of the material
     # Units: g/cc

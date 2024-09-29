@@ -16,7 +16,7 @@ DirectionMatrix: !record
   fields:
     matrix: float[3, 3]
 
-# rigid transformation, encoded via homogenous transformation
+# Rigid transformation, encoded via homogenous transformation
 # transformed_coord = matrix * [c, 1] (where [c,1] is a column vector)
 # with `c` of type `Coordinate`
 RigidTransformation: !record
