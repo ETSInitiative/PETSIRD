@@ -5,9 +5,10 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "prd"
 version = "0.0.1"  # Update as needed
-description = "Your package description"
-authors = [{ name = "Your Name", email = "your.email@example.com" }]
-license = { text = "MIT" }  # Update as needed
+description = "Library and tools for working with PET Emission Tomography Standardization Initiative Raw Data (PETSIRD) data"
+readme = "README.md"
+authors = [{ name = "Kris Thielemans", email = "k.thielemans@ucl.ac.uk" }]
+license = { text = "Apache-2.0" }  # Update as needed
 requires-python = ">=3.8"
 dependencies = [
     "numpy>=1.24.3",
