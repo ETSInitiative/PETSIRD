@@ -20,11 +20,18 @@ ScannerInformation: !record
     modelName: string
 
     # list of geometric information for all detector elements
+    # All coordinates are in the PET gantry coordinate system.
     scannerGeometry: ScannerGeometry
  
     # list of materials present in the scanner geometry. The `material_id`s there will refer to the
     # identifiers in this list below.
     bulkMaterials: BulkMaterial*
+
+    # fixed transformation to reference location for this scanner.
+    # This field can be used to encode alignment with the CT or MRI gantry for instance.
+    # The transformation should convert from the PET gantry coordinate system to the reference.
+    # An empty field implies the identity transformation.
+    gantryAlignment: RigidTransformation?
 
     # edge information for TOF bins in mm (given as from first to last edge, so there is one more edge than the number of bins)
     # 0 corresponds to the same arrival time. Negative numbers indicate that the first detector detected first.
