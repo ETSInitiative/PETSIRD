@@ -11,5 +11,5 @@ reading it from standard in. This can be used as follows:
 There is also a very basic utility to plot the scanner geometry. For instance
 ```
 python prd_generator.py > test.bin
-cat test.bin | python prd_plot_scanner.py`
+python prd_plot_scanner.py < test.bin`
 
