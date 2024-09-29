@@ -53,7 +53,7 @@ get_detector_module()
 {
   prd::ReplicatedSolidVolume rep_volume;
   {
-    rep_volume.solid_volume = get_crystal();
+    rep_volume.object = get_crystal();
     constexpr auto N0 = NUM_CRYSTALS_PER_MODULE[0];
     constexpr auto N1 = NUM_CRYSTALS_PER_MODULE[1];
     constexpr auto N2 = NUM_CRYSTALS_PER_MODULE[2];
@@ -82,8 +82,7 @@ get_scanner_geometry()
 {
   prd::ReplicatedDetectorModule rep_module;
   {
-    // TODO why module_field?
-    rep_module.module_field = get_detector_module();
+    rep_module.object = get_detector_module();
     int module_id = 0;
     std::vector<float> angles;
     for (int i = 0; i < 10; ++i)

@@ -20,10 +20,10 @@ if __name__ == "__main__":
             f"Number of modules of first type: {len(header.scanner.scanner_geometry.replicated_modules[0].transforms)}"
         )
         print(
-            f"Number of types of detecting elements in modules of first type: {len(header.scanner.scanner_geometry.replicated_modules[0].module.detecting_elements)}"
+            f"Number of types of detecting elements in modules of first type: {len(header.scanner.scanner_geometry.replicated_modules[0].object.detecting_elements)}"
         )
         print(
-            f"Number of elements of first type in modules of first type: {len(header.scanner.scanner_geometry.replicated_modules[0].module.detecting_elements[0].transforms)}"
+            f"Number of elements of first type in modules of first type: {len(header.scanner.scanner_geometry.replicated_modules[0].object.detecting_elements[0].transforms)}"
         )
         print(f"Number of TOF bins: {header.scanner.number_of_tof_bins()}")
         print(f"Number of energy bins: {header.scanner.number_of_energy_bins()}")

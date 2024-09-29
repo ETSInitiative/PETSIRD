@@ -41,9 +41,9 @@ main(int argc, char* argv[])
   std::cout << "Number of modules of first type: " << header.scanner.scanner_geometry.replicated_modules[0].transforms.size()
             << std::endl;
   std::cout << "Number of types of detecting elements in modules of first type: "
-            << header.scanner.scanner_geometry.replicated_modules[0].module_field.detecting_elements.size() << std::endl;
+            << header.scanner.scanner_geometry.replicated_modules[0].object.detecting_elements.size() << std::endl;
   std::cout << "Number of elements of first type in modules of first type: "
-            << header.scanner.scanner_geometry.replicated_modules[0].module_field.detecting_elements[0].transforms.size()
+            << header.scanner.scanner_geometry.replicated_modules[0].object.detecting_elements[0].transforms.size()
             << std::endl;
   std::cout << "Number of TOF bins: " << header.scanner.NumberOfTOFBins() << std::endl;
   std::cout << "Number of energy bins: " << header.scanner.NumberOfEnergyBins() << std::endl;

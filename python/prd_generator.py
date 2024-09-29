@@ -47,7 +47,7 @@ def get_crystal() -> prd.SolidVolume:
 def get_detector_module() -> prd.DetectorModule:
     """return a module of NUM_CRYSTALS_PER_MODULE cuboids"""
     crystal = get_crystal()
-    rep_volume = prd.ReplicatedSolidVolume(solid_volume=crystal)
+    rep_volume = prd.ReplicatedSolidVolume(object=crystal)
     N0 = NUM_CRYSTALS_PER_MODULE[0]
     N1 = NUM_CRYSTALS_PER_MODULE[1]
     N2 = NUM_CRYSTALS_PER_MODULE[2]
@@ -78,7 +78,7 @@ def get_scanner_geometry() -> prd.ScannerGeometry:
     radius = RADIUS
     angles = [2 * math.pi * i / NUM_MODULES for i in range(NUM_MODULES)]
 
-    rep_module = prd.ReplicatedDetectorModule(module=detector_module)
+    rep_module = prd.ReplicatedDetectorModule(object=detector_module)
     module_id = 0
     for angle in angles:
         transform = prd.RigidTransformation(

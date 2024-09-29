@@ -87,7 +87,7 @@ if __name__ == "__main__":
 
         # draw all crystals
         for rep_module in header.scanner.scanner_geometry.replicated_modules:
-            det_el = rep_module.module.detecting_elements
+            det_el = rep_module.object.detecting_elements
             for mod_transform in rep_module.transforms:
                 for rep_volume in det_el:
                     for transform in rep_volume.transforms:
@@ -95,7 +95,7 @@ if __name__ == "__main__":
                             ax,
                             transform_BoxShape(
                                 mult_transforms([mod_transform, transform]),
-                                rep_volume.solid_volume.shape.shape.value,
+                                rep_volume.object.shape.shape.value,
                             ),
                         )
         plt.show()

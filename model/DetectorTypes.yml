@@ -6,15 +6,7 @@ SolidVolume: !record
     materialId: uint
 
 # A list of identical SolidVolumes at different locations
-ReplicatedSolidVolume: !record
-  fields:
-    solidVolume: SolidVolume
-    # list of transforms
-    # constraint: length >= 1
-    transforms: RigidTransformation*
-    # list of unique ids for every replicated solid volume
-    # constraint: size(transforms) == size(ids)
-    ids: uint*
+ReplicatedSolidVolume: ReplicatedObject< SolidVolume >
 
 # Top-level detector structure, consisting of one or more lists of detecting elements (or "crystals")
 # This allows having different types of detecting elements (e.g. for phoswich detectors)
@@ -29,13 +21,7 @@ DetectorModule: !record
     nonDetectingElements: ReplicatedSolidVolume*?
 
 # A list of identical modules at different locations
-ReplicatedDetectorModule: !record
-  fields:
-    module: DetectorModule
-    transforms: RigidTransformation*
-    # list of unique ids for every replicated solid volume
-    # constraint: size(transforms) == size(ids)
-    ids: uint*
+ReplicatedDetectorModule: ReplicatedObject< DetectorModule >
     
 # Full definition of the geometry of the scanner, consisting of
 # one of more types of modules replicated in space and (optional) other structures (e.g. side-shielding)
