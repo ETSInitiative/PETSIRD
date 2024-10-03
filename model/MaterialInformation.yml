@@ -6,11 +6,9 @@ Atom: !record
     # Z
     atomicNumber: uint
 
-AtomAndFraction: !record
-  fields:
-    atom: Atom
-    massFraction: float
-
+# Specification of materials used in the scanner.
+# TODO agree with vendors if this information can be supplied and to what accuracy
+# Ideally this list should be reasonably accurate to be useful for Monte Carlo simulations, but can be approximate.
 BulkMaterial: !record
   fields:
     # unique id that can be used to refer to the material in voxelised maps etc
@@ -24,9 +22,8 @@ BulkMaterial: !record
     # Units: g/cc
     # TODO agree with vendors if this information can be supplied and to what accuracy
     density: float
-    # List of atoms and their respective mass fractions
-    # sum of massFractions should be 1
-    # TODO agree with vendors if this information can be supplied and to what accuracy
-    # Ideally this list should be reasonably accurate to be useful for Monte Carlo simulations, but can be approximate.
-    atoms: AtomAndFraction*
-    
+    # List of atoms
+    atoms: Atom*
+    # List of massFractions for the atoms.
+    # constraint: sum of massFractions should be 1
+    massFractions: float*
