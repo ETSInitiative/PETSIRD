@@ -30,7 +30,7 @@ constexpr uint32_t NUMBER_OF_TIME_BLOCKS = 6;
 constexpr float COUNT_RATE = 500.F;
 
 //! return a cuboid volume
-prd::SolidVolume
+prd::BoxSolidVolume
 get_crystal()
 {
   using prd::Coordinate;
@@ -43,7 +43,7 @@ get_crystal()
                                Coordinate{ CRYSTAL_LENGTH[0], CRYSTAL_LENGTH[1], CRYSTAL_LENGTH[2] },
                                Coordinate{ CRYSTAL_LENGTH[0], CRYSTAL_LENGTH[1], 0 } };
 
-  prd::SolidVolume crystal{ crystal_shape, /* material_id */ 1 };
+  prd::BoxSolidVolume crystal{ crystal_shape, /* material_id */ 1 };
   return crystal;
 }
 
@@ -51,7 +51,7 @@ get_crystal()
 prd::DetectorModule
 get_detector_module()
 {
-  prd::ReplicatedSolidVolume rep_volume;
+  prd::ReplicatedBoxSolidVolume rep_volume;
   {
     rep_volume.object = get_crystal();
     constexpr auto N0 = NUM_CRYSTALS_PER_MODULE[0];

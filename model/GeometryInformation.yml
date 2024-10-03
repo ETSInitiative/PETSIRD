@@ -61,7 +61,4 @@ AnnulusShape: !record
     # center point of the cylinder defining the annulus
 
 # Union of all possible shapes
-GeometricShape: !record
-  fields:
-    # union of different shape types
-    shape: [BoxShape, AnnulusShape]
+GeometricShape: [BoxShape, AnnulusShape]

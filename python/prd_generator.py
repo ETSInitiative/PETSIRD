@@ -37,17 +37,13 @@ def get_crystal() -> prd.SolidVolume:
             prd.Coordinate(c=(CRYSTAL_LENGTH[0], CRYSTAL_LENGTH[1], 0)),
         ]
     )
-    # handle unions in Python
-    crystal_shape = prd.GeometricShape(
-        shape=prd.BoxShapeOrAnnulusShape.BoxShape(crystal_shape)
-    )
-    return prd.SolidVolume(shape=crystal_shape, material_id=1)
+    return prd.BoxSolidVolume(shape=crystal_shape, material_id=1)
 
 
 def get_detector_module() -> prd.DetectorModule:
     """return a module of NUM_CRYSTALS_PER_MODULE cuboids"""
     crystal = get_crystal()
-    rep_volume = prd.ReplicatedSolidVolume(object=crystal)
+    rep_volume = prd.ReplicatedBoxSolidVolume(object=crystal)
     N0 = NUM_CRYSTALS_PER_MODULE[0]
     N1 = NUM_CRYSTALS_PER_MODULE[1]
     N2 = NUM_CRYSTALS_PER_MODULE[2]

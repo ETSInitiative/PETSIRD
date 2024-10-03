@@ -95,7 +95,7 @@ if __name__ == "__main__":
                             ax,
                             transform_BoxShape(
                                 mult_transforms([mod_transform, transform]),
-                                rep_volume.object.shape.shape.value,
+                                rep_volume.object.shape,
                             ),
                         )
         plt.show()
