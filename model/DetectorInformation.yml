@@ -2,7 +2,7 @@
 SolidVolume<Shape>: !record
   fields:
     shape: Shape
-    # identifier referring to `BulkMaterial` list in `ScannerInformation`
+    # identifier referring to `ScannerInformation.bulkMaterials` list
     materialId: uint
 
 BoxSolidVolume: SolidVolume<BoxShape>

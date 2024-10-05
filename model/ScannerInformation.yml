@@ -37,6 +37,7 @@ ScannerInformation: !record
     # 0 corresponds to the same arrival time. Negative numbers indicate that the first detector detected first.
     # For instance, a coincidence event is stored as 2 detectorIds, denoting the arrival time at the first
     # detector t1 and the arrival time at the second detector t2, we store (t1-t2)*c/2.
+    # Note: for non-TOF scanners, this defines the coincidence window
     # TODO: this currently assumes equal size for each TOF bin, but some scanners "stretch" TOF bins depending on length of LOR
     tofBinEdges: !array
       items: float

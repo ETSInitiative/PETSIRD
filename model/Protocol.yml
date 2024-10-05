@@ -1,5 +1,4 @@
-# You can read more about the yardl syntax here: https://aka.ms/yardl/docs
-
+# Definition of the stream of data
 PrdExperiment: !protocol
   sequence:
     header: Header
