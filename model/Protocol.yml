@@ -1,5 +1,5 @@
 # Definition of the stream of data
-PrdExperiment: !protocol
+PETSIRD: !protocol
   sequence:
     header: Header
     timeBlocks: !stream

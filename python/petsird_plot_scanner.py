@@ -8,7 +8,7 @@
 import sys
 import numpy
 import numpy.typing as npt
-import prd
+import petsird
 
 import matplotlib.pyplot as plt
 
@@ -17,26 +17,28 @@ import matplotlib.pyplot as plt
 
 
 def transform_to_mat44(
-    transform: prd.RigidTransformation,
+    transform: petsird.RigidTransformation,
 ) -> npt.NDArray[numpy.float32]:
     return numpy.vstack([transform.matrix, [0, 0, 0, 1]])
 
 
-def mat44_to_transform(mat: npt.NDArray[numpy.float32]) -> prd.RigidTransformation:
-    return prd.RigidTransformation(matrix=mat[0:3, :])
+def mat44_to_transform(mat: npt.NDArray[numpy.float32]) -> petsird.RigidTransformation:
+    return petsird.RigidTransformation(matrix=mat[0:3, :])
 
 
-def coordinate_to_homogeneous(coord: prd.Coordinate) -> npt.NDArray[numpy.float32]:
+def coordinate_to_homogeneous(coord: petsird.Coordinate) -> npt.NDArray[numpy.float32]:
     return numpy.hstack([coord.c, 1])
 
 
-def homogeneous_to_coordinate(hom_coord: npt.NDArray[numpy.float32]) -> prd.Coordinate:
-    return prd.Coordinate(c=hom_coord[0:3])
+def homogeneous_to_coordinate(
+    hom_coord: npt.NDArray[numpy.float32],
+) -> petsird.Coordinate:
+    return petsird.Coordinate(c=hom_coord[0:3])
 
 
 def mult_transforms(
-    transforms: list[prd.RigidTransformation],
-) -> prd.RigidTransformation:
+    transforms: list[petsird.RigidTransformation],
+) -> petsird.RigidTransformation:
     """multiply rigid transformations"""
     mat = numpy.array(
         ((1, 0, 0, 0), (0, 1, 0, 0), (0, 0, 1, 0), (0, 0, 0, 1)),
@@ -49,8 +51,8 @@ def mult_transforms(
 
 
 def mult_transforms_coord(
-    transforms: list[prd.RigidTransformation], coord: prd.Coordinate
-) -> prd.Coordinate:
+    transforms: list[petsird.RigidTransformation], coord: petsird.Coordinate
+) -> petsird.Coordinate:
     """apply list of transformations to coordinate"""
     # TODO better to multiply with coordinates in sequence, as first multiplying the matrices
     hom = numpy.matmul(
@@ -61,21 +63,21 @@ def mult_transforms_coord(
 
 
 def transform_BoxShape(
-    transform: prd.RigidTransformation, box_shape: prd.BoxShape
-) -> prd.BoxShape:
-    return prd.BoxShape(
+    transform: petsird.RigidTransformation, box_shape: petsird.BoxShape
+) -> petsird.BoxShape:
+    return petsird.BoxShape(
         corners=[mult_transforms_coord([transform], c) for c in box_shape.corners]
     )
 
 
-def draw_BoxShape(ax, box: prd.BoxShape) -> None:
+def draw_BoxShape(ax, box: petsird.BoxShape) -> None:
     coords = numpy.array([c.c for c in box.corners])
     # mpl_toolkits.mplot3d.art3d.Line3D(coords[:, 0], coords[:, 1], coords[:, 2])
     ax.plot3D(coords[:, 0], coords[:, 1], coords[:, 2])
 
 
 if __name__ == "__main__":
-    with prd.BinaryPrdExperimentReader(sys.stdin.buffer) as reader:
+    with petsird.BinaryPETSIRDReader(sys.stdin.buffer) as reader:
         header = reader.read_header()
         # TODO somehow say we won't read the time blocks to avoid a ProtocolError
 

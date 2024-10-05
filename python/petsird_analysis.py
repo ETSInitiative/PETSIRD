@@ -5,11 +5,11 @@
 
 import sys
 import numpy
-import prd
+import petsird
 
 
 if __name__ == "__main__":
-    with prd.BinaryPrdExperimentReader(sys.stdin.buffer) as reader:
+    with petsird.BinaryPETSIRDReader(sys.stdin.buffer) as reader:
         header = reader.read_header()
         print(f"Subject ID: {header.exam.subject.id}")
         print(f"Scanner name: { header.scanner.model_name}")

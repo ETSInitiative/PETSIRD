@@ -29,7 +29,7 @@ ARG USERNAME="vscode"
 ARG USER_UID=1000
 ARG USER_GID=$USER_UID
 ARG CONDA_GID=900
-ARG CONDA_ENVIRONMENT_NAME=prd
+ARG CONDA_ENVIRONMENT_NAME=petsird
 ARG VSCODE_DEV_CONTAINERS_SCRIPT_LIBRARY_VERSION=v0.229.0
 
 RUN apt-get update && apt-get install -y \
@@ -87,7 +87,7 @@ ENV CMAKE_GENERATOR=Ninja
 
 # Create a kits file for the VSCode CMake Tools extension, so you are not prompted for which kit to select whenever you open VSCode
 RUN mkdir -p /home/vscode/.local/share/CMakeTools \
-    && echo '[{"name":"GCC-10","compilers":{"C":"/opt/conda/envs/prd/bin/x86_64-conda_cos6-linux-gnu-gcc","CXX":"/opt/conda/envs/prd/bin/x86_64-conda_cos6-linux-gnu-g++"}}]' > /home/vscode/.local/share/CMakeTools/cmake-tools-kits.json \
+    && echo '[{"name":"GCC-10","compilers":{"C":"/opt/conda/envs/petsird/bin/x86_64-conda_cos6-linux-gnu-gcc","CXX":"/opt/conda/envs/petsird/bin/x86_64-conda_cos6-linux-gnu-g++"}}]' > /home/vscode/.local/share/CMakeTools/cmake-tools-kits.json \
     && chown vscode:conda /home/vscode/.local/share/CMakeTools/cmake-tools-kits.json
 
 # Install the yardl tool

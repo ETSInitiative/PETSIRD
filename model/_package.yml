@@ -1,4 +1,4 @@
-namespace: Prd
+namespace: PETSIRD
 
 cpp:
   sourcesOutputDir: ../cpp/generated

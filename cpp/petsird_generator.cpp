@@ -14,10 +14,10 @@
 
 #ifdef USE_HDF5
 #  include "generated/hdf5/protocols.h"
-using prd::hdf5::PrdExperimentWriter;
+using petsird::hdf5::PETSIRDWriter;
 #else
 #  include "generated/binary/protocols.h"
-using prd::binary::PrdExperimentWriter;
+using petsird::binary::PETSIRDWriter;
 #endif
 
 // these are constants for now
@@ -30,28 +30,28 @@ constexpr uint32_t NUMBER_OF_TIME_BLOCKS = 6;
 constexpr float COUNT_RATE = 500.F;
 
 //! return a cuboid volume
-prd::BoxSolidVolume
+petsird::BoxSolidVolume
 get_crystal()
 {
-  using prd::Coordinate;
-  prd::BoxShape crystal_shape{ Coordinate{ { 0, 0, 0 } },
-                               Coordinate{ { 0, 0, CRYSTAL_LENGTH[2] } },
-                               Coordinate{ { 0, CRYSTAL_LENGTH[1], CRYSTAL_LENGTH[2] } },
-                               Coordinate{ { 0, CRYSTAL_LENGTH[1], 0 } },
-                               Coordinate{ { CRYSTAL_LENGTH[0], 0, 0 } },
-                               Coordinate{ { CRYSTAL_LENGTH[0], 0, CRYSTAL_LENGTH[2] } },
-                               Coordinate{ { CRYSTAL_LENGTH[0], CRYSTAL_LENGTH[1], CRYSTAL_LENGTH[2] } },
-                               Coordinate{ { CRYSTAL_LENGTH[0], CRYSTAL_LENGTH[1], 0 } } };
+  using petsird::Coordinate;
+  petsird::BoxShape crystal_shape{ Coordinate{ { 0, 0, 0 } },
+                                   Coordinate{ { 0, 0, CRYSTAL_LENGTH[2] } },
+                                   Coordinate{ { 0, CRYSTAL_LENGTH[1], CRYSTAL_LENGTH[2] } },
+                                   Coordinate{ { 0, CRYSTAL_LENGTH[1], 0 } },
+                                   Coordinate{ { CRYSTAL_LENGTH[0], 0, 0 } },
+                                   Coordinate{ { CRYSTAL_LENGTH[0], 0, CRYSTAL_LENGTH[2] } },
+                                   Coordinate{ { CRYSTAL_LENGTH[0], CRYSTAL_LENGTH[1], CRYSTAL_LENGTH[2] } },
+                                   Coordinate{ { CRYSTAL_LENGTH[0], CRYSTAL_LENGTH[1], 0 } } };
 
-  prd::BoxSolidVolume crystal{ crystal_shape, /* material_id */ 1 };
+  petsird::BoxSolidVolume crystal{ crystal_shape, /* material_id */ 1 };
   return crystal;
 }
 
 //! return a module of NUM_CRYSTALS_PER_MODULE cuboids
-prd::DetectorModule
+petsird::DetectorModule
 get_detector_module()
 {
-  prd::ReplicatedBoxSolidVolume rep_volume;
+  petsird::ReplicatedBoxSolidVolume rep_volume;
   {
     rep_volume.object = get_crystal();
     constexpr auto N0 = NUM_CRYSTALS_PER_MODULE[0];
@@ -61,15 +61,15 @@ get_detector_module()
       for (int rep1 = 0; rep1 < N1; ++rep1)
         for (int rep2 = 0; rep2 < N2; ++rep2)
           {
-            prd::RigidTransformation transform{ { { 1.0, 0.0, 0.0, RADIUS + rep0 * CRYSTAL_LENGTH[0] },
-                                                  { 0.0, 1.0, 0.0, rep1 * CRYSTAL_LENGTH[1] },
-                                                  { 0.0, 0.0, 1.0, rep2 * CRYSTAL_LENGTH[2] } } };
+            petsird::RigidTransformation transform{ { { 1.0, 0.0, 0.0, RADIUS + rep0 * CRYSTAL_LENGTH[0] },
+                                                      { 0.0, 1.0, 0.0, rep1 * CRYSTAL_LENGTH[1] },
+                                                      { 0.0, 0.0, 1.0, rep2 * CRYSTAL_LENGTH[2] } } };
             rep_volume.transforms.push_back(transform);
             rep_volume.ids.push_back(rep0 + N0 * (rep1 + N1 * rep2));
           }
   }
 
-  prd::DetectorModule detector_module;
+  petsird::DetectorModule detector_module;
   detector_module.detecting_elements.push_back(rep_volume);
   detector_module.detecting_element_ids.push_back(0);
 
@@ -77,10 +77,10 @@ get_detector_module()
 }
 
 //! return scanner build by rotating a module around the (0,0,1) axis
-prd::ScannerGeometry
+petsird::ScannerGeometry
 get_scanner_geometry()
 {
-  prd::ReplicatedDetectorModule rep_module;
+  petsird::ReplicatedDetectorModule rep_module;
   {
     rep_module.object = get_detector_module();
     int module_id = 0;
@@ -91,23 +91,23 @@ get_scanner_geometry()
       }
     for (auto angle : angles)
       {
-        prd::RigidTransformation transform{ { { std::cos(angle), std::sin(angle), 0.F, 0.F },
-                                              { -std::sin(angle), std::cos(angle), 0.F, 0.F },
-                                              { 0.F, 0.F, 1.F, 0.F } } };
+        petsird::RigidTransformation transform{ { { std::cos(angle), std::sin(angle), 0.F, 0.F },
+                                                  { -std::sin(angle), std::cos(angle), 0.F, 0.F },
+                                                  { 0.F, 0.F, 1.F, 0.F } } };
         rep_module.ids.push_back(module_id++);
         rep_module.transforms.push_back(transform);
       }
   }
-  prd::ScannerGeometry scanner_geometry;
+  petsird::ScannerGeometry scanner_geometry;
   scanner_geometry.replicated_modules.push_back(rep_module);
   scanner_geometry.ids.push_back(0);
   return scanner_geometry;
 }
 
-prd::ScannerInformation
+petsird::ScannerInformation
 get_scanner_info()
 {
-  prd::ScannerInformation scanner_info;
+  petsird::ScannerInformation scanner_info;
   scanner_info.model_name = "PETSIRD_TEST";
 
   scanner_info.scanner_geometry = get_scanner_geometry();
@@ -136,18 +136,18 @@ get_scanner_info()
   return scanner_info;
 }
 
-prd::Header
+petsird::Header
 get_header()
 {
-  prd::Subject subject;
+  petsird::Subject subject;
   subject.id = "123456";
-  prd::Institution institution;
+  petsird::Institution institution;
   institution.name = "Diamond Light Source";
   institution.address = "Harwell Science and Innovation Campus, Didcot, Oxfordshire, OX11 0DE, UK";
-  prd::ExamInformation exam_info;
+  petsird::ExamInformation exam_info;
   exam_info.subject = subject;
   exam_info.institution = institution;
-  prd::Header header;
+  petsird::Header header;
   header.exam = exam_info;
   header.scanner = get_scanner_info();
   return header;
@@ -174,15 +174,15 @@ get_random_tof_value()
   return rand() % NUMBER_OF_TOF_BINS;
 }
 
-std::vector<prd::CoincidenceEvent>
-get_events(const prd::Header&, std::size_t num_events)
+std::vector<petsird::CoincidenceEvent>
+get_events(const petsird::Header&, std::size_t num_events)
 {
-  std::vector<prd::CoincidenceEvent> events;
+  std::vector<petsird::CoincidenceEvent> events;
   events.reserve(num_events);
   for (std::size_t i = 0; i < num_events; ++i)
     {
       const auto detectors = get_random_pair(1); // TODO header.scanner.NumberOfDetectors());
-      prd::CoincidenceEvent e;
+      petsird::CoincidenceEvent e;
       e.detector_ids[0] = detectors.first;
       e.detector_ids[1] = detectors.second;
       e.energy_indices[0] = get_random_energy_value();
@@ -205,7 +205,7 @@ main(int argc, char* argv[])
 
   std::string outfile = argv[1];
   std::remove(outfile.c_str());
-  PrdExperimentWriter writer(outfile);
+  PETSIRDWriter writer(outfile);
 
   const auto header = get_header();
   writer.WriteHeader(header);
@@ -217,7 +217,7 @@ main(int argc, char* argv[])
       std::poisson_distribution<> poisson(COUNT_RATE);
       const auto num_prompts_this_block = poisson(gen);
       const auto prompts_this_block = get_events(header, num_prompts_this_block);
-      prd::TimeBlock time_block;
+      petsird::TimeBlock time_block;
       time_block.id = t;
       time_block.prompt_events = prompts_this_block;
       writer.WriteTimeBlocks(time_block);

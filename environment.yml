@@ -1,4 +1,4 @@
-name: prd
+name: petsird
 channels:
   - conda-forge
   - defaults
