@@ -34,14 +34,14 @@ prd::BoxSolidVolume
 get_crystal()
 {
   using prd::Coordinate;
-  prd::BoxShape crystal_shape{ Coordinate{ 0, 0, 0 },
-                               Coordinate{ 0, 0, CRYSTAL_LENGTH[2] },
-                               Coordinate{ 0, CRYSTAL_LENGTH[1], CRYSTAL_LENGTH[2] },
-                               Coordinate{ 0, CRYSTAL_LENGTH[1], 0 },
-                               Coordinate{ CRYSTAL_LENGTH[0], 0, 0 },
-                               Coordinate{ CRYSTAL_LENGTH[0], 0, CRYSTAL_LENGTH[2] },
-                               Coordinate{ CRYSTAL_LENGTH[0], CRYSTAL_LENGTH[1], CRYSTAL_LENGTH[2] },
-                               Coordinate{ CRYSTAL_LENGTH[0], CRYSTAL_LENGTH[1], 0 } };
+  prd::BoxShape crystal_shape{ Coordinate{ { 0, 0, 0 } },
+                               Coordinate{ { 0, 0, CRYSTAL_LENGTH[2] } },
+                               Coordinate{ { 0, CRYSTAL_LENGTH[1], CRYSTAL_LENGTH[2] } },
+                               Coordinate{ { 0, CRYSTAL_LENGTH[1], 0 } },
+                               Coordinate{ { CRYSTAL_LENGTH[0], 0, 0 } },
+                               Coordinate{ { CRYSTAL_LENGTH[0], 0, CRYSTAL_LENGTH[2] } },
+                               Coordinate{ { CRYSTAL_LENGTH[0], CRYSTAL_LENGTH[1], CRYSTAL_LENGTH[2] } },
+                               Coordinate{ { CRYSTAL_LENGTH[0], CRYSTAL_LENGTH[1], 0 } } };
 
   prd::BoxSolidVolume crystal{ crystal_shape, /* material_id */ 1 };
   return crystal;

@@ -7,6 +7,7 @@ import sys
 import math
 import random
 import numpy
+import numpy.typing as npt
 from collections.abc import Iterator
 import prd
 
@@ -23,18 +24,22 @@ NUMBER_OF_EVENTS = 1000
 COUNT_RATE = 500
 
 
+def make_coordinate(v: tuple) -> prd.Coordinate:
+    return prd.Coordinate(c=numpy.array(v, dtype=numpy.float32))
+
+
 def get_crystal() -> prd.SolidVolume:
     """return a cuboid volume"""
     crystal_shape = prd.BoxShape(
         corners=[
-            prd.Coordinate(c=(0, 0, 0)),
-            prd.Coordinate(c=(0, 0, CRYSTAL_LENGTH[2])),
-            prd.Coordinate(c=(0, CRYSTAL_LENGTH[1], CRYSTAL_LENGTH[2])),
-            prd.Coordinate(c=(0, CRYSTAL_LENGTH[1], 0)),
-            prd.Coordinate(c=(CRYSTAL_LENGTH[0], 0, 0)),
-            prd.Coordinate(c=(CRYSTAL_LENGTH[0], 0, CRYSTAL_LENGTH[2])),
-            prd.Coordinate(c=(CRYSTAL_LENGTH[0], CRYSTAL_LENGTH[1], CRYSTAL_LENGTH[2])),
-            prd.Coordinate(c=(CRYSTAL_LENGTH[0], CRYSTAL_LENGTH[1], 0)),
+            make_coordinate((0, 0, 0)),
+            make_coordinate((0, 0, CRYSTAL_LENGTH[2])),
+            make_coordinate((0, CRYSTAL_LENGTH[1], CRYSTAL_LENGTH[2])),
+            make_coordinate((0, CRYSTAL_LENGTH[1], 0)),
+            make_coordinate((CRYSTAL_LENGTH[0], 0, 0)),
+            make_coordinate((CRYSTAL_LENGTH[0], 0, CRYSTAL_LENGTH[2])),
+            make_coordinate((CRYSTAL_LENGTH[0], CRYSTAL_LENGTH[1], CRYSTAL_LENGTH[2])),
+            make_coordinate((CRYSTAL_LENGTH[0], CRYSTAL_LENGTH[1], 0)),
         ]
     )
     return prd.BoxSolidVolume(shape=crystal_shape, material_id=1)

@@ -3,7 +3,7 @@
 # 3D coordinates (in mm)
 Coordinate: !record
   fields:
-    c: float*3
+    c: float[3]
 
 # 3D direction vector (normalized to 1)
 Direction: !record
