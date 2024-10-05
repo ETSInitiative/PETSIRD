@@ -66,7 +66,7 @@ def get_detector_module() -> prd.DetectorModule:
                     )
                 )
                 rep_volume.transforms.append(transform)
-            rep_volume.ids.append(rep0 + N0 * (rep1 + N1 * rep2))
+                rep_volume.ids.append(rep0 + N0 * (rep1 + N1 * rep2))
 
     return prd.DetectorModule(
         detecting_elements=[rep_volume], detecting_element_ids=[0]
