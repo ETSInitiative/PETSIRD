@@ -1,0 +1,64 @@
+# Type definitions related to geometry and coordinates
+
+# 3D coordinates (in mm)
+Coordinate: !record
+  fields:
+    c: float[3]
+
+# 3D direction vector (normalized to 1)
+Direction: !record
+  fields:
+    c: float[3]
+
+# Orthonormal matrix
+# direction_of_first_axis = matrix * [1, 0 ,0] (as a column vector)
+DirectionMatrix: !record
+  fields:
+    matrix: float[3, 3]
+
+# Rigid transformation, encoded via homogenous transformation
+# transformed_coord = matrix * [c, 1] (where [c,1] is a column vector)
+# with `c` of type `Coordinate`
+RigidTransformation: !record
+  fields:
+    matrix: float[3, 4]
+
+# A list of identical objects at different locations
+ReplicatedObject<T>: !record
+  fields:
+    object: T
+    # list of transforms
+    # constraint: length >= 1
+    transforms: RigidTransformation*
+    # list of unique ids for every replicated solid volume
+    # constraint: size(transforms) == size(ids)
+    ids: uint*
+  computedFields:
+    numberOfObjects: size(transforms)
+
+# A box-shape specified by 8 corners (e.g. cuboid, wedge, etc.)
+# TODO need to think about a clear definition of planes
+# We do not want to have to check about intersection planes
+# Potential mechanisms:
+# - lexicographical ordering of corner coordinates?
+# - first 4 coordinates give first plane, 5th and 6th need to define plane with first 2, etc.
+BoxShape: !record
+  fields:
+    corners: Coordinate*8
+
+# Annulus of certain thickness centered at [0,0,0] and oriented along the [0,0,1] axis
+# in radians. An angle of 0 corresponds to the [1,0,0] axis, Pi/2 corresponds to the [0,1,0] axis.
+AnnulusShape: !record
+  fields:
+    # inner radius (in mm)
+    innerRadius: float
+    # outer radius (in mm)
+    outerRadius: float
+    # thickness of the annulus, i.e. length along the axis (in mm)
+    thickness: float
+    # start-stop angle (in radians)
+    angularRange: float*2
+    # center point of the cylinder defining the annulus
+
+# Union of all possible shapes
+GeometricShape: [BoxShape, AnnulusShape]

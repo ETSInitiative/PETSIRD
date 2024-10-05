@@ -1,7 +1,13 @@
+#  Copyright (C) 2022-2023 Microsoft Corporation
+#  Copyright (C) 2023-2024 University College London
+#
+#  SPDX-License-Identifier: Apache-2.0
+
 import sys
 import math
 import random
 import numpy
+import numpy.typing as npt
 from collections.abc import Iterator
 import prd
 
@@ -9,21 +15,96 @@ import prd
 NUMBER_OF_ENERGY_BINS = 3
 NUMBER_OF_TOF_BINS = 300
 RADIUS = 400
+CRYSTAL_LENGTH = (4, 4, 20)
+# num crystals in a module
+NUM_CRYSTALS_PER_MODULE = (5, 6, 2)
+NUM_MODULES = 20
 NUMBER_OF_TIME_BLOCKS = 6
 NUMBER_OF_EVENTS = 1000
 COUNT_RATE = 500
 
 
-# single ring as example
-def get_scanner_info() -> prd.ScannerInformation:
+def make_coordinate(v: tuple) -> prd.Coordinate:
+    return prd.Coordinate(c=numpy.array(v, dtype=numpy.float32))
+
+
+def get_crystal() -> prd.SolidVolume:
+    """return a cuboid volume"""
+    crystal_shape = prd.BoxShape(
+        corners=[
+            make_coordinate((0, 0, 0)),
+            make_coordinate((0, 0, CRYSTAL_LENGTH[2])),
+            make_coordinate((0, CRYSTAL_LENGTH[1], CRYSTAL_LENGTH[2])),
+            make_coordinate((0, CRYSTAL_LENGTH[1], 0)),
+            make_coordinate((CRYSTAL_LENGTH[0], 0, 0)),
+            make_coordinate((CRYSTAL_LENGTH[0], 0, CRYSTAL_LENGTH[2])),
+            make_coordinate((CRYSTAL_LENGTH[0], CRYSTAL_LENGTH[1], CRYSTAL_LENGTH[2])),
+            make_coordinate((CRYSTAL_LENGTH[0], CRYSTAL_LENGTH[1], 0)),
+        ]
+    )
+    return prd.BoxSolidVolume(shape=crystal_shape, material_id=1)
+
+
+def get_detector_module() -> prd.DetectorModule:
+    """return a module of NUM_CRYSTALS_PER_MODULE cuboids"""
+    crystal = get_crystal()
+    rep_volume = prd.ReplicatedBoxSolidVolume(object=crystal)
+    N0 = NUM_CRYSTALS_PER_MODULE[0]
+    N1 = NUM_CRYSTALS_PER_MODULE[1]
+    N2 = NUM_CRYSTALS_PER_MODULE[2]
+    for rep0 in range(N0):
+        for rep1 in range(N1):
+            for rep2 in range(N2):
+                transform = prd.RigidTransformation(
+                    matrix=numpy.array(
+                        (
+                            (1.0, 0.0, 0.0, RADIUS + rep0 * CRYSTAL_LENGTH[0]),
+                            (0.0, 1.0, 0.0, rep1 * CRYSTAL_LENGTH[1]),
+                            (0.0, 0.0, 1.0, rep2 * CRYSTAL_LENGTH[2]),
+                        ),
+                        dtype="float32",
+                    )
+                )
+                rep_volume.transforms.append(transform)
+                rep_volume.ids.append(rep0 + N0 * (rep1 + N1 * rep2))
+
+    return prd.DetectorModule(
+        detecting_elements=[rep_volume], detecting_element_ids=[0]
+    )
+
+
+def get_scanner_geometry() -> prd.ScannerGeometry:
+    """return a scanner build by rotating a module around the (0,0,1) axis"""
+    detector_module = get_detector_module()
     radius = RADIUS
-    angles = [2 * math.pi * i / 10 for i in range(10)]
-    detectors = [
-        prd.Detector(x=x, y=y, z=0, id=i)
-        for i, (x, y) in enumerate(
-            (radius * math.sin(angle), radius * math.cos(angle)) for angle in angles
+    angles = [2 * math.pi * i / NUM_MODULES for i in range(NUM_MODULES)]
+
+    rep_module = prd.ReplicatedDetectorModule(object=detector_module)
+    module_id = 0
+    for angle in angles:
+        transform = prd.RigidTransformation(
+            matrix=numpy.array(
+                (
+                    (math.cos(angle), math.sin(angle), 0.0, 0.0),
+                    (-math.sin(angle), math.cos(angle), 0.0, 0.0),
+                    (0.0, 0.0, 1.0, 0.0),
+                ),
+                dtype="float32",
+            )
         )
-    ]
+        rep_module.ids.append(module_id)
+        module_id += 1
+        rep_module.transforms.append(transform)
+
+    return prd.ScannerGeometry(replicated_modules=[rep_module], ids=[0])
+
+
+def get_scanner_info() -> prd.ScannerInformation:
+
+    scanner_geometry = get_scanner_geometry()
+
+    # TODO scanner_info.bulk_materials
+
     # TOF info (in mm)
     tofBinEdges = numpy.linspace(
         -RADIUS, RADIUS, NUMBER_OF_TOF_BINS + 1, dtype="float32"
@@ -32,7 +113,8 @@ def get_scanner_info() -> prd.ScannerInformation:
         430, 650, NUMBER_OF_ENERGY_BINS + 1, dtype="float32"
     )
     return prd.ScannerInformation(
-        detectors=detectors,
+        model_name="PETSIRD_TEST",
+        scanner_geometry=scanner_geometry,
         tof_bin_edges=tofBinEdges,
         tof_resolution=9.4,  # in mm
         energy_bin_edges=energyBinEdges,
@@ -54,13 +136,17 @@ def get_header() -> prd.Header:
 
 
 def get_events(header: prd.Header, num_events: int) -> Iterator[prd.CoincidenceEvent]:
-    detector_count = header.scanner.number_of_detectors()
+    detector_count = 5  # TODO header.scanner.number_of_detectors()
     for _ in range(num_events):
         yield prd.CoincidenceEvent(
-            detector_ids = [random.randrange(0, detector_count),
-                           random.randrange(0, detector_count)],
-            energy_indices = [random.randrange(0, NUMBER_OF_ENERGY_BINS),
-                          random.randrange(0, NUMBER_OF_ENERGY_BINS)],
+            detector_ids=[
+                random.randrange(0, detector_count),
+                random.randrange(0, detector_count),
+            ],
+            energy_indices=[
+                random.randrange(0, NUMBER_OF_ENERGY_BINS),
+                random.randrange(0, NUMBER_OF_ENERGY_BINS),
+            ],
             tof_idx=random.randrange(0, NUMBER_OF_TOF_BINS),
         )
 
