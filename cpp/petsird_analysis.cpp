@@ -10,10 +10,10 @@
 
 #ifdef USE_HDF5
 #  include "generated/hdf5/protocols.h"
-using prd::hdf5::PrdExperimentReader;
+using petsird::hdf5::PETSIRDReader;
 #else
 #  include "generated/binary/protocols.h"
-using prd::binary::PrdExperimentReader;
+using petsird::binary::PETSIRDReader;
 #endif
 #include <xtensor/xview.hpp>
 #include <xtensor/xio.hpp>
@@ -30,8 +30,8 @@ main(int argc, char* argv[])
     }
 
   // Open the file
-  PrdExperimentReader reader(argv[1]);
-  prd::Header header;
+  PETSIRDReader reader(argv[1]);
+  petsird::Header header;
   reader.ReadHeader(header);
 
   std::cout << "Processing file: " << argv[1] << std::endl;
@@ -56,7 +56,7 @@ main(int argc, char* argv[])
                                  / 2;
   std::cout << "Energy mid points: " << energy_mid_points << std::endl;
 
-  prd::TimeBlock time_block;
+  petsird::TimeBlock time_block;
 
   // Process events in batches of up to 100
   float energy_1 = 0, energy_2 = 0;

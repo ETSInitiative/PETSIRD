@@ -9,7 +9,7 @@ import random
 import numpy
 import numpy.typing as npt
 from collections.abc import Iterator
-import prd
+import petsird
 
 # these are constants for now
 NUMBER_OF_ENERGY_BINS = 3
@@ -24,13 +24,13 @@ NUMBER_OF_EVENTS = 1000
 COUNT_RATE = 500
 
 
-def make_coordinate(v: tuple) -> prd.Coordinate:
-    return prd.Coordinate(c=numpy.array(v, dtype=numpy.float32))
+def make_coordinate(v: tuple) -> petsird.Coordinate:
+    return petsird.Coordinate(c=numpy.array(v, dtype=numpy.float32))
 
 
-def get_crystal() -> prd.SolidVolume:
+def get_crystal() -> petsird.SolidVolume:
     """return a cuboid volume"""
-    crystal_shape = prd.BoxShape(
+    crystal_shape = petsird.BoxShape(
         corners=[
             make_coordinate((0, 0, 0)),
             make_coordinate((0, 0, CRYSTAL_LENGTH[2])),
@@ -42,20 +42,20 @@ def get_crystal() -> prd.SolidVolume:
             make_coordinate((CRYSTAL_LENGTH[0], CRYSTAL_LENGTH[1], 0)),
         ]
     )
-    return prd.BoxSolidVolume(shape=crystal_shape, material_id=1)
+    return petsird.BoxSolidVolume(shape=crystal_shape, material_id=1)
 
 
-def get_detector_module() -> prd.DetectorModule:
+def get_detector_module() -> petsird.DetectorModule:
     """return a module of NUM_CRYSTALS_PER_MODULE cuboids"""
     crystal = get_crystal()
-    rep_volume = prd.ReplicatedBoxSolidVolume(object=crystal)
+    rep_volume = petsird.ReplicatedBoxSolidVolume(object=crystal)
     N0 = NUM_CRYSTALS_PER_MODULE[0]
     N1 = NUM_CRYSTALS_PER_MODULE[1]
     N2 = NUM_CRYSTALS_PER_MODULE[2]
     for rep0 in range(N0):
         for rep1 in range(N1):
             for rep2 in range(N2):
-                transform = prd.RigidTransformation(
+                transform = petsird.RigidTransformation(
                     matrix=numpy.array(
                         (
                             (1.0, 0.0, 0.0, RADIUS + rep0 * CRYSTAL_LENGTH[0]),
@@ -68,21 +68,21 @@ def get_detector_module() -> prd.DetectorModule:
                 rep_volume.transforms.append(transform)
                 rep_volume.ids.append(rep0 + N0 * (rep1 + N1 * rep2))
 
-    return prd.DetectorModule(
+    return petsird.DetectorModule(
         detecting_elements=[rep_volume], detecting_element_ids=[0]
     )
 
 
-def get_scanner_geometry() -> prd.ScannerGeometry:
+def get_scanner_geometry() -> petsird.ScannerGeometry:
     """return a scanner build by rotating a module around the (0,0,1) axis"""
     detector_module = get_detector_module()
     radius = RADIUS
     angles = [2 * math.pi * i / NUM_MODULES for i in range(NUM_MODULES)]
 
-    rep_module = prd.ReplicatedDetectorModule(object=detector_module)
+    rep_module = petsird.ReplicatedDetectorModule(object=detector_module)
     module_id = 0
     for angle in angles:
-        transform = prd.RigidTransformation(
+        transform = petsird.RigidTransformation(
             matrix=numpy.array(
                 (
                     (math.cos(angle), math.sin(angle), 0.0, 0.0),
@@ -96,10 +96,10 @@ def get_scanner_geometry() -> prd.ScannerGeometry:
         module_id += 1
         rep_module.transforms.append(transform)
 
-    return prd.ScannerGeometry(replicated_modules=[rep_module], ids=[0])
+    return petsird.ScannerGeometry(replicated_modules=[rep_module], ids=[0])
 
 
-def get_scanner_info() -> prd.ScannerInformation:
+def get_scanner_info() -> petsird.ScannerInformation:
 
     scanner_geometry = get_scanner_geometry()
 
@@ -112,7 +112,7 @@ def get_scanner_info() -> prd.ScannerInformation:
     energyBinEdges = numpy.linspace(
         430, 650, NUMBER_OF_ENERGY_BINS + 1, dtype="float32"
     )
-    return prd.ScannerInformation(
+    return petsird.ScannerInformation(
         model_name="PETSIRD_TEST",
         scanner_geometry=scanner_geometry,
         tof_bin_edges=tofBinEdges,
@@ -123,22 +123,24 @@ def get_scanner_info() -> prd.ScannerInformation:
     )
 
 
-def get_header() -> prd.Header:
-    subject = prd.Subject(id="123456")
-    institution = prd.Institution(
+def get_header() -> petsird.Header:
+    subject = petsird.Subject(id="123456")
+    institution = petsird.Institution(
         name="Diamond Light Source",
         address="Harwell Science and Innovation Campus, Didcot, Oxfordshire, OX11 0DE, UK",
     )
-    return prd.Header(
-        exam=prd.ExamInformation(subject=subject, institution=institution),
+    return petsird.Header(
+        exam=petsird.ExamInformation(subject=subject, institution=institution),
         scanner=get_scanner_info(),
     )
 
 
-def get_events(header: prd.Header, num_events: int) -> Iterator[prd.CoincidenceEvent]:
+def get_events(
+    header: petsird.Header, num_events: int
+) -> Iterator[petsird.CoincidenceEvent]:
     detector_count = 5  # TODO header.scanner.number_of_detectors()
     for _ in range(num_events):
-        yield prd.CoincidenceEvent(
+        yield petsird.CoincidenceEvent(
             detector_ids=[
                 random.randrange(0, detector_count),
                 random.randrange(0, detector_count),
@@ -155,8 +157,8 @@ if __name__ == "__main__":
     # numpy random number generator
     rng = numpy.random.default_rng()
 
-    with prd.BinaryPrdExperimentWriter(sys.stdout.buffer) as writer:
-        # with prd.NDJsonPrdExperimentWriter(sys.stdout) as writer:
+    with petsird.BinaryPETSIRDWriter(sys.stdout.buffer) as writer:
+        # with petsird.NDJsonPETSIRDWriter(sys.stdout) as writer:
         header = get_header()
         writer.write_header(header)
         for t in range(NUMBER_OF_TIME_BLOCKS):
@@ -164,5 +166,5 @@ if __name__ == "__main__":
             prompts_this_block = list(get_events(header, num_prompts_this_block))
             # Normally we'd write multiple blocks, but here we have just one, so let's write a tuple with just one element
             writer.write_time_blocks(
-                (prd.TimeBlock(id=t, prompt_events=prompts_this_block),)
+                (petsird.TimeBlock(id=t, prompt_events=prompts_this_block),)
             )
