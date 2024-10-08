@@ -3,7 +3,7 @@ requires = ["setuptools>=42", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "prd"
+name = "petsird"
 version = "0.0.1"  # Update as needed
 description = "Library and tools for working with PET Emission Tomography Standardization Initiative Raw Data (PETSIRD) data"
 readme = "README.md"
