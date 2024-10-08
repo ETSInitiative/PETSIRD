@@ -1,14 +1,4 @@
 
-# Detector ID and location. Units are in mm
-# TODO: this is currently just a sample implementation with "point" detectors.
-# We plan to have full shape information here.
-Detector: !record
-  fields:
-    id: uint
-    x: float
-    y: float
-    z: float
-
 # Type definition for how to encode how the scanner handles multiple coincidences when recording the prompts.
 # Due to various effects (such as high count rate, prompt gammas), it is possible that multiple single
 # events are detected within the coincidence window. This type encodes some different ways
@@ -27,16 +17,27 @@ CoincidencePolicy: !enum
 
 ScannerInformation: !record
   fields:
-    modelName: string?
+    modelName: string
 
-    # list of geometric information for all detector elements
-    # TODO will be adjusted when properly encoding geometry
-    detectors: Detector*
+    # Geometric information for all detector elements
+    # All coordinates are in the PET gantry coordinate system.
+    scannerGeometry: ScannerGeometry
+ 
+    # List of materials present in the scanner geometry. The `material_id`s there will refer to the
+    # identifiers in this list below.
+    bulkMaterials: BulkMaterial*
 
-    # edge information for TOF bins in mm (given as from first to last edge, so there is one more edge than the number of bins)
+    # Fixed transformation to reference location for this scanner.
+    # This field can be used to encode alignment with the CT or MRI gantry for instance.
+    # The transformation should convert from the PET gantry coordinate system to the reference.
+    # An empty field implies the identity transformation.
+    gantryAlignment: RigidTransformation?
+
+    # Edge information for TOF bins in mm (given as from first to last edge, so there is one more edge than the number of bins)
     # 0 corresponds to the same arrival time. Negative numbers indicate that the first detector detected first.
     # For instance, a coincidence event is stored as 2 detectorIds, denoting the arrival time at the first
     # detector t1 and the arrival time at the second detector t2, we store (t1-t2)*c/2.
+    # Note: for non-TOF scanners, this defines the coincidence window
     # TODO: this currently assumes equal size for each TOF bin, but some scanners "stretch" TOF bins depending on length of LOR
     tofBinEdges: !array
       items: float
@@ -44,7 +45,7 @@ ScannerInformation: !record
     # TOF resolution in mm
     tofResolution: float
 
-    # edge information for energy windows in keV (given as from first to last edge, so there is one more edge than the number of bins)
+    # Edge information for energy windows in keV (given as from first to last edge, so there is one more edge than the number of bins)
     energyBinEdges: !array
       items: float
       dimensions: 1
@@ -54,10 +55,9 @@ ScannerInformation: !record
     # duration of each time block in ms
     listmodeTimeBlockDuration: uint
 
-    # encode how the scanner handles multiple coincidences
+    # Encode how the scanner handles multiple coincidences
     coincidencePolicy: CoincidencePolicy
 
   computedFields:
-    numberOfDetectors: size(detectors)
     numberOfTOFBins: size(tofBinEdges)-1
     numberOfEnergyBins: size(energyBinEdges)-1

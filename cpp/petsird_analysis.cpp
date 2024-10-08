@@ -1,11 +1,20 @@
 /*
   Copyright (C) 2022-2023 Microsoft Corporation
-  Copyright (C) 2023 University College London
+  Copyright (C) 2023-2024 University College London
 
   SPDX-License-Identifier: Apache-2.0
 */
 
-#include "generated/hdf5/protocols.h"
+// (un)comment if you want HDF5 or binary output
+#define USE_HDF5
+
+#ifdef USE_HDF5
+#  include "generated/hdf5/protocols.h"
+using petsird::hdf5::PETSIRDReader;
+#else
+#  include "generated/binary/protocols.h"
+using petsird::binary::PETSIRDReader;
+#endif
 #include <xtensor/xview.hpp>
 #include <xtensor/xio.hpp>
 #include <iostream>
@@ -21,16 +30,22 @@ main(int argc, char* argv[])
     }
 
   // Open the file
-  prd::hdf5::PrdExperimentReader reader(argv[1]);
-  prd::Header header;
+  PETSIRDReader reader(argv[1]);
+  petsird::Header header;
   reader.ReadHeader(header);
 
   std::cout << "Processing file: " << argv[1] << std::endl;
   if (header.exam) // only do this if present
     std::cout << "Subject ID: " << header.exam->subject.id << std::endl;
-  std::cout << "Number of detectors: " << header.scanner.NumberOfDetectors() << std::endl;
+  std::cout << "Types of modules: " << header.scanner.scanner_geometry.replicated_modules.size() << std::endl;
+  std::cout << "Number of modules of first type: " << header.scanner.scanner_geometry.replicated_modules[0].transforms.size()
+            << std::endl;
+  std::cout << "Number of types of detecting elements in modules of first type: "
+            << header.scanner.scanner_geometry.replicated_modules[0].object.detecting_elements.size() << std::endl;
+  std::cout << "Number of elements of first type in modules of first type: "
+            << header.scanner.scanner_geometry.replicated_modules[0].object.detecting_elements[0].transforms.size() << std::endl;
   std::cout << "Number of TOF bins: " << header.scanner.NumberOfTOFBins() << std::endl;
-  std::cout << "Number of energy bins: " <<header.scanner.NumberOfEnergyBins() << std::endl;
+  std::cout << "Number of energy bins: " << header.scanner.NumberOfEnergyBins() << std::endl;
 
   const auto& tof_bin_edges = header.scanner.tof_bin_edges;
   std::cout << "TOF bin edges: " << tof_bin_edges << std::endl;
@@ -41,7 +56,7 @@ main(int argc, char* argv[])
                                  / 2;
   std::cout << "Energy mid points: " << energy_mid_points << std::endl;
 
-  prd::TimeBlock time_block;
+  petsird::TimeBlock time_block;
 
   // Process events in batches of up to 100
   float energy_1 = 0, energy_2 = 0;

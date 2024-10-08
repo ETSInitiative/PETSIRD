@@ -49,12 +49,12 @@ jobs:
       - name: Python
         run: |
           cd python
-          python prd_generator.py | python prd_analysis.py
+          python petsird_generator.py | python petsird_analysis.py
 
       - name: Cpp
         run: |
           cd cpp && mkdir -p build && cd build
           cmake -G Ninja -S .. -DHDF5_ROOT="$CONDA_PREFIX"
           ninja
-          ./prd_generator test.h5
-          ./prd_analysis test.h5
+          ./petsird_generator test.h5
+          ./petsird_analysis test.h5

@@ -3,10 +3,13 @@
 cpp/generated/
 cpp/build/
 
-python/prd/
+python/petsird/
 **/__pycache__/
 
 # Common editor backups
 ~$*
 *~
 *.bak
+\#*
+*#
+.#*

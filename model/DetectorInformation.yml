@@ -1,0 +1,42 @@
+# A shape filled with a uniform material
+SolidVolume<Shape>: !record
+  fields:
+    shape: Shape
+    # identifier referring to `ScannerInformation.bulkMaterials` list
+    materialId: uint
+
+BoxSolidVolume: SolidVolume<BoxShape>
+GenericSolidVolume: SolidVolume<GeometricShape>
+
+# A list of identical SolidVolumes<BoxShape> at different locations
+ReplicatedBoxSolidVolume: ReplicatedObject< BoxSolidVolume >
+
+# A list of identical SolidVolumes<BGeometricShape> at different locations
+ReplicatedGenericSolidVolume: ReplicatedObject< GenericSolidVolume >
+
+# Top-level detector structure, consisting of one or more lists of detecting elements (or "crystals")
+# This allows having different types of detecting elements (e.g. for phoswich detectors)
+# TODO this could be made into a hierarchical structure
+DetectorModule: !record
+  fields:
+    detectingElements: ReplicatedBoxSolidVolume*
+    # list of unique ids for every replicated solid volume
+    # constraint: size(detectingElements) == size(detectingElementsIds)
+    detectingElementIds: uint*
+    # optional list describing shielding/optical reflectors etc
+    nonDetectingElements: ReplicatedGenericSolidVolume*
+
+# A list of identical modules at different locations
+ReplicatedDetectorModule: ReplicatedObject< DetectorModule >
+    
+# Full definition of the geometry of the scanner, consisting of
+# one of more types of modules replicated in space and (optional) other structures (e.g. side-shielding)
+ScannerGeometry: !record
+  fields:
+    # list of different types of replicated modules
+    replicatedModules: ReplicatedDetectorModule*
+    # list of unique ids for every replicated module
+    # constraint: size(replicated_modules) == size(ids)
+    ids: uint*
+    # shielding etc
+    nonDetectingVolumes: GenericSolidVolume*?

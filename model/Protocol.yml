@@ -1,6 +1,5 @@
-# You can read more about the yardl syntax here: https://aka.ms/yardl/docs
-
-PrdExperiment: !protocol
+# Definition of the stream of data
+PETSIRD: !protocol
   sequence:
     header: Header
     timeBlocks: !stream

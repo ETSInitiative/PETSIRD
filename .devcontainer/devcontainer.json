@@ -1,7 +1,7 @@
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the README at:
 // https://github.com/microsoft/vscode-dev-containerdevcotns/tree/v0.238.0/containers/go
 {
-  "name": "prd",
+  "name": "petsird",
   "build": {
     "dockerfile": "Dockerfile",
     "context": ".."
@@ -41,7 +41,7 @@
         "cmake.buildDirectory": "${workspaceFolder}/cpp/build",
         "cmake.configureOnOpen": false,
 
-        "python.defaultInterpreterPath": "/opt/conda/envs/prd/bin/python",
+        "python.defaultInterpreterPath": "/opt/conda/envs/petsird/bin/python",
         "python.analysis.typeCheckingMode": "strict",
         "python.analysis.diagnosticMode": "workspace",
         "python.analysis.diagnosticSeverityOverrides": {
@@ -81,7 +81,7 @@
           "gitlens.showWhatsNewAfterUpgrades": false
         },
 
-        "gcovViewer.gcovBinary": "/opt/conda/envs/prd/bin/x86_64-conda-linux-gnu-gcov",
+        "gcovViewer.gcovBinary": "/opt/conda/envs/petsird/bin/x86_64-conda-linux-gnu-gcov",
         "gcovViewer.buildDirectories": ["${workspaceFolder}/cpp/build"],
 
         "search.useIgnoreFiles": false,
