@@ -3,6 +3,7 @@ PETSIRD: !protocol
   sequence:
     header: Header
     timeBlocks: !stream
+      # Note: multiple time blocks can occur at the same start time
       items: TimeBlock
 
 Header: !record
@@ -10,10 +11,13 @@ Header: !record
     scanner: ScannerInformation
     exam: ExamInformation?
 
-TimeBlock: !record
+TimeBlock: [EventTimeBlock, ExternalSignalTimeBlock, BedMovementTimeBlock]
+
+EventTimeBlock: !record
   fields:
-   # number of the block. Multiply with listmodeTimeBlockDuration to get time since startOfAcquisition
-   id: uint
+   # start time since startOfAcquisition in ms
+   start: uint
+   # TODO encode end time?
    # list of prompts in this time block
    # TODO might be better to use !array
    promptEvents: CoincidenceEvent*
@@ -21,3 +25,37 @@ TimeBlock: !record
    delayedEvents: CoincidenceEvent*?
    # optional list of triple coincidences in this time block
    tripleEvents: TripleEvent*?
+
+ExternalSignalTypeEnum: !enum
+  values:
+    - ECG_trace
+    - ECG_trigger
+    - resp_trace
+    - resp_trigger
+    - other_motion_signal
+    - other_motion_trigger
+    - external_sync
+    # other options, to be listed in the future
+    - other
+
+ExternalSignalType: !record
+  fields:
+    type: ExternalSignalTypeEnum
+    description: str
+    id: uint
+
+ExternalSignalTimeBlock: !record
+  fields:
+   # start time since startOfAcquisition in ms
+   start: uint
+   # refer to ExternalSignalType.id
+   signal_id: uint
+   # Note for triggers, this field is to be ignored
+   signalValues: float*
+
+
+BedMovementTimeBlock: !record
+  fields:
+    # start time since startOfAcquisition in ms
+    start: uint
+    transform: RigidTransformation
