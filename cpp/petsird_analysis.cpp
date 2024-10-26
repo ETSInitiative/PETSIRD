@@ -68,7 +68,7 @@ main(int argc, char* argv[])
       if (std::holds_alternative<petsird::EventTimeBlock>(time_block))
         {
           auto& event_time_block = std::get<petsird::EventTimeBlock>(time_block);
-          last_time = event_time_block.start * header.scanner.listmode_time_block_duration;
+          last_time = event_time_block.start;
           num_prompts += event_time_block.prompt_events.size();
 
           for (auto& event : event_time_block.prompt_events)

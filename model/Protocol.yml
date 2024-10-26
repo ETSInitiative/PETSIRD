@@ -19,6 +19,7 @@ TimeBlock: [EventTimeBlock, ExternalSignalTimeBlock, BedMovementTimeBlock, Gantr
 EventTimeBlock: !record
   fields:
    # start time since ExamInformation.startOfAcquisition in ms
+   # Note: duration is given by ScannerInformation.eventTimeBlockDuration
    start: uint
    # TODO encode end time?
    # list of prompts in this time block
