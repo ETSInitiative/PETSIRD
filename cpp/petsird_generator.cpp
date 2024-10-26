@@ -217,8 +217,8 @@ main(int argc, char* argv[])
       std::poisson_distribution<> poisson(COUNT_RATE);
       const auto num_prompts_this_block = poisson(gen);
       const auto prompts_this_block = get_events(header, num_prompts_this_block);
-      petsird::TimeBlock time_block;
-      time_block.id = t;
+      petsird::EventTimeBlock time_block;
+      time_block.start = t * header.scanner.listmode_time_block_duration;
       time_block.prompt_events = prompts_this_block;
       writer.WriteTimeBlocks(time_block);
     }
