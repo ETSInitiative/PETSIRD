@@ -37,8 +37,8 @@ if __name__ == "__main__":
         num_prompts = 0
         last_time = 0
         for time_block in reader.read_time_blocks():
-            last_time = time_block.value.start  # all TimeBlock types have this field
             if isinstance(time_block, petsird.TimeBlock.EventTimeBlock):
+                last_time = time_block.value.start  # all TimeBlock types have this field
                 num_prompts += len(time_block.value.prompt_events)
                 for event in time_block.value.prompt_events:
                     energy_1 += energy_mid_points[event.energy_indices[0]]
