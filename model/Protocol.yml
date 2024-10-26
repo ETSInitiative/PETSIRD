@@ -3,6 +3,7 @@ PETSIRD: !protocol
   sequence:
     header: Header
     timeBlocks: !stream
+      # block with information (e.g. events, signals, etc.) occurring at a certain time or in a time interval
       # Note: multiple time blocks can occur at the same start time
       items: TimeBlock
 
@@ -11,11 +12,13 @@ Header: !record
     scanner: ScannerInformation
     exam: ExamInformation?
 
-TimeBlock: [EventTimeBlock, ExternalSignalTimeBlock, BedMovementTimeBlock]
+# types of timeBlocks
+# TODO more types could be needed
+TimeBlock: [EventTimeBlock, ExternalSignalTimeBlock, BedMovementTimeBlock, GantryMovementTimeBlock]
 
 EventTimeBlock: !record
   fields:
-   # start time since startOfAcquisition in ms
+   # start time since ExamInformation.startOfAcquisition in ms
    start: uint
    # TODO encode end time?
    # list of prompts in this time block
@@ -28,34 +31,39 @@ EventTimeBlock: !record
 
 ExternalSignalTypeEnum: !enum
   values:
-    - ECG_trace
-    - ECG_trigger
-    - resp_trace
-    - resp_trigger
-    - other_motion_signal
-    - other_motion_trigger
-    - external_sync
+    - ecgTrace
+    - ecgTrigger
+    - respTrace
+    - respTrigger
+    - otherMotionSignal
+    - otherMotionTrigger
+    - externalSync
     # other options, to be listed in the future
     - other
 
 ExternalSignalType: !record
   fields:
     type: ExternalSignalTypeEnum
-    description: str
+    description: string
     id: uint
 
 ExternalSignalTimeBlock: !record
   fields:
-   # start time since startOfAcquisition in ms
+   # start time since ExamInformation.startOfAcquisition in ms
    start: uint
    # refer to ExternalSignalType.id
-   signal_id: uint
+   signalID: uint
    # Note for triggers, this field is to be ignored
    signalValues: float*
 
-
 BedMovementTimeBlock: !record
   fields:
-    # start time since startOfAcquisition in ms
+    # start time since ExamInformation.startOfAcquisition in ms
+    start: uint
+    transform: RigidTransformation
+
+GantryMovementTimeBlock: !record
+  fields:
+    # start time since ExamInformation.startOfAcquisition in ms
     start: uint
     transform: RigidTransformation
