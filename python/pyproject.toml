@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "petsird"
+version = "0.0.1"  # Update as needed
+description = "Library and tools for working with PET Emission Tomography Standardization Initiative Raw Data (PETSIRD) data"
+readme = "README.md"
+authors = [{ name = "Kris Thielemans", email = "k.thielemans@ucl.ac.uk" }]
+license = { text = "Apache-2.0" }
+requires-python = ">=3.9"
+dependencies = [
+    "numpy>=1.22",
+]
+
+[project.urls]
+Homepage = "https://etsinitiative.org/"
+Repository = "https://github.com/ETSInitiative/PETSIRD.git"
+Issues = "https://github.com/ETSInitiative/PETSIRD/issues"

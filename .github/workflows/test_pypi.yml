@@ -1,0 +1,48 @@
+name: Publish to TestPyPI
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types:
+      - completed
+env:
+  # Increase this to manually reset the conda environment cache
+  YARDL_VERSION: 0.6.2
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.9'  # Adjust Python version as needed
+
+      - name: Install required packages
+        run: |
+          pip install setuptools wheel twine build
+
+      - name: Install yardl
+        run: |
+          YARDL_DIR=${{github.workspace}}/yardl
+          mkdir ${YARDL_DIR}
+          cd ${YARDL_DIR}
+          echo "${{github.workspace}}/yardl" >> $GITHUB_PATH
+          wget --quiet "https://github.com/microsoft/yardl/releases/download/v${YARDL_VERSION}/yardl_${YARDL_VERSION}_linux_x86_64.tar.gz"
+          tar -xzf "yardl_${YARDL_VERSION}_linux_x86_64.tar.gz"
+          rm "yardl_${YARDL_VERSION}_linux_x86_64.tar.gz"
+
+      - name: Run yardl
+        run: |
+          cd model
+          yardl generate
+
+      - name: Publish to TestPyPI
+        run: |
+          cd python
+          python -m build
+          twine upload --repository-url https://test.pypi.org/legacy/ dist/* -u __token__ -p ${{ secrets.TEST_PYPI_TOKEN }}
