@@ -11,7 +11,8 @@ import petsird
 if __name__ == "__main__":
     with petsird.BinaryPETSIRDReader(sys.stdin.buffer) as reader:
         header = reader.read_header()
-        print(f"Subject ID: {header.exam.subject.id}")
+        if header.exam is not None:
+            print(f"Subject ID: {header.exam.subject.id}")
         print(f"Scanner name: { header.scanner.model_name}")
         print(
             f"Types of modules: {len(header.scanner.scanner_geometry.replicated_modules)}"
