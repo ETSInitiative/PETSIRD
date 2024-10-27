@@ -20,6 +20,8 @@ using petsird::hdf5::PETSIRDWriter;
 using petsird::binary::PETSIRDWriter;
 #endif
 
+#include "petsird_helpers.h"
+
 // these are constants for now
 constexpr uint32_t NUMBER_OF_ENERGY_BINS = 3;
 constexpr uint32_t NUMBER_OF_TOF_BINS = 300;
@@ -104,6 +106,58 @@ get_scanner_geometry()
   return scanner_geometry;
 }
 
+petsird::DetectionEfficiencies
+get_detection_efficiencies(const petsird::ScannerInformation& scanner)
+{
+  const auto num_det_els = petsird_helpers::get_num_det_els(scanner.scanner_geometry);
+  petsird::DetectionEfficiencies detection_efficiencies;
+
+  detection_efficiencies.det_el_efficiencies = xt::ones<float>({ num_det_els, scanner.NumberOfEnergyBins() });
+
+  // only rotations of 1 type of module in the current scanner
+  assert(scanner.scanner_geometry.replicated_modules.size() == 1);
+  const auto& rep_module = scanner.scanner_geometry.replicated_modules[0];
+  const auto num_modules = rep_module.transforms.size();
+
+  // We only need to store geometric efficiencies of the first module with all others.
+  // Assume all module-pairs are in coincidence.
+  // We can now use as SGID=abs(mod_1 - mod_2) -1
+  // This gives SGID = -1 for "self-coincidences", which are normally not recorded
+  const auto num_SGIDs = num_modules - 1;
+  detection_efficiencies.module_pair_sgidlut = yardl::NDArray<int, 2>({ num_modules, num_modules });
+  auto& module_pair_SGID_LUT = *detection_efficiencies.module_pair_sgidlut;
+  for (unsigned int mod1 = 0; mod1 < num_modules; ++mod1)
+    {
+      for (unsigned int mod2 = 0; mod2 < num_modules; ++mod2)
+        {
+          module_pair_SGID_LUT(mod1, mod2) = std::abs(int(mod1) - int(mod2)) - 1;
+        }
+    }
+
+  // assign an empty vector first, and reserve correct size
+  detection_efficiencies.module_pair_efficiencies_vector = petsird::ModulePairEfficienciesVector();
+  detection_efficiencies.module_pair_efficiencies_vector->reserve(num_SGIDs);
+
+  assert(rep_module.object.detecting_elements.size() == 1);
+  const auto& detecting_elements = rep_module.object.detecting_elements[0];
+  const auto num_det_els_in_module = detecting_elements.transforms.size();
+  const unsigned int mod1 = 0;
+  for (unsigned int mod2 = 1; mod2 < num_modules; ++mod2)
+    {
+      const int SGID = std::abs(int(mod1) - int(mod2)) - 1;
+      petsird::ModulePairEfficiencies module_pair_efficiencies;
+      module_pair_efficiencies.values = yardl::NDArray<float, 4>(
+          { num_det_els_in_module, scanner.NumberOfEnergyBins(), num_det_els_in_module, scanner.NumberOfEnergyBins() });
+      // give some (non-physical) value
+      module_pair_efficiencies.values.fill(SGID);
+      module_pair_efficiencies.sgid = SGID;
+      detection_efficiencies.module_pair_efficiencies_vector->emplace_back(module_pair_efficiencies);
+      assert(detection_efficiencies.module_pair_efficiencies_vector->size() == unsigned(SGID + 1));
+    }
+
+  return detection_efficiencies;
+}
+
 petsird::ScannerInformation
 get_scanner_info()
 {
@@ -133,6 +187,8 @@ get_scanner_info()
     scanner_info.listmode_time_block_duration = 1.F; // ms
   }
 
+  scanner_info.detection_efficiencies = get_detection_efficiencies(scanner_info);
+
   return scanner_info;
 }
 
@@ -154,12 +210,13 @@ get_header()
 }
 
 // return pair of integers between 0 and max
-std::pair<int, int>
+std::array<unsigned, 2>
 get_random_pair(int max)
 {
-  int a = rand() % max;
-  int b = rand() % max;
-  return std::make_pair(a, b);
+  unsigned a = rand() % max;
+  unsigned b = rand() % max;
+  std::array<unsigned, 2> p{ a, b };
+  return p;
 }
 
 uint32_t
@@ -175,16 +232,26 @@ get_random_tof_value()
 }
 
 std::vector<petsird::CoincidenceEvent>
-get_events(const petsird::Header&, std::size_t num_events)
+get_events(const petsird::Header& header, std::size_t num_events)
 {
   std::vector<petsird::CoincidenceEvent> events;
   events.reserve(num_events);
+  const auto num_det_els = petsird_helpers::get_num_det_els(header.scanner.scanner_geometry);
   for (std::size_t i = 0; i < num_events; ++i)
     {
-      const auto detectors = get_random_pair(1); // TODO header.scanner.NumberOfDetectors());
       petsird::CoincidenceEvent e;
-      e.detector_ids[0] = detectors.first;
-      e.detector_ids[1] = detectors.second;
+      // Generate random detector_ids, where the corresponding modules are distinct
+      // This is because in the generated scanner.detection_efficiencies, we assume that
+      // "within module" coincidences are not recorded
+      while (true)
+        {
+          e.detector_ids = get_random_pair(num_det_els);
+          const auto mod_and_els = petsird_helpers::get_module_and_element(header.scanner.scanner_geometry, e.detector_ids);
+          if (std::abs(int(mod_and_els[0].module) - mod_and_els[1].module) > 0)
+            {
+              break;
+            }
+        }
       e.energy_indices[0] = get_random_energy_value();
       e.energy_indices[1] = get_random_energy_value();
       e.tof_idx = get_random_tof_value();

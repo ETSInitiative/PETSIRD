@@ -15,6 +15,7 @@ using petsird::hdf5::PETSIRDReader;
 #  include "generated/binary/protocols.h"
 using petsird::binary::PETSIRDReader;
 #endif
+#include "petsird_helpers.h"
 #include <xtensor/xview.hpp>
 #include <xtensor/xio.hpp>
 #include <iostream>
@@ -44,6 +45,8 @@ main(int argc, char* argv[])
             << header.scanner.scanner_geometry.replicated_modules[0].object.detecting_elements.size() << std::endl;
   std::cout << "Number of elements of first type in modules of first type: "
             << header.scanner.scanner_geometry.replicated_modules[0].object.detecting_elements[0].transforms.size() << std::endl;
+  std::cout << "Total number of 'crystals': " << petsird_helpers::get_num_det_els(header.scanner.scanner_geometry) << std::endl;
+
   std::cout << "Number of TOF bins: " << header.scanner.NumberOfTOFBins() << std::endl;
   std::cout << "Number of energy bins: " << header.scanner.NumberOfEnergyBins() << std::endl;
 
@@ -71,6 +74,17 @@ main(int argc, char* argv[])
         {
           energy_1 += energy_mid_points[event.energy_indices[0]];
           energy_2 += energy_mid_points[event.energy_indices[1]];
+
+          std::cout << "CoincidenceEvent(detectorIds=[" << event.detector_ids[0] << ", " << event.detector_ids[1]
+                    << "], tofIdx=" << event.tof_idx << ", energyIndices=[" << event.energy_indices[0] << ", "
+                    << event.energy_indices[1] << "])\n";
+          const auto module_and_elems
+              = petsird_helpers::get_module_and_element(header.scanner.scanner_geometry, event.detector_ids);
+          std::cout << "    "
+                    << "[ModuleAndElement(module=" << module_and_elems[0].module << ", "
+                    << "el=" << module_and_elems[0].el << "), ModuleAndElement(module=" << module_and_elems[0].module << ", "
+                    << "el=" << module_and_elems[0].el << ")]\n";
+          std::cout << "    efficiency:" << petsird_helpers::get_detection_efficiency(header.scanner, event) << "\n";
         }
     }
 
