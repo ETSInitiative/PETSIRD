@@ -42,7 +42,8 @@ ScannerInformation: !record
     tofBinEdges: !array
       items: float
       dimensions: 1
-    # TOF resolution in mm
+    # TOF resolution (as FWHM) in mm
+    # Scanner coincidence timing resolution (CTR) without tof-binning
     tofResolution: float
 
     # Edge information for energy windows in keV (given as from first to last edge, so there is one more edge than the number of bins)
