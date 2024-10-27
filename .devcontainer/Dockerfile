@@ -48,7 +48,7 @@ RUN script=$(curl -fsSL "https://raw.githubusercontent.com/microsoft/vscode-dev-
 ENTRYPOINT [ "/usr/local/share/docker-init.sh" ]
 CMD [ "sleep", "infinity" ]
 
-ARG MAMBAFORGE_VERSION=22.9.0-2
+ARG MAMBAFORGE_VERSION=24.9.0-0
 
 # Based on https://github.com/conda-forge/miniforge-images/blob/master/ubuntu/Dockerfile
 RUN wget --no-hsts --quiet https://github.com/conda-forge/miniforge/releases/download/${MAMBAFORGE_VERSION}/Mambaforge-${MAMBAFORGE_VERSION}-Linux-$(uname -m).sh -O /tmp/miniforge.sh \
@@ -91,7 +91,7 @@ RUN mkdir -p /home/vscode/.local/share/CMakeTools \
     && chown vscode:conda /home/vscode/.local/share/CMakeTools/cmake-tools-kits.json
 
 # Install the yardl tool
-ARG YARDL_VERSION=0.3.2
+ARG YARDL_VERSION=0.6.2
 RUN wget --quiet "https://github.com/microsoft/yardl/releases/download/v${YARDL_VERSION}/yardl_${YARDL_VERSION}_linux_x86_64.tar.gz" \
     && tar -xzf "yardl_${YARDL_VERSION}_linux_x86_64.tar.gz" \
     && mv yardl "/opt/conda/envs/${CONDA_ENVIRONMENT_NAME}/bin/" \
