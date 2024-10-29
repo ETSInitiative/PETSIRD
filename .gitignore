@@ -1,12 +1,10 @@
-.vscode
-
-cpp/generated/
-cpp/build/
-
-python/petsird/
-**/__pycache__/
+/cpp/generated/
+/cpp/build/
+/python/petsird/
+__pycache__/
 
 # Common editor backups
+/.vscode/
 ~$*
 *~
 *.bak
