@@ -18,6 +18,7 @@ using petsird::binary::PETSIRDReader;
 #include <xtensor/xview.hpp>
 #include <xtensor/xio.hpp>
 #include <iostream>
+#include <variant>
 
 int
 main(int argc, char* argv[])
@@ -64,13 +65,17 @@ main(int argc, char* argv[])
   float last_time = 0.F;
   while (reader.ReadTimeBlocks(time_block))
     {
-      last_time = time_block.id * header.scanner.listmode_time_block_duration;
-      num_prompts += time_block.prompt_events.size();
-
-      for (auto& event : time_block.prompt_events)
+      if (std::holds_alternative<petsird::EventTimeBlock>(time_block))
         {
-          energy_1 += energy_mid_points[event.energy_indices[0]];
-          energy_2 += energy_mid_points[event.energy_indices[1]];
+          auto& event_time_block = std::get<petsird::EventTimeBlock>(time_block);
+          last_time = event_time_block.start;
+          num_prompts += event_time_block.prompt_events.size();
+
+          for (auto& event : event_time_block.prompt_events)
+            {
+              energy_1 += energy_mid_points[event.energy_indices[0]];
+              energy_2 += energy_mid_points[event.energy_indices[1]];
+            }
         }
     }
 
