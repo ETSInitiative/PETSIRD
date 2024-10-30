@@ -19,6 +19,7 @@ using petsird::binary::PETSIRDReader;
 #include <xtensor/xview.hpp>
 #include <xtensor/xio.hpp>
 #include <iostream>
+#include <variant>
 
 int
 main(int argc, char* argv[])
@@ -67,24 +68,29 @@ main(int argc, char* argv[])
   float last_time = 0.F;
   while (reader.ReadTimeBlocks(time_block))
     {
-      last_time = time_block.id * header.scanner.listmode_time_block_duration;
-      num_prompts += time_block.prompt_events.size();
-
-      for (auto& event : time_block.prompt_events)
+      if (std::holds_alternative<petsird::EventTimeBlock>(time_block))
         {
-          energy_1 += energy_mid_points[event.energy_indices[0]];
-          energy_2 += energy_mid_points[event.energy_indices[1]];
+          auto& event_time_block = std::get<petsird::EventTimeBlock>(time_block);
+          last_time = event_time_block.start;
+          num_prompts += event_time_block.prompt_events.size();
+          std::cout << "=====================  Events in time block from " << last_time << " ==============\n";
 
-          std::cout << "CoincidenceEvent(detectorIds=[" << event.detector_ids[0] << ", " << event.detector_ids[1]
-                    << "], tofIdx=" << event.tof_idx << ", energyIndices=[" << event.energy_indices[0] << ", "
-                    << event.energy_indices[1] << "])\n";
-          const auto module_and_elems
-              = petsird_helpers::get_module_and_element(header.scanner.scanner_geometry, event.detector_ids);
-          std::cout << "    "
-                    << "[ModuleAndElement(module=" << module_and_elems[0].module << ", "
-                    << "el=" << module_and_elems[0].el << "), ModuleAndElement(module=" << module_and_elems[0].module << ", "
-                    << "el=" << module_and_elems[0].el << ")]\n";
-          std::cout << "    efficiency:" << petsird_helpers::get_detection_efficiency(header.scanner, event) << "\n";
+          for (auto& event : event_time_block.prompt_events)
+            {
+              energy_1 += energy_mid_points[event.energy_indices[0]];
+              energy_2 += energy_mid_points[event.energy_indices[1]];
+
+              std::cout << "CoincidenceEvent(detectorIds=[" << event.detector_ids[0] << ", " << event.detector_ids[1]
+                        << "], tofIdx=" << event.tof_idx << ", energyIndices=[" << event.energy_indices[0] << ", "
+                        << event.energy_indices[1] << "])\n";
+              const auto module_and_elems
+                = petsird_helpers::get_module_and_element(header.scanner.scanner_geometry, event.detector_ids);
+              std::cout << "    "
+                        << "[ModuleAndElement(module=" << module_and_elems[0].module << ", "
+                        << "el=" << module_and_elems[0].el << "), ModuleAndElement(module=" << module_and_elems[0].module << ", "
+                        << "el=" << module_and_elems[0].el << ")]\n";
+              std::cout << "    efficiency:" << petsird_helpers::get_detection_efficiency(header.scanner, event) << "\n";
+            }
         }
     }
 

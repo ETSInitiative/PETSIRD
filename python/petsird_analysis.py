@@ -15,7 +15,8 @@ from petsird_helpers import (
 if __name__ == "__main__":
     with petsird.BinaryPETSIRDReader(sys.stdin.buffer) as reader:
         header = reader.read_header()
-        print(f"Subject ID: {header.exam.subject.id}")
+        if header.exam is not None:
+            print(f"Subject ID: {header.exam.subject.id}")
         print(f"Scanner name: { header.scanner.model_name}")
         print(
             f"Types of modules: {len(header.scanner.scanner_geometry.replicated_modules)}"
@@ -44,22 +45,24 @@ if __name__ == "__main__":
         num_prompts = 0
         last_time = 0
         for time_block in reader.read_time_blocks():
-            last_time = time_block.id * header.scanner.listmode_time_block_duration
-            num_prompts += len(time_block.prompt_events)
-            for event in time_block.prompt_events:
-                energy_1 += energy_mid_points[event.energy_indices[0]]
-                energy_2 += energy_mid_points[event.energy_indices[1]]
+            if isinstance(time_block, petsird.TimeBlock.EventTimeBlock):
+                last_time = time_block.value.start  # all TimeBlock types have this field
+                num_prompts += len(time_block.value.prompt_events)
+                print("=====================  Events in time block from ", last_time, " ==============")
+                for event in time_block.value.prompt_events:
+                    energy_1 += energy_mid_points[event.energy_indices[0]]
+                    energy_2 += energy_mid_points[event.energy_indices[1]]
 
-                print(event)
-                print(
-                    "   ",
-                    get_module_and_element(
-                        header.scanner.scanner_geometry, event.detector_ids
-                    ),
-                )
-                print(
-                    "    efficiency:", get_detection_efficiency(header.scanner, event)
-                )
+                    print(event)
+                    print(
+                        "   ",
+                        get_module_and_element(
+                            header.scanner.scanner_geometry, event.detector_ids
+                        ),
+                    )
+                    print(
+                        "    efficiency:", get_detection_efficiency(header.scanner, event)
+                    )
 
         print(f"Last time block at {last_time} ms")
         print(f"Number of prompt events: {num_prompts}")
