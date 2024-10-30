@@ -1,20 +1,43 @@
 [build-system]
-requires = ["setuptools>=42", "wheel"]
+requires = ["setuptools>=42", "setuptools_scm[toml]>=3.4"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "petsird"
-version = "0.0.1"  # Update as needed
+dynamic = ["version"]
 description = "Library and tools for working with PET Emission Tomography Standardization Initiative Raw Data (PETSIRD) data"
 readme = "README.md"
-authors = [{ name = "Kris Thielemans", email = "k.thielemans@ucl.ac.uk" }]
-license = { text = "Apache-2.0" }
+authors = [
+    # TODO
+    {name = "Kris Thielemans", email = "k.thielemans@ucl.ac.uk"},
+]
+maintainers = [
+    {name = "Casper da Costa-Luis", email = "imaging@cdcl.ml"},
+    {name = "Kris Thielemans", email = "k.thielemans@ucl.ac.uk"}]
+license = {text = "Apache-2.0"}
 requires-python = ">=3.9"
 dependencies = [
     "numpy>=1.22",
 ]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3 :: Only"]
+
+[tool.setuptools.packages.find]
+include = ["petsird", "petsird.*"]
+
+[tool.setuptools_scm]
+version_file = "petsird/version.py"
+root = ".."
 
 [project.urls]
-Homepage = "https://etsinitiative.org/"
-Repository = "https://github.com/ETSInitiative/PETSIRD.git"
+Homepage = "https://etsinitiative.org"
+Repository = "https://github.com/ETSInitiative/PETSIRD"
 Issues = "https://github.com/ETSInitiative/PETSIRD/issues"
