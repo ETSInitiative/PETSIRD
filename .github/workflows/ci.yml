@@ -1,60 +1,65 @@
 name: CI
-
 on:
   push:
     branches: [main]
+    tags: ['**']
     paths-ignore:
-      - '**/*.md'
-  pull_request:
-    branches: [main]
-
-defaults:
-  run:
-    # See https://github.com/marketplace/actions/setup-miniconda#important
-    shell: bash -el {0}
-
+    - '**/*.md'
+  pull_request: {branches: [main]}
+defaults: {run: {shell: 'bash -el {0}'}} # https://github.com/marketplace/actions/setup-miniconda#important
+env:
+  YARDL_VERSION: 0.6.2
 jobs:
   validate:
     strategy:
       matrix:
         cppVersion: [17]
-
+    environment: pypi
+    permissions: {id-token: write}
     name: Validate Python and C++${{ matrix.cppVersion }}
     runs-on: ubuntu-latest
-
     steps:
-      - uses: actions/checkout@v3
-        with:
-          submodules: recursive
-
-      - name: Configure environment
-        uses: ./.github/actions/configure-environment
-
-      - name: Install yardl
-        run: |
-          YARDL_DIR=${{github.workspace}}/yardl
-          mkdir ${YARDL_DIR}
-          cd ${YARDL_DIR}
-          echo "${{github.workspace}}/yardl" >> $GITHUB_PATH
-          YARDL_VERSION=0.3.2
-          wget --quiet "https://github.com/microsoft/yardl/releases/download/v${YARDL_VERSION}/yardl_${YARDL_VERSION}_linux_x86_64.tar.gz"
-          tar -xzf "yardl_${YARDL_VERSION}_linux_x86_64.tar.gz"
-          rm "yardl_${YARDL_VERSION}_linux_x86_64.tar.gz"
-
-      - name: Build model
-        run: |
-          cd model
-          yardl generate
-
-      - name: Python
-        run: |
-          cd python
-          python petsird_generator.py | python petsird_analysis.py
-
-      - name: Cpp
-        run: |
-          cd cpp && mkdir -p build && cd build
-          cmake -G Ninja -S .. -DHDF5_ROOT="$CONDA_PREFIX"
-          ninja
-          ./petsird_generator test.h5
-          ./petsird_analysis test.h5
+    - uses: actions/checkout@v4
+      with: {submodules: recursive}
+    - name: strip environment.yml
+      run: |
+        cat environment.yml | grep -v "#.*\<\local\>" > temp-ci-environment.yml
+    - uses: conda-incubator/setup-miniconda@v3
+      with:
+        activate-environment: yardl
+        environment-file: temp-ci-environment.yml
+    - name: Install yardl
+      run: |
+        rm temp-ci-environment.yml
+        gh release download -R microsoft/yardl -p '*linux_x86_64.tar.gz' v$YARDL_VERSION
+        mkdir yardl
+        tar -xzf "yardl_${YARDL_VERSION}_linux_x86_64.tar.gz" -C yardl
+        rm "yardl_${YARDL_VERSION}_linux_x86_64.tar.gz"
+        echo "$PWD/yardl" >> "$GITHUB_PATH"
+      env:
+        GH_TOKEN: ${{ github.token }}
+    - name: Build model
+      run: |
+        cd model
+        yardl generate
+    - name: Python
+      run: |
+        cd python
+        python petsird_generator.py | python petsird_analysis.py
+    - name: cpp
+      run: |
+        mkdir cpp/build
+        cd cpp/build
+        cmake -G Ninja -S .. -DHDF5_ROOT="$CONDA_PREFIX"
+        ninja
+        ./petsird_generator test.h5
+        ./petsird_analysis test.h5
+    - uses: casperdcl/deploy-pypi@v2
+      with:
+        build: -s python -o dist
+        upload: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags') }}
+    - if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+      uses: casperdcl/deploy-pypi@v2
+      with:
+        url: https://test.pypi.org/legacy/
+        password: ${{ secrets.TEST_PYPI_TOKEN }}

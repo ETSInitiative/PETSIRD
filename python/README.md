@@ -9,7 +9,8 @@ reading it from standard in. This can be used as follows:
 1. `python petsird_generator.py | python petsird_analysis.py`
 
 There is also a very basic utility to plot the scanner geometry. For instance
-```
-python petsird_generator.py > test.bin
-python petsird_plot_scanner.py < test.bin`
 
+```sh
+python petsird_generator.py > test.bin
+python petsird_plot_scanner.py < test.bin
+```
