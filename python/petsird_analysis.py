@@ -39,7 +39,7 @@ if __name__ == "__main__":
         print(f"Energy bin edges: {energy_bin_edges}")
         energy_mid_points = (energy_bin_edges[:-1] + energy_bin_edges[1:]) / 2
         print(f"Energy mid points: {energy_mid_points}")
-
+        print("SGID LUT:\n", header.scanner.detection_efficiencies.module_pair_sgidlut)
         energy_1, energy_2 = 0.0, 0.0
         num_prompts = 0
         last_time = 0
