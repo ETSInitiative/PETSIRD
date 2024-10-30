@@ -56,10 +56,9 @@ jobs:
         ./petsird_analysis test.h5
     - uses: casperdcl/deploy-pypi@v2
       with:
-        build: -s python -o dist
+        build: python -o dist
         upload: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags') }}
-    - if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
-      uses: casperdcl/deploy-pypi@v2
+    - uses: actions/upload-artifact@v4
       with:
-        url: https://test.pypi.org/legacy/
-        password: ${{ secrets.TEST_PYPI_TOKEN }}
+        name: python-petsird
+        path: dist/**
