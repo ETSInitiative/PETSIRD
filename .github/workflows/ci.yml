@@ -19,12 +19,12 @@ jobs:
     name: Validate Python and C++${{ matrix.cppVersion }}
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with: {submodules: recursive}
     - name: strip environment.yml
       run: |
         cat environment.yml | grep -v "#.*\<\local\>" > temp-ci-environment.yml
-    - uses: conda-incubator/setup-miniconda@v2
+    - uses: conda-incubator/setup-miniconda@v3
       with:
         activate-environment: yardl
         environment-file: temp-ci-environment.yml
