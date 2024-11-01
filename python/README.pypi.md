@@ -1,9 +1,10 @@
 # PETSIRD Python SDK
 
 The [Emission Tomography Standardization Initiative (ETSI)](https://etsinitiative.org/)
-is working towards establishing a standard for PET Raw Data, called PETSIRD ("PET ETSI Raw Data").
+is working towards establishing a standard for PET Raw Data, called PETSIRD ("Positron Emission Tomography Standardization Initiative Raw Data").
 
-This python package contains the python SDK to read/write PETSIRD data.
+Read & write PETSIRD data in Python.
 
-Examples for how to use this package are available at
-https://github.com/ETSInitiative/PETSIRD/tree/main/python
+## Examples
+
+See [ETSInitiative/PETSIRD:python](https://github.com/ETSInitiative/PETSIRD/tree/main/python).
