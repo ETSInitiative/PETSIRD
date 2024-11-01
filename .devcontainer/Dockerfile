@@ -30,17 +30,15 @@ ARG USER_UID=1000
 ARG USER_GID=$USER_UID
 ARG CONDA_GID=900
 ARG CONDA_ENVIRONMENT_NAME=petsird
-ARG VSCODE_DEV_CONTAINERS_SCRIPT_LIBRARY_VERSION=v0.229.0
 
 RUN apt-get update && apt-get install -y \
     libc6-dbg \
     && rm -rf /var/lib/apt/lists/*
 
 # Enable non-root Docker access in container
-ARG ENABLE_NONROOT_DOCKER="true"
-# Use the OSS Moby CLI instead of the licensed Docker CLI
-ARG USE_MOBY="false"
-RUN script=$(curl -fsSL "https://raw.githubusercontent.com/microsoft/vscode-dev-containers/${VSCODE_DEV_CONTAINERS_SCRIPT_LIBRARY_VERSION}/script-library/docker-debian.sh") && bash -c "$script" -- "${ENABLE_NONROOT_DOCKER}" "/var/run/docker-host.sock" "/var/run/docker.sock" "${USERNAME}" "${USE_MOBY}"
+ARG DOCKER_VERSION="27.0.3"
+RUN script=$(curl -fsSL "https://raw.githubusercontent.com/devcontainers/features/2951f0481a488ea43a6f2ea6f18a47f0a0bf744d/src/docker-outside-of-docker/install.sh") \
+    && VERSION=${DOCKER_VERSION} DOCKERDASHCOMPOSEVERSION="none" bash -c "$script"
 
 # Setting the ENTRYPOINT to docker-init.sh will configure non-root access to
 # the Docker socket if "overrideCommand": false is set in devcontainer.json.
@@ -94,4 +92,3 @@ RUN wget --quiet "https://github.com/microsoft/yardl/releases/download/v${YARDL_
     && tar -xzf "yardl_${YARDL_VERSION}_linux_x86_64.tar.gz" \
     && mv yardl "/opt/conda/envs/${CONDA_ENVIRONMENT_NAME}/bin/" \
     && rm "yardl_${YARDL_VERSION}_linux_x86_64.tar.gz"
-    
