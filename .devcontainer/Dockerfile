@@ -48,10 +48,8 @@ RUN script=$(curl -fsSL "https://raw.githubusercontent.com/microsoft/vscode-dev-
 ENTRYPOINT [ "/usr/local/share/docker-init.sh" ]
 CMD [ "sleep", "infinity" ]
 
-ARG MAMBAFORGE_VERSION=24.9.0-0
-
 # Based on https://github.com/conda-forge/miniforge-images/blob/master/ubuntu/Dockerfile
-RUN wget --no-hsts --quiet https://github.com/conda-forge/miniforge/releases/download/${MAMBAFORGE_VERSION}/Mambaforge-${MAMBAFORGE_VERSION}-Linux-$(uname -m).sh -O /tmp/miniforge.sh \
+RUN wget --no-hsts --quiet https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-$(uname)-$(uname -m).sh -O /tmp/miniforge.sh \
     && /bin/bash /tmp/miniforge.sh -b -p /opt/conda \
     && rm /tmp/miniforge.sh \
     && /opt/conda/bin/conda clean --tarballs --index-cache --packages --yes \
@@ -67,8 +65,8 @@ RUN wget --no-hsts --quiet https://github.com/conda-forge/miniforge/releases/dow
 # Create a conda environment from the environment file in the repo root.
 COPY --from=file-normalizer --chown=$USER_UID:conda /data/environment.yml /tmp/build/
 RUN umask 0002 \
-    && /opt/conda/bin/mamba env create -f /tmp/build/environment.yml \
-    && /opt/conda/bin/mamba clean -fy \
+    && /opt/conda/bin/conda env create -f /tmp/build/environment.yml \
+    && /opt/conda/bin/conda clean -fy \
     && sudo chown -R :conda /opt/conda/envs
 
 # Add a file that is to be sourced from .bashrc and from the devops pipeline stages
