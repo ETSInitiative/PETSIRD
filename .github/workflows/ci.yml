@@ -16,7 +16,7 @@ jobs:
         cppVersion: [17]
     environment: pypi
     permissions: {id-token: write}
-    name: Validate Python and C++${{ matrix.cppVersion }}
+    name: Validate Python and C++${{ matrix.cppVersion }} and deploy to PyPI
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4

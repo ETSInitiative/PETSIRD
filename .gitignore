@@ -2,6 +2,8 @@
 /cpp/build/
 /python/petsird/
 __pycache__/
+/python/build/
+/python/petsird.egg*
 
 # Common editor backups
 /.vscode/
