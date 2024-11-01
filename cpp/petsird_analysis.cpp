@@ -84,7 +84,7 @@ main(int argc, char* argv[])
                         << "], tofIdx=" << event.tof_idx << ", energyIndices=[" << event.energy_indices[0] << ", "
                         << event.energy_indices[1] << "])\n";
               const auto module_and_elems
-                = petsird_helpers::get_module_and_element(header.scanner.scanner_geometry, event.detector_ids);
+                  = petsird_helpers::get_module_and_element(header.scanner.scanner_geometry, event.detector_ids);
               std::cout << "    "
                         << "[ModuleAndElement(module=" << module_and_elems[0].module << ", "
                         << "el=" << module_and_elems[0].el << "), ModuleAndElement(module=" << module_and_elems[0].module << ", "

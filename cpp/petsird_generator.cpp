@@ -8,6 +8,7 @@
 #include <iostream>
 #include <cmath>
 #include <random>
+#include <algorithm>
 
 // (un)comment if you want HDF5 or binary output
 #define USE_HDF5
@@ -26,8 +27,12 @@ using petsird::binary::PETSIRDWriter;
 constexpr uint32_t NUMBER_OF_ENERGY_BINS = 3;
 constexpr uint32_t NUMBER_OF_TOF_BINS = 300;
 constexpr float RADIUS = 400.F;
-constexpr std::array<float, 3> CRYSTAL_LENGTH{ 4.F, 4.F, 20.F };
-constexpr std::array<float, 3> NUM_CRYSTALS_PER_MODULE{ 5, 6, 2 };
+constexpr std::array<float, 3> CRYSTAL_LENGTH{ 20.F, 4.F, 4.F };
+constexpr std::array<float, 3> NUM_CRYSTALS_PER_MODULE{ 2, 4, 5 };
+constexpr uint32_t NUM_MODULES_ALONG_RING{ 20 };
+constexpr uint32_t NUM_MODULES_ALONG_AXIS{ 2 };
+constexpr float MODULE_AXIS_SPACING{ (NUM_CRYSTALS_PER_MODULE[2] + 4) * CRYSTAL_LENGTH[2] };
+
 constexpr uint32_t NUMBER_OF_TIME_BLOCKS = 6;
 constexpr float COUNT_RATE = 500.F;
 
@@ -64,8 +69,8 @@ get_detector_module()
         for (int rep2 = 0; rep2 < N2; ++rep2)
           {
             petsird::RigidTransformation transform{ { { 1.0, 0.0, 0.0, RADIUS + rep0 * CRYSTAL_LENGTH[0] },
-                                                      { 0.0, 1.0, 0.0, rep1 * CRYSTAL_LENGTH[1] },
-                                                      { 0.0, 0.0, 1.0, rep2 * CRYSTAL_LENGTH[2] } } };
+                                                      { 0.0, 1.0, 0.0, (rep1 - N1 / 2) * CRYSTAL_LENGTH[1] },
+                                                      { 0.0, 0.0, 1.0, (rep2 - N2 / 2) * CRYSTAL_LENGTH[2] } } };
             rep_volume.transforms.push_back(transform);
             rep_volume.ids.push_back(rep0 + N0 * (rep1 + N1 * rep2));
           }
@@ -87,18 +92,19 @@ get_scanner_geometry()
     rep_module.object = get_detector_module();
     int module_id = 0;
     std::vector<float> angles;
-    for (int i = 0; i < 10; ++i)
+    for (unsigned int i = 0; i < NUM_MODULES_ALONG_RING; ++i)
       {
-        angles.push_back(static_cast<float>(2 * M_PI * i / 10));
+        angles.push_back(static_cast<float>((2 * M_PI * i) / NUM_MODULES_ALONG_RING));
       }
     for (auto angle : angles)
-      {
-        petsird::RigidTransformation transform{ { { std::cos(angle), std::sin(angle), 0.F, 0.F },
-                                                  { -std::sin(angle), std::cos(angle), 0.F, 0.F },
-                                                  { 0.F, 0.F, 1.F, 0.F } } };
-        rep_module.ids.push_back(module_id++);
-        rep_module.transforms.push_back(transform);
-      }
+      for (unsigned ax_mod = 0; ax_mod < NUM_MODULES_ALONG_AXIS; ++ax_mod)
+        {
+          petsird::RigidTransformation transform{ { { std::cos(angle), std::sin(angle), 0.F, 0.F },
+                                                    { -std::sin(angle), std::cos(angle), 0.F, 0.F },
+                                                    { 0.F, 0.F, 1.F, MODULE_AXIS_SPACING * ax_mod } } };
+          rep_module.ids.push_back(module_id++);
+          rep_module.transforms.push_back(transform);
+        }
   }
   petsird::ScannerGeometry scanner_geometry;
   scanner_geometry.replicated_modules.push_back(rep_module);
@@ -114,25 +120,42 @@ get_detection_efficiencies(const petsird::ScannerInformation& scanner)
 
   detection_efficiencies.det_el_efficiencies = xt::ones<float>({ num_det_els, scanner.NumberOfEnergyBins() });
 
-  // only rotations of 1 type of module in the current scanner
+  // only 1 type of module in the current scanner
   assert(scanner.scanner_geometry.replicated_modules.size() == 1);
   const auto& rep_module = scanner.scanner_geometry.replicated_modules[0];
   const auto num_modules = rep_module.transforms.size();
 
-  // We only need to store geometric efficiencies of the first module with all others.
-  // Assume all module-pairs are in coincidence.
-  // We can now use as SGID=abs(mod_1 - mod_2) -1
-  // This gives SGID = -1 for "self-coincidences", which are normally not recorded
-  const auto num_SGIDs = num_modules - 1;
+  // We will only use rotational symmetries (no translation along the axis yet)
+  // We also assume all module-pairs are in coincidence, except those with the same angle.
+  // Writing a module number as (z-position, angle):
+  //   eff((z1,a1), (z2, a2)) == eff((z1,0), (z2, abs(a2-a1)))
+  // or in linear indices
+  //   eff(z1 + NZ * a1, z2 + NZ * a2) == eff(z1, z2 + NZ * abs(a2 - a1))
+  // (coincident) SGIDs need to start from 0, so ignoring self-coincident angles
+  constexpr auto num_SGIDs = NUM_MODULES_ALONG_AXIS * NUM_MODULES_ALONG_AXIS * (NUM_MODULES_ALONG_RING - 1);
+  // SGID = z1 + NZ * (z2 + NZ * abs(a2 - a1) - 1)
+  constexpr auto NZ = NUM_MODULES_ALONG_AXIS;
   detection_efficiencies.module_pair_sgidlut = yardl::NDArray<int, 2>({ num_modules, num_modules });
   auto& module_pair_SGID_LUT = *detection_efficiencies.module_pair_sgidlut;
   for (unsigned int mod1 = 0; mod1 < num_modules; ++mod1)
     {
       for (unsigned int mod2 = 0; mod2 < num_modules; ++mod2)
         {
-          module_pair_SGID_LUT(mod1, mod2) = std::abs(int(mod1) - int(mod2)) - 1;
+          const auto z1 = mod1 % NZ;
+          const auto a1 = mod1 / NZ;
+          const auto z2 = mod2 % NZ;
+          const auto a2 = mod2 / NZ;
+          if (a1 == a2)
+            {
+              module_pair_SGID_LUT(mod1, mod2) = -1;
+            }
+          else
+            {
+              module_pair_SGID_LUT(mod1, mod2) = z1 + NZ * (z2 + NZ * (std::abs(int(a2) - int(a1)) - 1));
+            }
         }
     }
+  // assert(module_pair_SGID_LUT).max() == num_SGIDs - 1);
 
   // assign an empty vector first, and reserve correct size
   detection_efficiencies.module_pair_efficiencies_vector = petsird::ModulePairEfficienciesVector();
@@ -141,10 +164,10 @@ get_detection_efficiencies(const petsird::ScannerInformation& scanner)
   assert(rep_module.object.detecting_elements.size() == 1);
   const auto& detecting_elements = rep_module.object.detecting_elements[0];
   const auto num_det_els_in_module = detecting_elements.transforms.size();
-  const unsigned int mod1 = 0;
-  for (unsigned int mod2 = 1; mod2 < num_modules; ++mod2)
+  for (unsigned int SGID = 0; SGID < num_SGIDs; ++SGID)
     {
-      const int SGID = std::abs(int(mod1) - int(mod2)) - 1;
+      // extract first module_pair for this SGID. However, as this currently unused, it is commented out
+      // const auto& module_pair = *std::find(module_pair_SGID_LUT.begin(), module_pair_SGID_LUT.end(), SGID);
       petsird::ModulePairEfficiencies module_pair_efficiencies;
       module_pair_efficiencies.values = yardl::NDArray<float, 4>(
           { num_det_els_in_module, scanner.NumberOfEnergyBins(), num_det_els_in_module, scanner.NumberOfEnergyBins() });
@@ -241,14 +264,15 @@ get_events(const petsird::Header& header, std::size_t num_events)
     {
       petsird::CoincidenceEvent e;
       // Generate random detector_ids, where the corresponding modules are distinct
-      // This is because in the generated scanner.detection_efficiencies, we assume that
-      // "within module" coincidences are not recorded
       while (true)
         {
           e.detector_ids = get_random_pair(num_det_els);
           const auto mod_and_els = petsird_helpers::get_module_and_element(header.scanner.scanner_geometry, e.detector_ids);
-          if (std::abs(int(mod_and_els[0].module) - mod_and_els[1].module) > 0)
+          if (!header.scanner.detection_efficiencies.module_pair_sgidlut /* there is no LUT */
+              || ((*header.scanner.detection_efficiencies.module_pair_sgidlut)(mod_and_els[0].module, mod_and_els[1].module)
+                  >= 0))
             {
+              // in coincidence, we can get out of the loop
               break;
             }
         }
