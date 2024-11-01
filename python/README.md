@@ -12,7 +12,7 @@ source ~/petsirdenv/bin/activate
 pip install petsird
 ```
 
-### Use the model files from your local clone
+## Local Development
 
 (This option needs the `yardl` binary, either download it, or use our devcontainer or GitHub CodeSpace.)
 
