@@ -11,9 +11,7 @@ import numpy.typing as npt
 import petsird
 
 import matplotlib.pyplot as plt
-
-# from mpl_toolkits.mplot3d import Axes3D
-# import mpl_toolkits
+from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 
 
 def transform_to_mat44(
@@ -71,9 +69,15 @@ def transform_BoxShape(
 
 
 def draw_BoxShape(ax, box: petsird.BoxShape) -> None:
-    coords = numpy.array([c.c for c in box.corners])
-    # mpl_toolkits.mplot3d.art3d.Line3D(coords[:, 0], coords[:, 1], coords[:, 2])
-    ax.plot3D(coords[:, 0], coords[:, 1], coords[:, 2])
+    vertices = numpy.array([c.c for c in box.corners])
+    edges = [[vertices[j] for j in [0, 1, 2, 3]],
+         [vertices[j] for j in [4, 5, 6, 7]],
+         [vertices[j] for j in [0, 1, 5, 4]],
+         [vertices[j] for j in [2, 3, 7, 6]],
+         [vertices[j] for j in [1, 2, 6, 5]],
+         [vertices[j] for j in [4, 7, 3, 0]]]
+    box = Poly3DCollection(edges, alpha=.25, linewidths=1, edgecolors='r')
+    ax.add_collection3d(box)
 
 
 if __name__ == "__main__":

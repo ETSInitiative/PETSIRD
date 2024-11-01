@@ -59,6 +59,9 @@ ScannerInformation: !record
     # Encode how the scanner handles multiple coincidences
     coincidencePolicy: CoincidencePolicy
 
+    # coincidence detection efficiencies
+    detectionEfficiencies: DetectionEfficiencies
+
   computedFields:
     numberOfTOFBins: size(tofBinEdges)-1
     numberOfEnergyBins: size(energyBinEdges)-1
