@@ -16,3 +16,19 @@ add_executable(petsird_analysis petsird_analysis.cpp)
 target_link_libraries(petsird_analysis petsird_generated)
 
 add_subdirectory(generated)
+
+# PETSIRD Library (libpetsird)
+add_library(petsird SHARED $<TARGET_OBJECTS:petsird_generated>)
+target_link_libraries(petsird petsird_generated)
+install(TARGETS petsird DESTINATION lib)
+
+# Set the target include directory where headers will be installed
+set(INSTALL_INCLUDE_DIR "include/petsird")
+
+# Collect all header files in the current directory and subdirectories
+file(GLOB_RECURSE HEADER_FILES "*.h")
+
+# Specify the installation directory for header files
+install(FILES ${HEADER_FILES}
+    DESTINATION ${INSTALL_INCLUDE_DIR}
+)
