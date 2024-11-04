@@ -39,12 +39,13 @@ get_module_and_element(const ScannerGeometry& scanner_geometry, const T& scanner
   assert(scanner_geometry.replicated_modules.size() == 1);
   const auto& rep_module = scanner_geometry.replicated_modules[0];
   assert(rep_module.object.detecting_elements.size() == 1);
-  int num_modules = rep_module.transforms.size();
+
+  const auto num_el_per_module = rep_module.object.detecting_elements[0].ids.size();
 
   std::vector<ModuleAndElement> result;
   for (int det : scanner_det_ids)
     {
-      result.push_back({ det % num_modules, det / num_modules });
+      result.push_back({ det / num_el_per_module, det % num_el_per_module });
     }
   return result;
 }
