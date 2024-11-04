@@ -18,7 +18,7 @@ NUMBER_OF_TOF_BINS = 300
 RADIUS = 400
 CRYSTAL_LENGTH = (20, 4, 4)
 # num crystals in a module
-NUM_CRYSTALS_PER_MODULE = (2, 4,5)
+NUM_CRYSTALS_PER_MODULE = (2, 4, 7)
 NUM_MODULES_ALONG_RING = 20
 NUM_MODULES_ALONG_AXIS = 2
 MODULE_AXIS_SPACING = (NUM_CRYSTALS_PER_MODULE[2] + 4) * CRYSTAL_LENGTH[2]
@@ -69,7 +69,7 @@ def get_detector_module() -> petsird.DetectorModule:
                     )
                 )
                 rep_volume.transforms.append(transform)
-                rep_volume.ids.append(rep0 + N0 * (rep1 + N1 * rep2))
+                rep_volume.ids.append(rep2 + N2 * (rep1 + N1 * rep0))
 
     return petsird.DetectorModule(
         detecting_elements=[rep_volume], detecting_element_ids=[0]
