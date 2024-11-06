@@ -4,18 +4,21 @@ channels:
   - defaults
 dependencies:
   - bash-completion>=2.11
+  - ccache=4.5.1
   - cmake>=3.21.3
-  - fmt>=8.1.1
   - compilers
+  - fmt>=8.1.1
+  - gdb>=11.2
   - h5py>=3.7.0
   - hdf5>=1.12.1
   - howardhinnant_date>=3.0.1
   - ipykernel>=6.19.2
+  - just>=1.36.0
+  - matplotlib
   - ninja>=1.11.0
   - nlohmann_json>=3.11.2
   - numpy>=1.24.3
   - python>=3.11.3
-  - matplotlib
   - shellcheck>=0.8.0
   - xtensor-fftw>=0.2.5
   - xtensor>=0.24.2
