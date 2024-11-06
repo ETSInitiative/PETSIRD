@@ -7,8 +7,6 @@ dependencies:
   - ccache=4.5.1
   - cmake>=3.21.3
   - compilers
-  - fmt>=8.1.1
-  - gdb>=11.2
   - h5py>=3.7.0
   - hdf5>=1.12.1
   - howardhinnant_date>=3.0.1

@@ -9,22 +9,10 @@ else()
   add_compile_options(-Wall -Wextra -pedantic)
 endif()
 
-SET(CMAKE_CXX_FLAGS_DEBUG "-O0 -ggdb")
-
-# Enable ccache if not already enabled by symlink masquerading and if no other
-# CMake compiler launchers are already defined
-find_program(CCACHE_EXECUTABLE ccache)
-mark_as_advanced(CCACHE_EXECUTABLE)
-if(CCACHE_EXECUTABLE)
-  message(STATUS "ccache found")
-  foreach(LANG C CXX)
-    if(NOT DEFINED CMAKE_${LANG}_COMPILER_LAUNCHER AND NOT CMAKE_${LANG}_COMPILER MATCHES ".*/ccache")
-      message(STATUS "Enabling ccache for ${LANG}")
-      set(CMAKE_${LANG}_COMPILER_LAUNCHER ${CCACHE_EXECUTABLE} CACHE STRING "")
-    endif()
-  endforeach()
-else()
-  message(STATUS "ccache not found")
+find_program(CCACHE_PROGRAM ccache)
+if(CCACHE_PROGRAM)
+  set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE "${CCACHE_PROGRAM}")
+  message(STATUS "ccache found, so we will use it.")
 endif()
 
 add_executable(petsird_generator petsird_generator.cpp)
