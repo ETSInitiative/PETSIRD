@@ -66,5 +66,6 @@ if __name__ == "__main__":
 
         print(f"Last time block at {last_time} ms")
         print(f"Number of prompt events: {num_prompts}")
-        print(f"Average energy_1: {energy_1 / num_prompts}")
-        print(f"Average energy_2: {energy_2 / num_prompts}")
+        if num_prompts > 0:
+            print(f"Average energy_1: {energy_1 / num_prompts}")
+            print(f"Average energy_2: {energy_2 / num_prompts}")

@@ -83,7 +83,9 @@ def draw_BoxShape(ax, box: petsird.BoxShape) -> None:
 if __name__ == "__main__":
     with petsird.BinaryPETSIRDReader(sys.stdin.buffer) as reader:
         header = reader.read_header()
-        # TODO somehow say we won't read the time blocks to avoid a ProtocolError
+
+        # Consume all Time Blocks without processing them
++       collections.deque(reader.read_time_blocks(), maxlen=0)
 
         # Create a new figure
         fig = plt.figure()
