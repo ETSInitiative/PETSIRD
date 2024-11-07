@@ -54,6 +54,10 @@ jobs:
         ninja
         ./petsird_generator test.h5
         ./petsird_analysis test.h5
+    - name: Copy LICENSE for deployment
+      run: |
+        cp LICENSE.txt python/LICENSE
+        cp LICENSE.txt cpp/LICENSE
     - uses: casperdcl/deploy-pypi@v2
       with:
         build: python -o dist

@@ -70,38 +70,39 @@ def transform_BoxShape(
 
 def draw_BoxShape(ax, box: petsird.BoxShape) -> None:
     vertices = numpy.array([c.c for c in box.corners])
-    edges = [[vertices[j] for j in [0, 1, 2, 3]],
-         [vertices[j] for j in [4, 5, 6, 7]],
-         [vertices[j] for j in [0, 1, 5, 4]],
-         [vertices[j] for j in [2, 3, 7, 6]],
-         [vertices[j] for j in [1, 2, 6, 5]],
-         [vertices[j] for j in [4, 7, 3, 0]]]
-    box = Poly3DCollection(edges, alpha=.25, linewidths=1, edgecolors='r')
+    edges = [
+        [vertices[j] for j in [0, 1, 2, 3]],
+        [vertices[j] for j in [4, 5, 6, 7]],
+        [vertices[j] for j in [0, 1, 5, 4]],
+        [vertices[j] for j in [2, 3, 7, 6]],
+        [vertices[j] for j in [1, 2, 6, 5]],
+        [vertices[j] for j in [4, 7, 3, 0]],
+    ]
+    box = Poly3DCollection(edges, alpha=0.25, linewidths=1, edgecolors="r")
     ax.add_collection3d(box)
 
 
 if __name__ == "__main__":
-    with petsird.BinaryPETSIRDReader(sys.stdin.buffer) as reader:
-        header = reader.read_header()
-        # TODO somehow say we won't read the time blocks to avoid a ProtocolError
+    reader = petsird.BinaryPETSIRDReader(sys.stdin.buffer)
+    header = reader.read_header()
 
-        # Create a new figure
-        fig = plt.figure()
+    # Create a new figure
+    fig = plt.figure()
 
-        # Add a 3D subplot
-        ax = fig.add_subplot(111, projection="3d")
+    # Add a 3D subplot
+    ax = fig.add_subplot(111, projection="3d")
 
-        # draw all crystals
-        for rep_module in header.scanner.scanner_geometry.replicated_modules:
-            det_el = rep_module.object.detecting_elements
-            for mod_transform in rep_module.transforms:
-                for rep_volume in det_el:
-                    for transform in rep_volume.transforms:
-                        draw_BoxShape(
-                            ax,
-                            transform_BoxShape(
-                                mult_transforms([mod_transform, transform]),
-                                rep_volume.object.shape,
-                            ),
-                        )
-        plt.show()
+    # draw all crystals
+    for rep_module in header.scanner.scanner_geometry.replicated_modules:
+        det_el = rep_module.object.detecting_elements
+        for mod_transform in rep_module.transforms:
+            for rep_volume in det_el:
+                for transform in rep_volume.transforms:
+                    draw_BoxShape(
+                        ax,
+                        transform_BoxShape(
+                            mult_transforms([mod_transform, transform]),
+                            rep_volume.object.shape,
+                        ),
+                    )
+    plt.show()
