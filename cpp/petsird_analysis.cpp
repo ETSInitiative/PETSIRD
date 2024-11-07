@@ -96,8 +96,10 @@ main(int argc, char* argv[])
 
   std::cout << "Last time block at " << last_time << " ms\n";
   std::cout << "Number of prompt events: " << num_prompts << std::endl;
-  std::cout << "Average energy_1: " << energy_1 / num_prompts << std::endl;
-  std::cout << "Average energy_2: " << energy_2 / num_prompts << std::endl;
+  if (num_prompts > 0) {
+    std::cout << "Average energy_1: " << energy_1 / num_prompts << std::endl;
+    std::cout << "Average energy_2: " << energy_2 / num_prompts << std::endl;
+  }
 
   return 0;
 }
