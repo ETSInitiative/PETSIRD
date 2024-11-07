@@ -90,7 +90,7 @@ get_scanner_geometry()
   petsird::ReplicatedDetectorModule rep_module;
   {
     rep_module.object = get_detector_module();
-    int module_id = 0;
+    uint32_t module_id = 0;
     std::vector<float> angles;
     for (unsigned int i = 0; i < NUM_MODULES_ALONG_RING; ++i)
       {
