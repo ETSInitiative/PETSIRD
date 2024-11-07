@@ -28,7 +28,7 @@ constexpr uint32_t NUMBER_OF_ENERGY_BINS = 3;
 constexpr uint32_t NUMBER_OF_TOF_BINS = 300;
 constexpr float RADIUS = 400.F;
 constexpr std::array<float, 3> CRYSTAL_LENGTH{ 20.F, 4.F, 4.F };
-constexpr std::array<float, 3> NUM_CRYSTALS_PER_MODULE{ 2, 4, 5 };
+constexpr std::array<float, 3> NUM_CRYSTALS_PER_MODULE{ 2, 4, 7 };
 constexpr uint32_t NUM_MODULES_ALONG_RING{ 20 };
 constexpr uint32_t NUM_MODULES_ALONG_AXIS{ 2 };
 constexpr float MODULE_AXIS_SPACING{ (NUM_CRYSTALS_PER_MODULE[2] + 4) * CRYSTAL_LENGTH[2] };
@@ -64,6 +64,7 @@ get_detector_module()
     constexpr auto N0 = NUM_CRYSTALS_PER_MODULE[0];
     constexpr auto N1 = NUM_CRYSTALS_PER_MODULE[1];
     constexpr auto N2 = NUM_CRYSTALS_PER_MODULE[2];
+    unsigned id = 0;
     for (int rep0 = 0; rep0 < N0; ++rep0)
       for (int rep1 = 0; rep1 < N1; ++rep1)
         for (int rep2 = 0; rep2 < N2; ++rep2)
@@ -72,7 +73,7 @@ get_detector_module()
                                                       { 0.0, 1.0, 0.0, (rep1 - N1 / 2) * CRYSTAL_LENGTH[1] },
                                                       { 0.0, 0.0, 1.0, (rep2 - N2 / 2) * CRYSTAL_LENGTH[2] } } };
             rep_volume.transforms.push_back(transform);
-            rep_volume.ids.push_back(rep0 + N0 * (rep1 + N1 * rep2));
+            rep_volume.ids.push_back(id++);
           }
   }
 
