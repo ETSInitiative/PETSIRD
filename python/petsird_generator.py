@@ -55,6 +55,7 @@ def get_detector_module() -> petsird.DetectorModule:
     N0 = NUM_CRYSTALS_PER_MODULE[0]
     N1 = NUM_CRYSTALS_PER_MODULE[1]
     N2 = NUM_CRYSTALS_PER_MODULE[2]
+    id = 0
     for rep0 in range(N0):
         for rep1 in range(N1):
             for rep2 in range(N2):
@@ -69,7 +70,8 @@ def get_detector_module() -> petsird.DetectorModule:
                     )
                 )
                 rep_volume.transforms.append(transform)
-                rep_volume.ids.append(rep2 + N2 * (rep1 + N1 * rep0))
+                rep_volume.ids.append(id)
+                id += 1
 
     return petsird.DetectorModule(
         detecting_elements=[rep_volume], detecting_element_ids=[0]
