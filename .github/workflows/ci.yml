@@ -20,7 +20,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-      with: {submodules: recursive}
+      with: {fetch-depth: 0, submodules: recursive}
     - name: strip environment.yml
       run: |
         cat environment.yml | grep -v "#.*\<\local\>" > temp-ci-environment.yml
