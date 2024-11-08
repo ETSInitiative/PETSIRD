@@ -5,7 +5,6 @@
 
 import sys
 
-import numpy
 import petsird
 from petsird_helpers import (get_detection_efficiency, get_module_and_element,
                              get_num_det_els)
@@ -15,30 +14,30 @@ if __name__ == "__main__":
         header = reader.read_header()
         if header.exam is not None:
             print(f"Subject ID: {header.exam.subject.id}")
-        print(f"Scanner name: { header.scanner.model_name}")
+        print(f"Scanner name: {header.scanner.model_name}")
+        print("Types of modules: ",
+              len(header.scanner.scanner_geometry.replicated_modules))
         print(
-            f"Types of modules: {len(header.scanner.scanner_geometry.replicated_modules)}"
-        )
+            "Number of modules of first type: ",
+            len(header.scanner.scanner_geometry.replicated_modules[0].
+                transforms))
         print(
-            f"Number of modules of first type: {len(header.scanner.scanner_geometry.replicated_modules[0].transforms)}"
-        )
+            "Number of types of detecting elements in modules of first type: ",
+            len(header.scanner.scanner_geometry.replicated_modules[0].object.
+                detecting_elements))
         print(
-            f"Number of types of detecting elements in modules of first type: {len(header.scanner.scanner_geometry.replicated_modules[0].object.detecting_elements)}"
-        )
-        print(
-            f"Number of elements of first type in modules of first type: {len(header.scanner.scanner_geometry.replicated_modules[0].object.detecting_elements[0].transforms)}"
-        )
-        print(
-            f"Total number of 'crystals' {get_num_det_els(header.scanner.scanner_geometry)}"
-        )
-        print(f"Number of TOF bins: {header.scanner.number_of_tof_bins()}")
-        print(
-            f"Number of energy bins: {header.scanner.number_of_energy_bins()}")
-
+            "Number of elements of first type in modules of first type: ",
+            len(header.scanner.scanner_geometry.replicated_modules[0].object.
+                detecting_elements[0].transforms))
+        print("Total number of 'crystals': ",
+              get_num_det_els(header.scanner.scanner_geometry))
+        print("Number of TOF bins: ", header.scanner.number_of_tof_bins())
+        print("Number of energy bins: ",
+              header.scanner.number_of_energy_bins())
         energy_bin_edges = header.scanner.energy_bin_edges
-        print(f"Energy bin edges: {energy_bin_edges}")
+        print("Energy bin edges: ", energy_bin_edges)
         energy_mid_points = (energy_bin_edges[:-1] + energy_bin_edges[1:]) / 2
-        print(f"Energy mid points: {energy_mid_points}")
+        print("Energy mid points: ", energy_mid_points)
         print("SGID LUT:\n",
               header.scanner.detection_efficiencies.module_pair_sgidlut)
         energy_1, energy_2 = 0.0, 0.0
@@ -46,7 +45,7 @@ if __name__ == "__main__":
         last_time = 0
         for time_block in reader.read_time_blocks():
             if isinstance(time_block, petsird.TimeBlock.EventTimeBlock):
-                last_time = time_block.value.start  # all TimeBlock types have this field
+                last_time = time_block.value.start
                 num_prompts += len(time_block.value.prompt_events)
                 print("=====================  Events in time block from ",
                       last_time, " ==============")

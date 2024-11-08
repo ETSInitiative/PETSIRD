@@ -9,7 +9,6 @@ Preliminary helpers for PETSIRD data
 import typing
 from dataclasses import dataclass
 
-import numpy
 import petsird
 
 

@@ -51,7 +51,8 @@ def mult_transforms(
 def mult_transforms_coord(transforms: list[petsird.RigidTransformation],
                           coord: petsird.Coordinate) -> petsird.Coordinate:
     """apply list of transformations to coordinate"""
-    # TODO better to multiply with coordinates in sequence, as first multiplying the matrices
+    # TODO better to multiply with coordinates in sequence, than first
+    # multiplying the matrices
     hom = numpy.matmul(
         transform_to_mat44(mult_transforms(transforms)),
         coordinate_to_homogeneous(coord),
