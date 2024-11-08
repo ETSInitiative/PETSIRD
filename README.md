@@ -30,5 +30,3 @@ This codespace/container will contain all necessary tools, including `yardl` its
 
 4. Have a look at (and try!) the examples in the [`cpp`](cpp/README.md) and/or
 [`python`](python/README.md) directories.
-
-

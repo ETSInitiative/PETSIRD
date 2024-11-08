@@ -1,122 +1,140 @@
 // For format details, see https://aka.ms/devcontainer.json.
-{
-  "name": "petsird",
-  "build": {
-    "dockerfile": "Dockerfile",
-    "context": ".."
-  },
-  "runArgs": [
-    "--cap-add=SYS_PTRACE",
-    "--security-opt",
-    "seccomp=unconfined",
-    "--platform=linux/amd64"
-  ],
+    {
+      "name": "petsird",
+      "build": {
+        "dockerfile": "Dockerfile",
+        "context": ".."
+      },
+      "runArgs": [
+        "--cap-add=SYS_PTRACE",
+        "--security-opt",
+        "seccomp=unconfined",
+        "--platform=linux/amd64"
+      ],
 
-  // Configure tool-specific properties.
-  "customizations": {
-    // Configure properties specific to VS Code.
-    "vscode": {
-      // Set *default* container specific settings.json values on container create.
-      "settings": {
-        "files.trimFinalNewlines": true,
-        "files.trimTrailingWhitespace": true,
-        "files.insertFinalNewline": true,
+      // Configure tool-specific properties.
+      "customizations": {
+        // Configure properties specific to VS Code.
+        "vscode": {
+          // Set *default* container specific settings.json values on container
+          // create.
+          "settings": {
+            "files.trimFinalNewlines": true,
+            "files.trimTrailingWhitespace": true,
+            "files.insertFinalNewline": true,
 
-        "[cpp]": {
-          "editor.formatOnSave": true
-        },
+            "[cpp]": {
+              "editor.formatOnSave": true
+            },
 
-        "[json]": {
-          "editor.defaultFormatter": "esbenp.prettier-vscode",
-          "editor.formatOnSave": true
-        },
+            "[json]": {
+              "editor.defaultFormatter": "esbenp.prettier-vscode",
+              "editor.formatOnSave": true
+            },
 
-        "[jsonc]": {
-          "editor.defaultFormatter": "esbenp.prettier-vscode",
-          "editor.formatOnSave": true
-        },
+            "[jsonc]": {
+              "editor.defaultFormatter": "esbenp.prettier-vscode",
+              "editor.formatOnSave": true
+            },
 
-        "[python]": {
-          "editor.defaultFormatter": "ms-python.black-formatter",
-          "editor.formatOnSave": true
-        },
+            "[python]": {
+              "editor.defaultFormatter": "ms-python.black-formatter",
+              "editor.formatOnSave": true
+            },
 
-        "cmake.sourceDirectory": "${workspaceFolder}/cpp",
-        "cmake.buildDirectory": "${workspaceFolder}/cpp/build",
-        "cmake.configureOnOpen": false,
+            "cmake.sourceDirectory": "${workspaceFolder}/cpp",
+            "cmake.buildDirectory": "${workspaceFolder}/cpp/build",
+            "cmake.configureOnOpen": false,
 
-        "python.defaultInterpreterPath": "/opt/conda/envs/petsird/bin/python",
-        "python.analysis.typeCheckingMode": "strict",
-        "python.analysis.diagnosticMode": "workspace",
-        "python.analysis.diagnosticSeverityOverrides": {
-          "reportUnknownArgumentType": "none",
-          "reportUnknownLambdaType": "none",
-          "reportUnknownMemberType": "none",
-          "reportUnknownParameterType": "none",
-          "reportUnknownVariableType": "none",
-          "reportUnnecessaryIsInstance": "none",
-          "reportUnusedImport": "none"
-        },
-        "python.terminal.activateEnvironment": false, // Disable the extension calling activate when the integrated terminal launches. We take care of this in ~/.bashrc.
+            "python.defaultInterpreterPath":
+                "/opt/conda/envs/petsird/bin/python",
+            "python.analysis.typeCheckingMode": "strict",
+            "python.analysis.diagnosticMode": "workspace",
+            "python.analysis.diagnosticSeverityOverrides": {
+              "reportUnknownArgumentType": "none",
+              "reportUnknownLambdaType": "none",
+              "reportUnknownMemberType": "none",
+              "reportUnknownParameterType": "none",
+              "reportUnknownVariableType": "none",
+              "reportUnnecessaryIsInstance": "none",
+              "reportUnusedImport": "none"
+            },
+            "python.terminal.activateEnvironment": false,
+            // Disable the extension calling activate when the integrated
+            // terminal launches. We take care of this in ~/.bashrc.
 
-        "testMate.cpp.test.executables": "cpp/{build,Build,BUILD,out,Out,OUT}/**/*{test,Test,TEST}*",
+            "testMate.cpp.test.executables":
+                "cpp/{build,Build,BUILD,out,Out,OUT}/**/*{test,Test,TEST}*",
 
-        // enable pretty printing when debugging C++ tests
-        "testMate.cpp.debug.configTemplate": {
-          "type": "cppvsdbg",
-          "linux": { "type": "cppdbg", "MIMode": "gdb" },
-          "darwin": { "type": "cppdbg", "MIMode": "lldb" },
-          "win32": { "type": "cppvsdbg" },
-          "program": "${exec}",
-          "args": "${argsArray}",
-          "cwd": "${cwd}",
-          "env": "${envObj}",
-          "environment": "${envObjArray}",
-          "sourceFileMap": "${sourceFileMapObj}",
-          "setupCommands": [
-            {
-              "description": "Enable pretty-printing for gdb",
-              "text": "-enable-pretty-printing",
-              "ignoreFailures": true
+            // enable pretty printing when debugging C++ tests
+            "testMate.cpp.debug.configTemplate": {
+              "type": "cppvsdbg",
+              "linux": {
+                "type": "cppdbg",
+                "MIMode": "gdb"
+              },
+              "darwin": {
+                "type": "cppdbg",
+                "MIMode": "lldb"
+              },
+              "win32": {
+                "type": "cppvsdbg"
+              },
+              "program": "${exec}",
+              "args": "${argsArray}",
+              "cwd": "${cwd}",
+              "env": "${envObj}",
+              "environment": "${envObjArray}",
+              "sourceFileMap": "${sourceFileMapObj}",
+              "setupCommands": [
+                {
+                  "description": "Enable pretty-printing for gdb",
+                  "text": "-enable-pretty-printing",
+                  "ignoreFailures": true
+                }
+              ],
+
+              "gitlens.showWelcomeOnInstall": false,
+              "gitlens.showWhatsNewAfterUpgrades": false
+            },
+
+            "gcovViewer.gcovBinary":
+                "/opt/conda/envs/petsird/bin/x86_64-conda-linux-gnu-gcov",
+            "gcovViewer.buildDirectories": [
+              "${workspaceFolder}/cpp/build"
+            ],
+
+            "search.useIgnoreFiles": false,
+            "search.exclude": {
+              "**/cpp/build": true
             }
-          ],
+          },
 
-          "gitlens.showWelcomeOnInstall": false,
-          "gitlens.showWhatsNewAfterUpgrades": false
-        },
-
-        "gcovViewer.gcovBinary": "/opt/conda/envs/petsird/bin/x86_64-conda-linux-gnu-gcov",
-        "gcovViewer.buildDirectories": ["${workspaceFolder}/cpp/build"],
-
-        "search.useIgnoreFiles": false,
-        "search.exclude": {
-          "**/cpp/build": true
+          // Add the IDs of extensions you want installed when the container is
+          // created.
+          "extensions": [
+            "cschlosser.doxdocgen",
+            "eamodio.gitlens",
+            "esbenp.prettier-vscode",
+            "JacquesLucke.gcov-viewer",
+            "matepek.vscode-catch2-test-adapter",
+            "mhutchie.git-graph",
+            "ms-python.black-formatter",
+            "ms-python.python",
+            "ms-vscode.cmake-tools",
+            "ms-vscode.cpptools",
+            "timonwong.shellcheck",
+            "twxs.cmake"
+          ]
         }
       },
 
-      // Add the IDs of extensions you want installed when the container is created.
-      "extensions": [
-        "cschlosser.doxdocgen",
-        "eamodio.gitlens",
-        "esbenp.prettier-vscode",
-        "JacquesLucke.gcov-viewer",
-        "matepek.vscode-catch2-test-adapter",
-        "mhutchie.git-graph",
-        "ms-python.black-formatter",
-        "ms-python.python",
-        "ms-vscode.cmake-tools",
-        "ms-vscode.cpptools",
-        "timonwong.shellcheck",
-        "twxs.cmake"
-      ]
+      "overrideCommand": false,
+      "mounts": [
+        // Bind mount docker socket under an alias to support
+        // docker-from-docker
+        "source=/var/run/docker.sock,target=/var/run/docker-host.sock,type=bind"
+      ],
+
+      "remoteUser": "vscode"
     }
-  },
-
-  "overrideCommand": false,
-  "mounts": [
-    // Bind mount docker socket under an alias to support docker-from-docker
-    "source=/var/run/docker.sock,target=/var/run/docker-host.sock,type=bind"
-  ],
-
-  "remoteUser": "vscode"
-}
