@@ -47,7 +47,7 @@ Please by mindful about the resources used by our Continuous Integration (CI) wo
      - `[actions skip]` does not run GitHub Actions, see [here](https://github.blog/changelog/2021-02-08-github-actions-skip-pull-request-and-push-workflows-with-skip-ci/).
 8. After acceptance of your PR, go home with a nice warm feeling.
 
-Suggested reading: 
+Suggested reading:
 https://help.github.com/articles/fork-a-repo/, https://git-scm.com/book/en/v2/GitHub-Contributing-to-a-Project or https://guides.github.com/activities/forking/.
 
 ### A note on copyright dates and notices (and licenses)

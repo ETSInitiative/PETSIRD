@@ -28,7 +28,7 @@ DetectorModule: !record
 
 # A list of identical modules at different locations
 ReplicatedDetectorModule: ReplicatedObject< DetectorModule >
-    
+
 # Full definition of the geometry of the scanner, consisting of
 # one of more types of modules replicated in space and (optional) other structures (e.g. side-shielding)
 ScannerGeometry: !record

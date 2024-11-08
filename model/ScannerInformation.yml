@@ -22,7 +22,7 @@ ScannerInformation: !record
     # Geometric information for all detector elements
     # All coordinates are in the PET gantry coordinate system.
     scannerGeometry: ScannerGeometry
- 
+
     # List of materials present in the scanner geometry. The `material_id`s there will refer to the
     # identifiers in this list below.
     bulkMaterials: BulkMaterial*
