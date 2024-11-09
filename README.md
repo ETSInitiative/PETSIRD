@@ -1,5 +1,8 @@
 # PETSIRD draft data model and examples
 
+[![CI](https://github.com/ETSInitiative/PETSIRD/actions/workflows/ci.yml/badge.svg)](https://github.com/ETSInitiative/PETSIRD/actions/workflows/ci.yml)
+[![pre-commit.ci status](https://results.pre-commit.ci/badge/github/ETSInitiative/PETSIRD/main.svg)](https://results.pre-commit.ci/latest/github/ETSInitiative/PETSIRD/main)
+
 The purpose of this repo is to have a working example of a data model for PET imaging (list mode data). This is **not complete**, and aspects do not follow the actual proposal of PETSIRD yet.
 
 ## Background
