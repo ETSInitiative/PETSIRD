@@ -13,7 +13,7 @@ generate an SDK for both C++ and Python to read/write PETSIRD data.
 
 ## To get started as a Python user:
 
-If you don't want to modify the yardl model, clone this repository and follow instructions in the [`python/README.md`](python/README.md).
+If you don't want to modify the yardl model, just `pip install petsird`. More detail is in the [`python/README.md`](python/README.md).
 
 ## To get started quickly as a developer:
 
