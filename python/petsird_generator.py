@@ -103,6 +103,7 @@ def get_scanner_geometry() -> petsird.ScannerGeometry:
 
 def get_detection_efficiencies(
     scanner: petsird.ScannerInformation, ) -> petsird.DetectionEfficiencies:
+    """return some (non-physical) detection efficiencies"""
     num_det_els = get_num_det_els(scanner.scanner_geometry)
     det_el_efficiencies = numpy.ones(
         (num_det_els, scanner.number_of_energy_bins()), dtype=numpy.float32)
