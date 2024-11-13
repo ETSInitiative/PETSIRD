@@ -45,7 +45,7 @@ jobs:
     - name: Python
       run: |
         cd python
-        python petsird_generator.py | python petsird_analysis.py
+        python -m petsird.helpers.generator | python -m petsird.helpers.analysis
     - name: cpp
       run: |
         mkdir cpp/build

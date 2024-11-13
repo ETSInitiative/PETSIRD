@@ -4,7 +4,6 @@
 
 # basic plotting of the scanner geometry
 # preliminary code!
-
 import sys
 
 import matplotlib.pyplot as plt
