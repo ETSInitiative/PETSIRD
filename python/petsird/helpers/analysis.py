@@ -2,12 +2,11 @@
 #  Copyright (C) 2023-2024 University College London
 #
 #  SPDX-License-Identifier: Apache-2.0
-
 import sys
 
 import petsird
-from petsird_helpers import (get_detection_efficiency, get_module_and_element,
-                             get_num_det_els)
+
+from . import get_detection_efficiency, get_module_and_element, get_num_det_els
 
 if __name__ == "__main__":
     with petsird.BinaryPETSIRDReader(sys.stdin.buffer) as reader:
