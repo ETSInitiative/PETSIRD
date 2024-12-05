@@ -56,16 +56,16 @@ get_detection_efficiency(const ScannerInformation& scanner, const CoincidenceEve
 {
   float eff = 1.0F;
   const auto& det_el_efficiencies = scanner.detection_efficiencies.det_el_efficiencies;
-  if (!det_el_efficiencies)
+  if (det_el_efficiencies)
     {
       eff *= ((*det_el_efficiencies)(event.detector_ids[0], event.energy_indices[0])
               * (*det_el_efficiencies)(event.detector_ids[1], event.energy_indices[1]));
     }
   const auto& module_pair_efficiencies_vector = scanner.detection_efficiencies.module_pair_efficiencies_vector;
-  if (!module_pair_efficiencies_vector)
+  if (module_pair_efficiencies_vector)
     {
       const auto& module_pair_SGID_LUT = scanner.detection_efficiencies.module_pair_sgidlut;
-      assert(!module_pair_SGID_LUT);
+      assert(module_pair_SGID_LUT);
 
       const auto mod_and_els = get_module_and_element(scanner.scanner_geometry, event.detector_ids);
       assert(scanner.scanner_geometry.replicated_modules.size() == 1);
