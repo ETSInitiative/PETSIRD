@@ -51,4 +51,4 @@ ScannerGeometry: !record
 # 3. replicated_module.detecting_elements
 # 4. detecting_element.transforms
 # (with therefore the detector IDs running faster over the 4th loop)
-DetectorID: uint
+DetectorId: uint
