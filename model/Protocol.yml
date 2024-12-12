@@ -98,7 +98,7 @@ DeadTimeTimeBlock: !record
     moduleCoincidenceAliveTimeFraction: !array
       items: float
       dimensions: [moduleId0, moduleId1]
-    # TODO currently commented out due to yardl proble=m (?)
-    # computedFields:
-    #  sizeOfDetectorIdDimension: size(singlesAliveTimeFraction, 'detectorId')
-    #  sizeOfEnergyIdxDimension: size(singlesAliveTimeFraction, 'energyIdx')
+
+  computedFields:
+    sizeOfDetectorIdDimension: size(singlesAliveTimeFraction, 'detectorId')
+    sizeOfEnergyIdxDimension: size(singlesAliveTimeFraction, 'energyIdx')
