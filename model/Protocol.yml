@@ -19,6 +19,7 @@ TimeBlock: [EventTimeBlock, ExternalSignalTimeBlock, BedMovementTimeBlock, Gantr
 EventTimeBlock: !record
   fields:
    # time interval for this time block
+   # Constraint: all event-time-blocks need to have the same duration, see ScannerInformation.even_time_block_duration
    timeInterval: TimeInterval
    # list of prompts in this time block
    # TODO might be better to use !array
@@ -76,7 +77,7 @@ GantryMovementTimeBlock: !record
 # aliveTimeFraction(detectorId0, energyIdx0, detectorId1, energyIdx1) =
 #   singlesAliveTimeFraction[detectorId0, energyIdx0] *
 #   singlesAliveTimeFraction[detectorId1, energyIdx1] *
-#   moduleCoincidenceAliveTimeFraction[module(detectorId0], module(energyIdx0)]
+#   moduleCoincidenceAliveTimeFraction[module(detectorId0), module(energyIdx0)]
 DeadTimeTimeBlock: !record
   fields:
     # time interval for this time block
@@ -95,6 +96,7 @@ DeadTimeTimeBlock: !record
     # If the size of this 2D array is (1,1), it is assumed that the corresponding alive-fraction is the same for all modules.
     # Constraint: size(moduleCoincidenceAliveTimeFraction, 0) == 1 or total number of modules of all types
     # Constraint: size(moduleCoincidenceAliveTimeFraction, 1) == 1 or total number of modules of all types
+    # Constraint: this matrix has to be symmetric
     moduleCoincidenceAliveTimeFraction: !array
       items: float
       dimensions: [moduleId0, moduleId1]
