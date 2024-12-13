@@ -40,3 +40,15 @@ ScannerGeometry: !record
     ids: uint*
     # shielding etc
     nonDetectingVolumes: GenericSolidVolume*?
+
+# This is the type for detector IDs using in `CoincidenceEvent` and `TripleEvent`.
+# It is an unsigned integer that runs over all the "elementary detector elements" (aka crystals),
+# starting from 0.
+# The correspondence between this integer and a module/det_el is not decided (TODO),
+# but the current proposal is to effectively increment the detectorID in nested loops:
+# 1. ScannerGeometry.replicated_modules
+# 2. replicated_module.transforms
+# 3. replicated_module.detecting_elements
+# 4. detecting_element.transforms
+# (with therefore the detector IDs running faster over the 4th loop)
+DetectorId: uint
