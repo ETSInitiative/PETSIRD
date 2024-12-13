@@ -23,7 +23,7 @@ writer.write_header(header);
 
 for t = 0:config.NUMBER_OF_TIME_BLOCKS-1
     start = t * header.scanner.event_time_block_duration;
-    % TODO: Need Statistics and Machine Learning Toolbox for Poisson distribution functions
+    % NOTE: Need Statistics and Machine Learning Toolbox for Poisson distribution functions
     % num_prompts_this_block = poissrnd(COUNT_RATE);
     num_prompts_this_block = randi(config.COUNT_RATE);
     prompts_this_block = get_events(header, num_prompts_this_block, config);
@@ -49,8 +49,6 @@ end
 
 function scanner = get_scanner_info(cfg)
     scanner_geometry = get_scanner_geometry(cfg);
-
-    % TODO scanner_info.bulk_materials
 
     % TOF info (in mm)
     tofBinEdges = single(linspace(-cfg.RADIUS, cfg.RADIUS, cfg.NUMBER_OF_TOF_BINS + 1));
