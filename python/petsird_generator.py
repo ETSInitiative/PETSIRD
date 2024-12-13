@@ -257,12 +257,14 @@ if __name__ == "__main__":
         header = get_header()
         writer.write_header(header)
         for t in range(NUMBER_OF_TIME_BLOCKS):
-            start = t * header.scanner.event_time_block_duration
+            time_interval = petsird.TimeInterval(
+                start=t * header.scanner.event_time_block_duration,
+                stop=(t + 1) * header.scanner.event_time_block_duration)
             num_prompts_this_block = rng.poisson(COUNT_RATE)
             prompts_this_block = list(
                 get_events(header, num_prompts_this_block))
             # Normally we'd write multiple blocks, but here we have just one,
             # so let's write a tuple with just one element
             writer.write_time_blocks((petsird.TimeBlock.EventTimeBlock(
-                petsird.EventTimeBlock(start=start,
+                petsird.EventTimeBlock(time_interval=time_interval,
                                        prompt_events=prompts_this_block)), ))

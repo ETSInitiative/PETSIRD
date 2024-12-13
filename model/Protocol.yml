@@ -14,14 +14,13 @@ Header: !record
 
 # types of timeBlocks
 # TODO more types could be needed
-TimeBlock: [EventTimeBlock, ExternalSignalTimeBlock, BedMovementTimeBlock, GantryMovementTimeBlock]
+TimeBlock: [EventTimeBlock, ExternalSignalTimeBlock, BedMovementTimeBlock, GantryMovementTimeBlock, DeadTimeTimeBlock]
 
 EventTimeBlock: !record
   fields:
-   # start time since ExamInformation.startOfAcquisition in ms
-   # Note: duration is given by ScannerInformation.eventTimeBlockDuration
-   start: uint
-   # TODO encode end time?
+   # time interval for this time block
+   # Constraint: all event-time-blocks need to have the same duration, see ScannerInformation.even_time_block_duration
+   timeInterval: TimeInterval
    # list of prompts in this time block
    # TODO might be better to use !array
    promptEvents: CoincidenceEvent*
@@ -50,8 +49,8 @@ ExternalSignalType: !record
 
 ExternalSignalTimeBlock: !record
   fields:
-   # start time since ExamInformation.startOfAcquisition in ms
-   start: uint
+   # time interval for this time block
+   timeInterval: TimeInterval
    # refer to ExternalSignalType.id
    signalID: uint
    # Note for triggers, this field is to be ignored
@@ -59,12 +58,49 @@ ExternalSignalTimeBlock: !record
 
 BedMovementTimeBlock: !record
   fields:
-    # start time since ExamInformation.startOfAcquisition in ms
-    start: uint
+    # time interval for this time block
+    timeInterval: TimeInterval
     transform: RigidTransformation
 
 GantryMovementTimeBlock: !record
   fields:
-    # start time since ExamInformation.startOfAcquisition in ms
-    start: uint
+    # time interval for this time block
+    timeInterval: TimeInterval
     transform: RigidTransformation
+
+# A time-block that stores the dead-time information for the given interval
+# TODO require that the complete scanning interval is "covered"?
+# Dead-time is encoded as "alive_time_fraction", i.e. 1 - dead_time_fraction
+# A component-based model is used, where the total alive-time for an pair of DetectorIds
+# is computed as the product of the (singles) alive-time of each detector times the
+# coincidence-alive-time of the corresponding module-pair:
+# aliveTimeFraction(detectorId0, energyIdx0, detectorId1, energyIdx1) =
+#   singlesAliveTimeFraction[detectorId0, energyIdx0] *
+#   singlesAliveTimeFraction[detectorId1, energyIdx1] *
+#   moduleCoincidenceAliveTimeFraction[module(detectorId0), module(energyIdx0)]
+DeadTimeTimeBlock: !record
+  fields:
+    # time interval for this time block
+    timeInterval: TimeInterval
+    # Singles dead-time array for the time interval, stored as fractions of "alive time"
+    # (1 means no dead-time, 0 means no detected counts)
+    # If sizeOfEnergyIdxDimension == 1, the fraction is assumed to be the same
+    # for all energy windows.
+    # Constraint: sizeOfDetectorIdDimension == number of all possible unique DetectorIds
+    # Constraint: (sizeOfEnergyIdxDimension == 1) or (sizeOfEnergyIdxDimension == ScannerInformation.numberOfEnergyBins)
+    singlesAliveTimeFraction: !array
+      items: float
+      dimensions: [detectorId, energyIdx]
+    # coincidence dead-time array for 2 modules in coincidence, stored as fractions of "alive time"
+    # (1 means no dead-time, 0 means no detected coincidences)
+    # If the size of this 2D array is (1,1), it is assumed that the corresponding alive-fraction is the same for all modules.
+    # Constraint: size(moduleCoincidenceAliveTimeFraction, 0) == 1 or total number of modules of all types
+    # Constraint: size(moduleCoincidenceAliveTimeFraction, 1) == 1 or total number of modules of all types
+    # Constraint: this matrix has to be symmetric
+    moduleCoincidenceAliveTimeFraction: !array
+      items: float
+      dimensions: [moduleId0, moduleId1]
+
+  computedFields:
+    sizeOfDetectorIdDimension: size(singlesAliveTimeFraction, 'detectorId')
+    sizeOfEnergyIdxDimension: size(singlesAliveTimeFraction, 'energyIdx')

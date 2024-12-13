@@ -122,7 +122,7 @@ main(int argc, char const* argv[])
       if (std::holds_alternative<petsird::EventTimeBlock>(time_block))
         {
           auto& event_time_block = std::get<petsird::EventTimeBlock>(time_block);
-          last_time = event_time_block.start;
+          last_time = event_time_block.time_interval.stop;
           num_prompts += event_time_block.prompt_events.size();
           if (event_time_block.delayed_events)
             num_delayeds += event_time_block.delayed_events->size();
