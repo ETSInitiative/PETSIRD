@@ -14,6 +14,23 @@ CoincidencePolicy: !enum
     # other options, to be listed in the future
     - other
 
+# Type definition for how single histogrammes are stored.
+# Many scanners are able to store singles accumulated in some time intervals, i.e.
+# histogrammed (as opposed to a list of singles with their corresponding DetectorId).
+# However, some scanners do not store this information at the smallest detector resolution.
+# Therefore, PETSIRD currently supports a total singles count for each module as well.
+#
+# Note that PETSIRD allows giving singles count summed over all energy windows. This is
+# currently not encode in this enum, but is derived from the size of the histogram.
+# See SinglesHistogramTimeBlock.
+SinglesHistogramLevelType: !enum
+  values:
+    # singles histograms are not stored at all
+    - none
+    # singles counts per module
+    - module
+    # singles counts for each DetectorId
+    - all
 
 ScannerInformation: !record
   fields:
@@ -55,6 +72,9 @@ ScannerInformation: !record
 
     # duration of each event time block in ms
     eventTimeBlockDuration: uint
+
+    # level at which the singles histograms are stored
+    singlesHistogramLevel: SinglesHistogramLevelType
 
     # Encode how the scanner handles multiple coincidences
     coincidencePolicy: CoincidencePolicy

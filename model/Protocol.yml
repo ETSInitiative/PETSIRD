@@ -14,7 +14,7 @@ Header: !record
 
 # types of timeBlocks
 # TODO more types could be needed
-TimeBlock: [EventTimeBlock, ExternalSignalTimeBlock, BedMovementTimeBlock, GantryMovementTimeBlock, DeadTimeTimeBlock]
+TimeBlock: [EventTimeBlock, ExternalSignalTimeBlock, BedMovementTimeBlock, GantryMovementTimeBlock, DeadTimeTimeBlock, SinglesHistogramTimeBlock]
 
 EventTimeBlock: !record
   fields:
@@ -104,3 +104,23 @@ DeadTimeTimeBlock: !record
   computedFields:
     sizeOfDetectorIdDimension: size(singlesAliveTimeFraction, 'detectorId')
     sizeOfEnergyIdxDimension: size(singlesAliveTimeFraction, 'energyIdx')
+
+# A time-block that stores a singles histogram.
+# See SinglesHistogramLevelType for information.
+SinglesHistogramTimeBlock: !record
+  fields:
+    timeInterval: TimeInterval
+    # A 2D histogram of all singles stored in the time-block.
+    # If ScannerInformation.singlesHistogramLevel == SinglesHistogramLevelType.module, the
+    # first index runs over all modules.
+    # If ScannerInformation.singlesHistogramLevel == SinglesHistogramLevelType.all, the
+    # first index runs over all DetectorIds.
+    # If sizeOfEnergyIdxDimension == 1, the singles histogram is summed over all energy windows.
+    # Constraint: (singlesHistogramLevel == module && size(singlesHistogram, 0) == total number of modules of all types) ||
+    #             (singlesHistogramLevel == all && size(singlesHistogram, 0) == total number of detecting elements in all modules) ||
+    singlesHistogram: !array
+      items: uint
+      dimensions: [idx, energyIdx]
+  computedFields:
+    #sizeOfIdxDimension: size(singlesHistogram, 'idx')
+    sizeOfEnergyIdxDimension: size(singlesHistogram, 'energyIdx')
