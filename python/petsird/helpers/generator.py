@@ -10,7 +10,7 @@ from collections.abc import Iterator
 import numpy
 import petsird
 
-from . import get_module_and_element, get_num_det_els
+from petsird.helpers import get_module_and_element, get_num_det_els
 
 # these are constants for now
 NUMBER_OF_ENERGY_BINS = 3
