@@ -9,7 +9,6 @@ from collections.abc import Iterator
 
 import numpy
 import petsird
-
 from petsird.helpers import get_module_and_element, get_num_det_els
 
 # these are constants for now

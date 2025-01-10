@@ -7,8 +7,8 @@ import argparse
 import sys
 
 import petsird
-
-from petsird.helpers import get_detection_efficiency, get_module_and_element, get_num_det_els
+from petsird.helpers import (get_detection_efficiency, get_module_and_element,
+                             get_num_det_els)
 
 
 def parserCreator():
