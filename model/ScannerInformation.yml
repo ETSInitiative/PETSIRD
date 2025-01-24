@@ -63,10 +63,12 @@ ScannerInformation: !record
     # Scanner coincidence timing resolution (CTR) without tof-binning
     tofResolution: float
 
-    # Edge information for energy windows in keV (given as from first to last edge, so there is one more edge than the number of bins)
+    # Edge information (in keV) for energy windows used for coincidences, triples etc
+    # (given as from first to last edge, so there is one more edge than the number of bins)
     energyBinEdges: !array
       items: float
       dimensions: 1
+
     # FWHM of photopeak for incoming gamma of 511 keV, expressed as a ratio w.r.t. 511
     energyResolutionAt511: float
 
@@ -75,6 +77,16 @@ ScannerInformation: !record
 
     # level at which the singles histograms are stored
     singlesHistogramLevel: SinglesHistogramLevelType
+
+    # Edge information (in keV) for energy windows used for singles histograms
+    # (given as from first to last edge, so there is one more edge than the number of bins)
+    # In many cases, this could be the same as energyBinEdges, but is an independent field
+    # for flexibility.
+    # Constraint: (singlesHistogramLevel == SinglesHistogramLevelType.none && numberOfSinglesHistogramEnergyBins >= 1) ||
+    #             (singlesHistogramLevel != SinglesHistogramLevelType.none && size(singlesHistogramEnergyBinEdges) == 0)
+    singlesHistogramEnergyBinEdges: !array
+      items: float
+      dimensions: 1
 
     # Encode how the scanner handles multiple coincidences
     coincidencePolicy: CoincidencePolicy
@@ -85,3 +97,4 @@ ScannerInformation: !record
   computedFields:
     numberOfTOFBins: size(tofBinEdges)-1
     numberOfEnergyBins: size(energyBinEdges)-1
+    numberOfSinglesHistogramEnergyBins: size(singlesHistogramEnergyBinEdges)-1

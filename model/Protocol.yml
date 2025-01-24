@@ -107,6 +107,9 @@ DeadTimeTimeBlock: !record
 
 # A time-block that stores a singles histogram.
 # See SinglesHistogramLevelType for information.
+# Constraint: if ScannerInformation.singlesHistogramLevel == SinglesHistogramLevelType.none, there should
+#     be no time blocks of this type in the stream.
+#     Otherwise, the union of SinglesHistogramTimeBlock.timeInterval should be at least as large as the union of all EventTimeBlocks.timeInterval
 SinglesHistogramTimeBlock: !record
   fields:
     timeInterval: TimeInterval
@@ -115,11 +118,11 @@ SinglesHistogramTimeBlock: !record
     # positionalIdx runs over all modules.
     # If ScannerInformation.singlesHistogramLevel == SinglesHistogramLevelType.all, the
     # positionalIdx runs over all DetectorIds.
-    # If sizeOfEnergyIdxDimension == 1, the singles histogram is summed over all energy windows.
-    # Constraint: (singlesHistogramLevel == module && size(singlesHistogram, 0) == total number of modules of all types) ||
-    #             (singlesHistogramLevel == all && size(singlesHistogram, 0) == total number of detecting elements in all modules) ||
+    # Constraint: (singlesHistogramLevel == module && sizeOfPositionalIdxDimension == total number of modules of all types) ||
+    #             (singlesHistogramLevel == all && sizeOfPositionalIdxDimension == total number of detecting elements in all modules)
+    # Constraint:  sizeOfEnergyIdxDimension == ScannerInformation.numberOfSinglesHistogramEnergyBins
     singlesHistogram: !array
-      items: uint
+      items: uint64
       dimensions: [positionalIdx, energyIdx]
   computedFields:
     sizeOfPositionalIdxDimension: size(singlesHistogram, 'positionalIdx')
