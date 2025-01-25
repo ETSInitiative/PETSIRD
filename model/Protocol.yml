@@ -87,7 +87,7 @@ DeadTimeTimeBlock: !record
     # If sizeOfEnergyIdxDimension == 1, the fraction is assumed to be the same
     # for all energy windows.
     # Constraint: sizeOfDetectorIdDimension == number of all possible unique DetectorIds
-    # Constraint: (sizeOfEnergyIdxDimension == 1) or (sizeOfEnergyIdxDimension == ScannerInformation.numberOfEnergyBins)
+    # Constraint: (sizeOfEnergyIdxDimension == 1) or (sizeOfEnergyIdxDimension == ScannerInformation.numberOfEventEnergyBins)
     singlesAliveTimeFraction: !array
       items: float
       dimensions: [detectorId, energyIdx]

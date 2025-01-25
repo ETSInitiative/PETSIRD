@@ -1,5 +1,5 @@
 #  Copyright (C) 2022-2023 Microsoft Corporation
-#  Copyright (C) 2023-2024 University College London
+#  Copyright (C) 2023-2025 University College London
 #
 #  SPDX-License-Identifier: Apache-2.0
 
@@ -59,10 +59,10 @@ if __name__ == "__main__":
               get_num_det_els(header.scanner.scanner_geometry))
         print("Number of TOF bins: ", header.scanner.number_of_tof_bins())
         print("Number of energy bins: ",
-              header.scanner.number_of_energy_bins())
-        energy_bin_edges = header.scanner.energy_bin_edges
-        print("Energy bin edges: ", energy_bin_edges)
-        energy_mid_points = (energy_bin_edges[:-1] + energy_bin_edges[1:]) / 2
+              header.scanner.number_of_event_energy_bins())
+        event_energy_bin_edges = header.scanner.event_energy_bin_edges
+        print("Event energy bin edges: ", event_energy_bin_edges)
+        energy_mid_points = (event_energy_bin_edges[:-1] + event_energy_bin_edges[1:]) / 2
         print("Energy mid points: ", energy_mid_points)
         print("SGID LUT:\n",
               header.scanner.detection_efficiencies.module_pair_sgidlut)

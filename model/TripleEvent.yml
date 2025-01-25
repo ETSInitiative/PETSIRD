@@ -10,5 +10,5 @@ TripleEvent: !record
     # Note: only 2, corresponding to the arrival time differences of the second and third detectorId
     # listed w.r.t. the first detectorId
     tofIndices: uint*2
-    # indices for each single event into the energyBinEdges field in the ScannerInformation
+    # indices for each single event into the ScannerInformation.eventEnergyBinEdges field
     energyIndices: uint*3

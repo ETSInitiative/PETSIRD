@@ -99,14 +99,14 @@ main(int argc, char const* argv[])
   std::cout << "Total number of 'crystals': " << petsird_helpers::get_num_det_els(header.scanner.scanner_geometry) << std::endl;
 
   std::cout << "Number of TOF bins: " << header.scanner.NumberOfTOFBins() << std::endl;
-  std::cout << "Number of energy bins: " << header.scanner.NumberOfEnergyBins() << std::endl;
+  std::cout << "Number of energy bins: " << header.scanner.NumberOfEventEnergyBins() << std::endl;
 
   const auto& tof_bin_edges = header.scanner.tof_bin_edges;
   std::cout << "TOF bin edges: " << tof_bin_edges << std::endl;
-  const auto& energy_bin_edges = header.scanner.energy_bin_edges;
-  std::cout << "Energy bin edges: " << energy_bin_edges << std::endl;
-  const auto energy_mid_points = (xt::view(energy_bin_edges, xt::range(0, energy_bin_edges.size() - 1))
-                                  + xt::view(energy_bin_edges, xt::range(1, energy_bin_edges.size())))
+  const auto& event_energy_bin_edges = header.scanner.event_energy_bin_edges;
+  std::cout << "Event energy bin edges: " << event_energy_bin_edges << std::endl;
+  const auto energy_mid_points = (xt::view(event_energy_bin_edges, xt::range(0, event_energy_bin_edges.size() - 1))
+                                  + xt::view(event_energy_bin_edges, xt::range(1, event_energy_bin_edges.size())))
                                  / 2;
   std::cout << "Energy mid points: " << energy_mid_points << std::endl;
 

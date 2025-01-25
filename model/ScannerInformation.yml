@@ -65,7 +65,7 @@ ScannerInformation: !record
 
     # Edge information (in keV) for energy windows used for coincidences, triples etc
     # (given as from first to last edge, so there is one more edge than the number of bins)
-    energyBinEdges: !array
+    eventEnergyBinEdges: !array
       items: float
       dimensions: 1
 
@@ -80,7 +80,7 @@ ScannerInformation: !record
 
     # Edge information (in keV) for energy windows used for singles histograms
     # (given as from first to last edge, so there is one more edge than the number of bins)
-    # In many cases, this could be the same as energyBinEdges, but is an independent field
+    # In many cases, this could be the same as eventEnergyBinEdges, but is an independent field
     # for flexibility.
     # Constraint: (singlesHistogramLevel == SinglesHistogramLevelType.none && numberOfSinglesHistogramEnergyBins >= 1) ||
     #             (singlesHistogramLevel != SinglesHistogramLevelType.none && size(singlesHistogramEnergyBinEdges) == 0)
@@ -96,5 +96,5 @@ ScannerInformation: !record
 
   computedFields:
     numberOfTOFBins: size(tofBinEdges)-1
-    numberOfEnergyBins: size(energyBinEdges)-1
+    numberOfEventEnergyBins: size(eventEnergyBinEdges)-1
     numberOfSinglesHistogramEnergyBins: size(singlesHistogramEnergyBinEdges)-1
