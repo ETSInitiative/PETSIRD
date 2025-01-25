@@ -62,7 +62,8 @@ if __name__ == "__main__":
               header.scanner.number_of_event_energy_bins())
         event_energy_bin_edges = header.scanner.event_energy_bin_edges
         print("Event energy bin edges: ", event_energy_bin_edges)
-        energy_mid_points = (event_energy_bin_edges[:-1] + event_energy_bin_edges[1:]) / 2
+        energy_mid_points = (event_energy_bin_edges[:-1] +
+                             event_energy_bin_edges[1:]) / 2
         print("Energy mid points: ", energy_mid_points)
         print("SGID LUT:\n",
               header.scanner.detection_efficiencies.module_pair_sgidlut)

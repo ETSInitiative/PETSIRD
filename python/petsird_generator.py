@@ -106,7 +106,8 @@ def get_detection_efficiencies(
     """return some (non-physical) detection efficiencies"""
     num_det_els = get_num_det_els(scanner.scanner_geometry)
     det_el_efficiencies = numpy.ones(
-        (num_det_els, scanner.number_of_event_energy_bins()), dtype=numpy.float32)
+        (num_det_els, scanner.number_of_event_energy_bins()),
+        dtype=numpy.float32)
 
     # only 1 type of module in the current scanner
     assert len(scanner.scanner_geometry.replicated_modules) == 1
