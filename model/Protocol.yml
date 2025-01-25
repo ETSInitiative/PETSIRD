@@ -113,7 +113,12 @@ DeadTimeTimeBlock: !record
 SinglesHistogramTimeBlock: !record
   fields:
     timeInterval: TimeInterval
-    # A 2D histogram of all singles stored in the time-block.
+    # A 2D histogram of all singles (after energy discrimination) occuring in the timeInterval.
+    # The dimensions correspond to positional information (i.e. module or detectorId, see below)
+    # and energy index. The latter index refers to ScannerInformation.singlesHistogramEnergyBinEdges.
+    # Note that in future, we might consider also storing singles before energy discremination,
+    # but this is currently not supported.
+    #
     # If ScannerInformation.singlesHistogramLevel == SinglesHistogramLevelType.module, the
     # positionalIdx runs over all modules.
     # If ScannerInformation.singlesHistogramLevel == SinglesHistogramLevelType.all, the
