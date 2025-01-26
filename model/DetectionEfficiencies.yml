@@ -1,6 +1,6 @@
 # Detection efficiencies for every detecting element and energy window
 # If size along energyBinIdx is 1, the effiencies are assumed to be the same for every energy bin.
-# Constraint: size(DetElEfficiencies, "energyBinIdx") == scannerInformation.numberOfEnergyBins or 1
+# Constraint: size(DetElEfficiencies, "energyBinIdx") == scannerInformation.numberOfEventEnergyBins or 1
 DetElEfficiencies: float[detElIdx, energyBinIdx]
 
 # Efficiency for two detecting elements (det_els) in a pair of modules.

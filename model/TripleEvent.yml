@@ -1,11 +1,14 @@
-# All information about a triple event specified as identifiers or indices (i.e. discretized).
+# All information about a triple event specified as identifiers (i.e. discretized).
 TripleEvent: !record
   fields:
-    detectorIds: uint*3
+    # Identifiers of the three detecting elements (see doc for DetectorId)
+    # Note that it is possible that 2 detectorIDs are equal (e.g. for
+    # inter-crystal Compton events)
+    detectorIds: DetectorId*3
     # timing differences (converted to mm) w.r.t. first event, stored as
     # indices into the tofBinEdges field in the ScannerInformation
     # Note: only 2, corresponding to the arrival time differences of the second and third detectorId
     # listed w.r.t. the first detectorId
     tofIndices: uint*2
-    # indices for each single event into the energyBinEdges field in the ScannerInformation
+    # indices for each single event into the ScannerInformation.eventEnergyBinEdges field
     energyIndices: uint*3

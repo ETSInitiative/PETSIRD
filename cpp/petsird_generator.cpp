@@ -24,7 +24,7 @@ using petsird::binary::PETSIRDWriter;
 #include "petsird_helpers.h"
 
 // these are constants for now
-constexpr uint32_t NUMBER_OF_ENERGY_BINS = 3;
+constexpr uint32_t NUMBER_OF_EVENT_ENERGY_BINS = 3;
 constexpr uint32_t NUMBER_OF_TOF_BINS = 300;
 constexpr float RADIUS = 400.F;
 constexpr std::array<float, 3> CRYSTAL_LENGTH{ 20.F, 4.F, 4.F };
@@ -119,7 +119,7 @@ get_detection_efficiencies(const petsird::ScannerInformation& scanner)
   const auto num_det_els = petsird_helpers::get_num_det_els(scanner.scanner_geometry);
   petsird::DetectionEfficiencies detection_efficiencies;
 
-  detection_efficiencies.det_el_efficiencies = xt::ones<float>({ num_det_els, scanner.NumberOfEnergyBins() });
+  detection_efficiencies.det_el_efficiencies = xt::ones<float>({ num_det_els, scanner.NumberOfEventEnergyBins() });
 
   // only 1 type of module in the current scanner
   assert(scanner.scanner_geometry.replicated_modules.size() == 1);
@@ -171,7 +171,7 @@ get_detection_efficiencies(const petsird::ScannerInformation& scanner)
       // const auto& module_pair = *std::find(module_pair_SGID_LUT.begin(), module_pair_SGID_LUT.end(), SGID);
       petsird::ModulePairEfficiencies module_pair_efficiencies;
       module_pair_efficiencies.values = yardl::NDArray<float, 4>(
-          { num_det_els_in_module, scanner.NumberOfEnergyBins(), num_det_els_in_module, scanner.NumberOfEnergyBins() });
+          { num_det_els_in_module, scanner.NumberOfEventEnergyBins(), num_det_els_in_module, scanner.NumberOfEventEnergyBins() });
       // give some (non-physical) value
       module_pair_efficiencies.values.fill(SGID);
       module_pair_efficiencies.sgid = SGID;
@@ -200,13 +200,13 @@ get_scanner_info()
     FArray1D tof_bin_edges(tof_bin_edges_shape);
     for (std::size_t i = 0; i < tof_bin_edges.size(); ++i)
       tof_bin_edges[i] = (i - NUMBER_OF_TOF_BINS / 2.F) / NUMBER_OF_TOF_BINS * 2 * RADIUS;
-    FArray1D::shape_type energy_bin_edges_shape = { NUMBER_OF_ENERGY_BINS + 1 };
-    FArray1D energy_bin_edges(energy_bin_edges_shape);
-    for (std::size_t i = 0; i < energy_bin_edges.size(); ++i)
-      energy_bin_edges[i] = 430.F + i * (650.F - 430.F) / NUMBER_OF_ENERGY_BINS;
+    FArray1D::shape_type event_energy_bin_edges_shape = { NUMBER_OF_EVENT_ENERGY_BINS + 1 };
+    FArray1D event_energy_bin_edges(event_energy_bin_edges_shape);
+    for (std::size_t i = 0; i < event_energy_bin_edges.size(); ++i)
+      event_energy_bin_edges[i] = 430.F + i * (650.F - 430.F) / NUMBER_OF_EVENT_ENERGY_BINS;
     scanner_info.tof_bin_edges = tof_bin_edges;
     scanner_info.tof_resolution = 9.4F; // in mm
-    scanner_info.energy_bin_edges = energy_bin_edges;
+    scanner_info.event_energy_bin_edges = event_energy_bin_edges;
     scanner_info.energy_resolution_at_511 = .11F; // as fraction of 511
     scanner_info.event_time_block_duration = 1.F; // ms
   }
@@ -246,7 +246,7 @@ get_random_pair(int max)
 uint32_t
 get_random_energy_value()
 {
-  return rand() % NUMBER_OF_ENERGY_BINS;
+  return rand() % NUMBER_OF_EVENT_ENERGY_BINS;
 }
 
 uint32_t
@@ -310,7 +310,8 @@ main(int argc, char* argv[])
       const auto num_prompts_this_block = poisson(gen);
       const auto prompts_this_block = get_events(header, num_prompts_this_block);
       petsird::EventTimeBlock time_block;
-      time_block.start = t * header.scanner.event_time_block_duration;
+      time_block.time_interval.start = t * header.scanner.event_time_block_duration;
+      time_block.time_interval.stop = (t + 1) * header.scanner.event_time_block_duration;
       time_block.prompt_events = prompts_this_block;
       writer.WriteTimeBlocks(time_block);
     }

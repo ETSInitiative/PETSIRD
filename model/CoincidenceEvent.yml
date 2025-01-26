@@ -1,10 +1,10 @@
-# All information about a coincidence event specified as identifiers or indices (i.e. discretized). Indices start from 0.
+# All information about a coincidence event specified as identifiers (i.e. discretized).
 # TODO: this might take up too much space, so some/all of these could be combined in a single index if necessary.
 CoincidenceEvent: !record
   fields:
-    # the pair of detector elements
-    detectorIds: uint*2
+    # identifiers of the two detecting elements (see doc for DetectorId)
+    detectorIds: DetectorId*2
     # an index into the tofBinEdges field in the ScannerInformation
     tofIdx: uint
-    # a pair of indices into the energyBinEdges field in the ScannerInformation
+    # a pair of indices into the ScannerInformation.eventEnergyBinEdges field
     energyIndices: uint*2
