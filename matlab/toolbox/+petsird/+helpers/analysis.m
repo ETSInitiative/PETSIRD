@@ -1,4 +1,4 @@
-function petsird_analysis(input)
+function analysis(input)
 
 arguments
     input (1,1) string

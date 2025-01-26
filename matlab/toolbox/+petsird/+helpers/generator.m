@@ -1,4 +1,4 @@
-function petsird_generator(output)
+generator(output)
 
 arguments
     output (1,1) string
