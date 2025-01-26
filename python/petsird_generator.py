@@ -1,5 +1,5 @@
 #  Copyright (C) 2022-2023 Microsoft Corporation
-#  Copyright (C) 2023-2024 University College London
+#  Copyright (C) 2023-2025 University College London
 #
 #  SPDX-License-Identifier: Apache-2.0
 
@@ -13,7 +13,7 @@ import petsird
 from petsird_helpers import get_module_and_element, get_num_det_els
 
 # these are constants for now
-NUMBER_OF_ENERGY_BINS = 3
+NUMBER_OF_EVENT_ENERGY_BINS = 3
 NUMBER_OF_TOF_BINS = 300
 RADIUS = 400
 CRYSTAL_LENGTH = (20, 4, 4)
@@ -106,7 +106,8 @@ def get_detection_efficiencies(
     """return some (non-physical) detection efficiencies"""
     num_det_els = get_num_det_els(scanner.scanner_geometry)
     det_el_efficiencies = numpy.ones(
-        (num_det_els, scanner.number_of_energy_bins()), dtype=numpy.float32)
+        (num_det_els, scanner.number_of_event_energy_bins()),
+        dtype=numpy.float32)
 
     # only 1 type of module in the current scanner
     assert len(scanner.scanner_geometry.replicated_modules) == 1
@@ -154,9 +155,9 @@ def get_detection_efficiencies(
         module_pair_efficiencies = numpy.ones(
             (
                 num_det_els_in_module,
-                scanner.number_of_energy_bins(),
+                scanner.number_of_event_energy_bins(),
                 num_det_els_in_module,
-                scanner.number_of_energy_bins(),
+                scanner.number_of_event_energy_bins(),
             ),
             dtype=numpy.float32,
         )
@@ -187,7 +188,7 @@ def get_scanner_info() -> petsird.ScannerInformation:
                                  dtype="float32")
     energyBinEdges = numpy.linspace(430,
                                     650,
-                                    NUMBER_OF_ENERGY_BINS + 1,
+                                    NUMBER_OF_EVENT_ENERGY_BINS + 1,
                                     dtype="float32")
     # We need energy bin info before being able to construct the detection
     # efficiencies, so we first construct a scanner without the efficiencies
@@ -196,7 +197,7 @@ def get_scanner_info() -> petsird.ScannerInformation:
         scanner_geometry=scanner_geometry,
         tof_bin_edges=tofBinEdges,
         tof_resolution=9.4,  # in mm
-        energy_bin_edges=energyBinEdges,
+        event_energy_bin_edges=energyBinEdges,
         energy_resolution_at_511=0.11,  # as fraction of 511
         event_time_block_duration=1,  # ms
     )
@@ -241,8 +242,8 @@ def get_events(header: petsird.Header,
         yield petsird.CoincidenceEvent(
             detector_ids=detector_ids,
             energy_indices=[
-                random.randrange(0, NUMBER_OF_ENERGY_BINS),
-                random.randrange(0, NUMBER_OF_ENERGY_BINS),
+                random.randrange(0, NUMBER_OF_EVENT_ENERGY_BINS),
+                random.randrange(0, NUMBER_OF_EVENT_ENERGY_BINS),
             ],
             tof_idx=random.randrange(0, NUMBER_OF_TOF_BINS),
         )

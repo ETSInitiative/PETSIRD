@@ -6,5 +6,5 @@ CoincidenceEvent: !record
     detectorIds: DetectorId*2
     # an index into the tofBinEdges field in the ScannerInformation
     tofIdx: uint
-    # a pair of indices into the energyBinEdges field in the ScannerInformation
+    # a pair of indices into the ScannerInformation.eventEnergyBinEdges field
     energyIndices: uint*2

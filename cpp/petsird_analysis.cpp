@@ -1,6 +1,6 @@
 /*
   Copyright (C) 2022-2023 Microsoft Corporation
-  Copyright (C) 2023-2024 University College London
+  Copyright (C) 2023-2025 University College London
 
   SPDX-License-Identifier: Apache-2.0
 */
@@ -99,16 +99,36 @@ main(int argc, char const* argv[])
   std::cout << "Total number of 'crystals': " << petsird_helpers::get_num_det_els(header.scanner.scanner_geometry) << std::endl;
 
   std::cout << "Number of TOF bins: " << header.scanner.NumberOfTOFBins() << std::endl;
-  std::cout << "Number of energy bins: " << header.scanner.NumberOfEnergyBins() << std::endl;
+  std::cout << "Number of energy bins: " << header.scanner.NumberOfEventEnergyBins() << std::endl;
 
   const auto& tof_bin_edges = header.scanner.tof_bin_edges;
   std::cout << "TOF bin edges: " << tof_bin_edges << std::endl;
-  const auto& energy_bin_edges = header.scanner.energy_bin_edges;
-  std::cout << "Energy bin edges: " << energy_bin_edges << std::endl;
-  const auto energy_mid_points = (xt::view(energy_bin_edges, xt::range(0, energy_bin_edges.size() - 1))
-                                  + xt::view(energy_bin_edges, xt::range(1, energy_bin_edges.size())))
+  const auto& event_energy_bin_edges = header.scanner.event_energy_bin_edges;
+  std::cout << "Event energy bin edges: " << event_energy_bin_edges << std::endl;
+  const auto energy_mid_points = (xt::view(event_energy_bin_edges, xt::range(0, event_energy_bin_edges.size() - 1))
+                                  + xt::view(event_energy_bin_edges, xt::range(1, event_energy_bin_edges.size())))
                                  / 2;
-  std::cout << "Energy mid points: " << energy_mid_points << std::endl;
+  std::cout << "Event energy mid points: " << energy_mid_points << std::endl;
+
+  std::cout << "Singles Histogram Level: ";
+  switch (header.scanner.singles_histogram_level)
+    {
+    case petsird::SinglesHistogramLevelType::kNone:
+      std::cout << "none\n";
+      break;
+    case petsird::SinglesHistogramLevelType::kModule:
+      std::cout << "module\n";
+      break;
+    case petsird::SinglesHistogramLevelType::kAll:
+      std::cout << "all\n";
+      break;
+    }
+  if (header.scanner.singles_histogram_level != petsird::SinglesHistogramLevelType::kNone)
+    {
+      std::cout << "Singles Histogram Energy Bin Edges: " << header.scanner.singles_histogram_energy_bin_edges << std::endl;
+      std::cout << "Number of Singles Histogram Energy Windows: " << header.scanner.NumberOfSinglesHistogramEnergyBins()
+                << std::endl;
+    }
 
   petsird::TimeBlock time_block;
 
