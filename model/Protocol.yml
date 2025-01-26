@@ -14,7 +14,7 @@ Header: !record
 
 # types of timeBlocks
 # TODO more types could be needed
-TimeBlock: [EventTimeBlock, ExternalSignalTimeBlock, BedMovementTimeBlock, GantryMovementTimeBlock, DeadTimeTimeBlock]
+TimeBlock: [EventTimeBlock, ExternalSignalTimeBlock, BedMovementTimeBlock, GantryMovementTimeBlock, DeadTimeTimeBlock, SinglesHistogramTimeBlock]
 
 EventTimeBlock: !record
   fields:
@@ -87,7 +87,7 @@ DeadTimeTimeBlock: !record
     # If sizeOfEnergyIdxDimension == 1, the fraction is assumed to be the same
     # for all energy windows.
     # Constraint: sizeOfDetectorIdDimension == number of all possible unique DetectorIds
-    # Constraint: (sizeOfEnergyIdxDimension == 1) or (sizeOfEnergyIdxDimension == ScannerInformation.numberOfEnergyBins)
+    # Constraint: (sizeOfEnergyIdxDimension == 1) or (sizeOfEnergyIdxDimension == ScannerInformation.numberOfEventEnergyBins)
     singlesAliveTimeFraction: !array
       items: float
       dimensions: [detectorId, energyIdx]
@@ -104,3 +104,31 @@ DeadTimeTimeBlock: !record
   computedFields:
     sizeOfDetectorIdDimension: size(singlesAliveTimeFraction, 'detectorId')
     sizeOfEnergyIdxDimension: size(singlesAliveTimeFraction, 'energyIdx')
+
+# A time-block that stores a singles histogram.
+# See SinglesHistogramLevelType for information.
+# Constraint: if ScannerInformation.singlesHistogramLevel == SinglesHistogramLevelType.none, there should
+#     be no time blocks of this type in the stream.
+#     Otherwise, the union of SinglesHistogramTimeBlock.timeInterval should be at least as large as the union of all EventTimeBlocks.timeInterval
+SinglesHistogramTimeBlock: !record
+  fields:
+    timeInterval: TimeInterval
+    # A 2D histogram of all singles (after energy discrimination) occuring in the timeInterval.
+    # The dimensions correspond to positional information (i.e. module or detectorId, see below)
+    # and energy index. The latter index refers to ScannerInformation.singlesHistogramEnergyBinEdges.
+    # Note that in future, we might consider also storing singles before energy discremination,
+    # but this is currently not supported.
+    #
+    # If ScannerInformation.singlesHistogramLevel == SinglesHistogramLevelType.module, the
+    # positionalIdx runs over all modules.
+    # If ScannerInformation.singlesHistogramLevel == SinglesHistogramLevelType.all, the
+    # positionalIdx runs over all DetectorIds.
+    # Constraint: (singlesHistogramLevel == module && sizeOfPositionalIdxDimension == total number of modules of all types) ||
+    #             (singlesHistogramLevel == all && sizeOfPositionalIdxDimension == total number of detecting elements in all modules)
+    # Constraint:  sizeOfEnergyIdxDimension == ScannerInformation.numberOfSinglesHistogramEnergyBins
+    singlesHistogram: !array
+      items: uint64
+      dimensions: [positionalIdx, energyIdx]
+  computedFields:
+    sizeOfPositionalIdxDimension: size(singlesHistogram, 'positionalIdx')
+    sizeOfEnergyIdxDimension: size(singlesHistogram, 'energyIdx')

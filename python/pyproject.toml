@@ -32,6 +32,9 @@ classifiers = [
     "Intended Audience :: Science/Research",
     "Topic :: Scientific/Engineering :: Medical Science Apps."]
 
+[tool.setuptools]
+license-files = [] # see https://github.com/pypa/twine/issues/1216#issuecomment-2609745412
+
 [tool.setuptools.packages.find]
 include = ["petsird", "petsird.*"]
 
