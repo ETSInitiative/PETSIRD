@@ -38,42 +38,39 @@ if __name__ == "__main__":
 
     with petsird.BinaryPETSIRDReader(file) as reader:
         header = reader.read_header()
+        scanner = header.scanner
         if header.exam is not None:
             print(f"Subject ID: {header.exam.subject.id}")
-        print(f"Scanner name: {header.scanner.model_name}")
+        print(f"Scanner name: {scanner.model_name}")
         print("Types of modules: ",
-              len(header.scanner.scanner_geometry.replicated_modules))
-        print(
-            "Number of modules of first type: ",
-            len(header.scanner.scanner_geometry.replicated_modules[0].
-                transforms))
+              len(scanner.scanner_geometry.replicated_modules))
+        print("Number of modules of first type: ",
+              len(scanner.scanner_geometry.replicated_modules[0].transforms))
         print(
             "Number of types of detecting elements in modules of first type: ",
-            len(header.scanner.scanner_geometry.replicated_modules[0].object.
+            len(scanner.scanner_geometry.replicated_modules[0].object.
                 detecting_elements))
         print(
             "Number of elements of first type in modules of first type: ",
-            len(header.scanner.scanner_geometry.replicated_modules[0].object.
+            len(scanner.scanner_geometry.replicated_modules[0].object.
                 detecting_elements[0].transforms))
         print("Total number of 'crystals': ",
-              get_num_det_els(header.scanner.scanner_geometry))
-        print("Number of TOF bins: ", header.scanner.number_of_tof_bins())
-        print("Number of energy bins: ",
-              header.scanner.number_of_event_energy_bins())
-        event_energy_bin_edges = header.scanner.event_energy_bin_edges
+              get_num_det_els(scanner.scanner_geometry))
+        print("Number of TOF bins: ", scanner.number_of_tof_bins())
+        print("Number of energy bins: ", scanner.number_of_event_energy_bins())
+        event_energy_bin_edges = scanner.event_energy_bin_edges
         print("Event energy bin edges: ", event_energy_bin_edges)
         energy_mid_points = (event_energy_bin_edges[:-1] +
                              event_energy_bin_edges[1:]) / 2
         print("Event energy mid points: ", energy_mid_points)
-        print("Singles histogram level: ",
-              header.scanner.singles_histogram_level)
-        if header.scanner.singles_histogram_level != petsird.SinglesHistogramLevelType.NONE:
+        print("Singles histogram level: ", scanner.singles_histogram_level)
+        if scanner.singles_histogram_level != petsird.SinglesHistogramLevelType.NONE:
             print("Number of singles histograms energy windows: ",
-                  header.scanner.number_of_singles_histogram_energy_bins())
+                  scanner.number_of_singles_histogram_energy_bins())
             print("Singles histogram energy bin edges: ",
-                  header.scanner.singles_histogram_energy_bin_edges)
+                  scanner.singles_histogram_energy_bin_edges)
         print("SGID LUT:\n",
-              header.scanner.detection_efficiencies.module_pair_sgidlut)
+              scanner.detection_efficiencies.module_pair_sgidlut)
         energy_1, energy_2 = 0.0, 0.0
         num_prompts = 0
         num_delayeds = 0
@@ -93,12 +90,11 @@ if __name__ == "__main__":
                         print(event)
                         print(
                             "   ",
-                            get_module_and_element(
-                                header.scanner.scanner_geometry,
-                                event.detector_ids),
+                            get_module_and_element(scanner.scanner_geometry,
+                                                   event.detector_ids),
                         )
                         print("    efficiency:",
-                              get_detection_efficiency(header.scanner, event))
+                              get_detection_efficiency(scanner, event))
 
         print(f"Last time block at {last_time} ms")
         print(f"Number of prompt events: {num_prompts}")
