@@ -5,7 +5,7 @@ arguments
 end
 
 % These are constants for now
-config.NUMBER_OF_ENERGY_BINS = 3;
+config.NUMBER_OF_EVENT_ENERGY_BINS = 3;
 config.NUMBER_OF_TOF_BINS = 300;
 config.RADIUS = 400;
 config.CRYSTAL_LENGTH = [20, 4, 4];
@@ -52,7 +52,7 @@ function scanner = get_scanner_info(cfg)
 
     % TOF info (in mm)
     tofBinEdges = single(linspace(-cfg.RADIUS, cfg.RADIUS, cfg.NUMBER_OF_TOF_BINS + 1));
-    energyBinEdges = single(linspace(430, 650, cfg.NUMBER_OF_ENERGY_BINS + 1));
+    energyBinEdges = single(linspace(430, 650, cfg.NUMBER_OF_EVENT_ENERGY_BINS + 1));
 
     % We need energy bin info before being able to construct the detection
     % efficiencies, so we first construct a scanner without the efficiencies
@@ -61,7 +61,7 @@ function scanner = get_scanner_info(cfg)
         scanner_geometry=scanner_geometry, ...
         tof_bin_edges=tofBinEdges, ...
         tof_resolution=9.4, ... % in mm
-        energy_bin_edges=energyBinEdges, ...
+        event_energy_bin_edges=energyBinEdges, ...
         energy_resolution_at_511=0.11, ... % as fraction of 511
         event_time_block_duration=1 ... % ms
     );
@@ -140,8 +140,8 @@ function efficiencies = get_detection_efficiencies(scanner, cfg)
     % Return some (non-physical) detection efficiencies
     num_det_els = petsird.helpers.get_num_detecting_elements(scanner.scanner_geometry);
 
-    % det_el_efficiencies = ones(num_det_els, scanner.number_of_energy_bins(), "single");
-    det_el_efficiencies = ones(scanner.number_of_energy_bins(), num_det_els, "single");
+    % det_el_efficiencies = ones(num_det_els, scanner.number_of_event_energy_bins(), "single");
+    det_el_efficiencies = ones(scanner.number_of_event_energy_bins(), num_det_els, "single");
 
     % Only 1 type of module in the current scanner
     assert(length(scanner.scanner_geometry.replicated_modules) == 1);
@@ -187,9 +187,9 @@ function efficiencies = get_detection_efficiencies(scanner, cfg)
         % module_pair = numpy.argwhere(module_pair_SGID_LUT == SGID)[0]
         % print(module_pair, file=sys.stderr)
         module_pair_efficiencies = ones(...
-                scanner.number_of_energy_bins(), ...
+                scanner.number_of_event_energy_bins(), ...
                 num_det_els_in_module, ...
-                scanner.number_of_energy_bins(), ...
+                scanner.number_of_event_energy_bins(), ...
                 num_det_els_in_module ...
         );
         % give some (non-physical) value
@@ -223,7 +223,7 @@ function events = get_events(header, num_events, cfg)
 
         events = [events, petsird.CoincidenceEvent(...
             detector_ids = detector_ids, ...
-            energy_indices = [randi([0, cfg.NUMBER_OF_ENERGY_BINS-1]), randi([0, cfg.NUMBER_OF_ENERGY_BINS-1])], ...
+            energy_indices = [randi([0, cfg.NUMBER_OF_EVENT_ENERGY_BINS-1]), randi([0, cfg.NUMBER_OF_EVENT_ENERGY_BINS-1])], ...
             tof_idx=randi([0, cfg.NUMBER_OF_TOF_BINS-1])...
         )];
     end

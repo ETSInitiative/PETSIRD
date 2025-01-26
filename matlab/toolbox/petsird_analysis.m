@@ -1,4 +1,4 @@
-function petsird_generator(input)
+function petsird_analysis(input)
 
 arguments
     input (1,1) string
@@ -24,13 +24,13 @@ fprintf("Number of elements of first type in modules of first type: %d\n", ...
 fprintf("Total number of 'crystals': %d\n", ...
     petsird.helpers.get_num_detecting_elements(header.scanner.scanner_geometry));
 fprintf("Number of TOF bins: %d\n", header.scanner.number_of_tof_bins());
-fprintf("Number of energy bins: %d\n", header.scanner.number_of_energy_bins());
+fprintf("Number of energy bins: %d\n", header.scanner.number_of_event_energy_bins());
 
-energy_bin_edges = header.scanner.energy_bin_edges;
-fprintf("Energy bin edges: " + join(repelem("%f", length(energy_bin_edges))) + "\n", energy_bin_edges);
+event_energy_bin_edges = header.scanner.event_energy_bin_edges;
+fprintf("Energy bin edges: " + join(repelem("%f", length(event_energy_bin_edges))) + "\n", event_energy_bin_edges);
 
-energy_mid_points = (energy_bin_edges(1:end-1) + energy_bin_edges(2:end)) / 2;
-fprintf("Energy mid points: " + join(repelem("%f", length(energy_mid_points))) + "\n", energy_mid_points);
+energy_mid_points = (event_energy_bin_edges(1:end-1) + event_energy_bin_edges(2:end)) / 2;
+fprintf("Event energy mid points: " + join(repelem("%f", length(energy_mid_points))) + "\n", energy_mid_points);
 
 % sgidlut = header.scanner.detection_efficiencies.module_pair_sgidlut;
 % fprintf("SGID LUT:\n");
