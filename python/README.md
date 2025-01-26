@@ -30,12 +30,13 @@ pip install --editable ../python
 The Python code shows piping the compact binary format to standard out and
 reading it from standard in. This can be used as follows:
 
-1. From the repo root `cd python`
-1. `python petsird_generator.py | python petsird_analysis.py`
+```sh
+python -m petsird.helpers.generator | python -m petsird.helpers.analysis
+```
 
 There is also a very basic utility to plot the scanner geometry. For instance
 
 ```sh
-python petsird_generator.py > test.bin
-python petsird_plot_scanner.py < test.bin
+python -m petsird.helpers.generator > test.bin
+python -m petsird.helpers.plot_scanner < test.bin
 ```
