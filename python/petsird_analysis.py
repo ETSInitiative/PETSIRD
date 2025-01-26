@@ -64,7 +64,14 @@ if __name__ == "__main__":
         print("Event energy bin edges: ", event_energy_bin_edges)
         energy_mid_points = (event_energy_bin_edges[:-1] +
                              event_energy_bin_edges[1:]) / 2
-        print("Energy mid points: ", energy_mid_points)
+        print("Event energy mid points: ", energy_mid_points)
+        print("Singles histogram level: ",
+              header.scanner.singles_histogram_level)
+        if header.scanner.singles_histogram_level != petsird.SinglesHistogramLevelType.NONE:
+            print("Number of singles histograms energy windows: ",
+                  header.scanner.number_of_singles_histogram_energy_bins())
+            print("Singles histogram energy bin edges: ",
+                  header.scanner.singles_histogram_energy_bin_edges)
         print("SGID LUT:\n",
               header.scanner.detection_efficiencies.module_pair_sgidlut)
         energy_1, energy_2 = 0.0, 0.0
