@@ -35,6 +35,7 @@ constexpr float MODULE_AXIS_SPACING{ (NUM_CRYSTALS_PER_MODULE[2] + 4) * CRYSTAL_
 
 constexpr uint32_t NUMBER_OF_TIME_BLOCKS = 6;
 constexpr float COUNT_RATE = 500.F;
+constexpr float EVENT_TIME_BLOCK_DURATION = 1.F;
 
 //! return a cuboid volume
 petsird::BoxSolidVolume
@@ -208,7 +209,6 @@ get_scanner_info()
     scanner_info.tof_resolution = 9.4F; // in mm
     scanner_info.event_energy_bin_edges = event_energy_bin_edges;
     scanner_info.energy_resolution_at_511 = .11F; // as fraction of 511
-    scanner_info.event_time_block_duration = 1.F; // ms
   }
 
   scanner_info.detection_efficiencies = get_detection_efficiencies(scanner_info);
@@ -306,12 +306,13 @@ main(int argc, char* argv[])
   std::mt19937 gen(rd());
   for (std::size_t t = 0; t < NUMBER_OF_TIME_BLOCKS; ++t)
     {
-      std::poisson_distribution<> poisson(COUNT_RATE);
+      constexpr auto average_num = EVENT_TIME_BLOCK_DURATION * COUNT_RATE;
+      std::poisson_distribution<> poisson(average_num);
       const auto num_prompts_this_block = poisson(gen);
       const auto prompts_this_block = get_events(header, num_prompts_this_block);
       petsird::EventTimeBlock time_block;
-      time_block.time_interval.start = t * header.scanner.event_time_block_duration;
-      time_block.time_interval.stop = (t + 1) * header.scanner.event_time_block_duration;
+      time_block.time_interval.start = t * EVENT_TIME_BLOCK_DURATION;
+      time_block.time_interval.stop = (t + 1) * EVENT_TIME_BLOCK_DURATION;
       time_block.prompt_events = prompts_this_block;
       writer.WriteTimeBlocks(time_block);
     }

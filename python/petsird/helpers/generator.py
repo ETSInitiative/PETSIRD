@@ -23,7 +23,8 @@ NUM_MODULES_ALONG_AXIS = 2
 MODULE_AXIS_SPACING = (NUM_CRYSTALS_PER_MODULE[2] + 4) * CRYSTAL_LENGTH[2]
 NUMBER_OF_TIME_BLOCKS = 6
 NUMBER_OF_EVENTS = 1000
-COUNT_RATE = 500
+COUNT_RATE = 500  # 1/ms
+EVENT_TIME_BLOCK_DURATION = 1  # ms
 
 
 def make_coordinate(v: tuple) -> petsird.Coordinate:
@@ -198,7 +199,6 @@ def get_scanner_info() -> petsird.ScannerInformation:
         tof_resolution=9.4,  # in mm
         event_energy_bin_edges=energyBinEdges,
         energy_resolution_at_511=0.11,  # as fraction of 511
-        event_time_block_duration=1,  # ms
     )
 
     # Now added the efficiencies
@@ -258,9 +258,10 @@ if __name__ == "__main__":
         writer.write_header(header)
         for t in range(NUMBER_OF_TIME_BLOCKS):
             time_interval = petsird.TimeInterval(
-                start=t * header.scanner.event_time_block_duration,
-                stop=(t + 1) * header.scanner.event_time_block_duration)
-            num_prompts_this_block = rng.poisson(COUNT_RATE)
+                start=t * EVENT_TIME_BLOCK_DURATION,
+                stop=(t + 1) * EVENT_TIME_BLOCK_DURATION)
+            average_num = EVENT_TIME_BLOCK_DURATION * COUNT_RATE
+            num_prompts_this_block = rng.poisson(average_num)
             prompts_this_block = list(
                 get_events(header, num_prompts_this_block))
             # Normally we'd write multiple blocks, but here we have just one,
