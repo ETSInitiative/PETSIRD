@@ -19,6 +19,9 @@ TimeBlock: [EventTimeBlock, ExternalSignalTimeBlock, BedMovementTimeBlock, Gantr
 EventTimeBlock: !record
   fields:
    # time interval for this time block
+   # We suggest that for each coincidence/multiple event, the earliest time of arrival
+   # of a photon is used for deciding which time block the event is entered in.
+   # However, the impact of this choice is negligible and therefore can be vendor dependent.
    timeInterval: TimeInterval
    # list of prompts in this time block
    # TODO might be better to use !array
