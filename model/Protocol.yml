@@ -37,6 +37,7 @@ ExternalSignalTypeEnum: !enum
     - otherMotionSignal
     - otherMotionTrigger
     - externalSync
+    - mrPulseStart
     # other options, to be listed in the future
     - other
 
