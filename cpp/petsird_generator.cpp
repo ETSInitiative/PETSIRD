@@ -306,7 +306,8 @@ main(int argc, char* argv[])
   std::mt19937 gen(rd());
   for (std::size_t t = 0; t < NUMBER_OF_TIME_BLOCKS; ++t)
     {
-      std::poisson_distribution<> poisson(COUNT_RATE);
+      constexpr auto average_num = EVENT_TIME_BLOCK_DURATION * COUNT_RATE;
+      std::poisson_distribution<> poisson(average_num);
       const auto num_prompts_this_block = poisson(gen);
       const auto prompts_this_block = get_events(header, num_prompts_this_block);
       petsird::EventTimeBlock time_block;

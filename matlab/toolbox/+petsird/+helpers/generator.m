@@ -14,7 +14,7 @@ config.NUM_MODULES_ALONG_RING = 20;
 config.NUM_MODULES_ALONG_AXIS = 2;
 config.MODULE_AXIS_SPACING = (config.NUM_CRYSTALS_PER_MODULE(3) + 4) * config.CRYSTAL_LENGTH(3);
 config.NUMBER_OF_TIME_BLOCKS = 6;
-config.COUNT_RATE = 500;
+config.COUNT_RATE = 500; % 1/ms
 config.EVENT_TIME_BLOCK_DURATION = 1; % ms
 
 writer = petsird.binary.PETSIRDWriter(output);
@@ -26,9 +26,10 @@ for t = 0:config.NUMBER_OF_TIME_BLOCKS-1
     time_interval = petsird.TimeInterval(
                 start=t * config.EVENT_TIME_BLOCK_DURATION,
                 stop=(t + 1) * config.EVENT_TIME_BLOCK_DURATION);
+    average_num = config.EVENT_TIME_BLOCK_DURATION * config.COUNT_RATE;
     % NOTE: Need Statistics and Machine Learning Toolbox for Poisson distribution functions
-    % num_prompts_this_block = poissrnd(COUNT_RATE);
-    num_prompts_this_block = randi(config.COUNT_RATE);
+    % num_prompts_this_block = poissrnd(average_num);
+    num_prompts_this_block = randi(config.average_num);
     prompts_this_block = get_events(header, num_prompts_this_block, config);
 
     tb = petsird.TimeBlock.EventTimeBlock(...

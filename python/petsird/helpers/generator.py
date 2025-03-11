@@ -23,7 +23,7 @@ NUM_MODULES_ALONG_AXIS = 2
 MODULE_AXIS_SPACING = (NUM_CRYSTALS_PER_MODULE[2] + 4) * CRYSTAL_LENGTH[2]
 NUMBER_OF_TIME_BLOCKS = 6
 NUMBER_OF_EVENTS = 1000
-COUNT_RATE = 500
+COUNT_RATE = 500  # 1/ms
 EVENT_TIME_BLOCK_DURATION = 1  # ms
 
 
@@ -260,7 +260,8 @@ if __name__ == "__main__":
             time_interval = petsird.TimeInterval(
                 start=t * EVENT_TIME_BLOCK_DURATION,
                 stop=(t + 1) * EVENT_TIME_BLOCK_DURATION)
-            num_prompts_this_block = rng.poisson(COUNT_RATE)
+            average_num = EVENT_TIME_BLOCK_DURATION * COUNT_RATE
+            num_prompts_this_block = rng.poisson(average_num)
             prompts_this_block = list(
                 get_events(header, num_prompts_this_block))
             # Normally we'd write multiple blocks, but here we have just one,
