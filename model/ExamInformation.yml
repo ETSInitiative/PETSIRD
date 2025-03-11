@@ -15,3 +15,6 @@ ExamInformation: !record
     institution: Institution
     protocol: string?
     startOfAcquisition: datetime?
+    # A list of all possible signals that are recorded in the stream.
+    # Actual values will be in recorded as ExternalSignalTimeBlock
+    externalSignals: ExternalSignal*
