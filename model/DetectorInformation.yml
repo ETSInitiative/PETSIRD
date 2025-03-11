@@ -16,7 +16,6 @@ ReplicatedGenericSolidVolume: ReplicatedObject< GenericSolidVolume >
 
 # Top-level detector structure, consisting of one or more lists of detecting elements (or "crystals")
 # This allows having different types of detecting elements (e.g. for phoswich detectors)
-# TODO this could be made into a hierarchical structure
 DetectorModule: !record
   fields:
     detectingElements: ReplicatedBoxSolidVolume*
