@@ -15,6 +15,7 @@ config.NUM_MODULES_ALONG_AXIS = 2;
 config.MODULE_AXIS_SPACING = (config.NUM_CRYSTALS_PER_MODULE(3) + 4) * config.CRYSTAL_LENGTH(3);
 config.NUMBER_OF_TIME_BLOCKS = 6;
 config.COUNT_RATE = 500;
+config.EVENT_TIME_BLOCK_DURATION = 1; % ms
 
 writer = petsird.binary.PETSIRDWriter(output);
 
@@ -22,14 +23,16 @@ header = get_header(config);
 writer.write_header(header);
 
 for t = 0:config.NUMBER_OF_TIME_BLOCKS-1
-    start = t * header.scanner.event_time_block_duration;
+    time_interval = petsird.TimeInterval(
+                start=t * config.EVENT_TIME_BLOCK_DURATION,
+                stop=(t + 1) * config.EVENT_TIME_BLOCK_DURATION);
     % NOTE: Need Statistics and Machine Learning Toolbox for Poisson distribution functions
     % num_prompts_this_block = poissrnd(COUNT_RATE);
     num_prompts_this_block = randi(config.COUNT_RATE);
     prompts_this_block = get_events(header, num_prompts_this_block, config);
 
     tb = petsird.TimeBlock.EventTimeBlock(...
-        petsird.EventTimeBlock(start=start, prompt_events=prompts_this_block) ...
+        petsird.EventTimeBlock(time_interval=time_interval, prompt_events=prompts_this_block) ...
     );
     writer.write_time_blocks(tb)
 end
@@ -62,8 +65,7 @@ function scanner = get_scanner_info(cfg)
         tof_bin_edges=tofBinEdges, ...
         tof_resolution=9.4, ... % in mm
         event_energy_bin_edges=energyBinEdges, ...
-        energy_resolution_at_511=0.11, ... % as fraction of 511
-        event_time_block_duration=1 ... % ms
+        energy_resolution_at_511=0.11 ... % as fraction of 511
     );
 
     % Now added the efficiencies

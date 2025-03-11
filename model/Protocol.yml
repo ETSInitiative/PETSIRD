@@ -19,7 +19,6 @@ TimeBlock: [EventTimeBlock, ExternalSignalTimeBlock, BedMovementTimeBlock, Gantr
 EventTimeBlock: !record
   fields:
    # time interval for this time block
-   # Constraint: all event-time-blocks need to have the same duration, see ScannerInformation.even_time_block_duration
    timeInterval: TimeInterval
    # list of prompts in this time block
    # TODO might be better to use !array
