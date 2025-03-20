@@ -37,20 +37,25 @@ ExternalSignalTypeEnum: !enum
     - otherMotionSignal
     - otherMotionTrigger
     - externalSync
+    - mrPulseStart
     # other options, to be listed in the future
     - other
 
-ExternalSignalType: !record
+ExternalSignal: !record
   fields:
     type: ExternalSignalTypeEnum
     description: string
     id: uint
 
+# A time block containing the values for a particular external signal.
+# See ExamInformation.externalSignals for the list of possible signals.
 ExternalSignalTimeBlock: !record
   fields:
    # time interval for this time block
+   # Note: for triggers, the time interval should be very short (and can be zero).
    timeInterval: TimeInterval
-   # refer to ExternalSignalType.id
+   # refer to ExternalSignal.id
+   # Constraint: value has to be listed in ExamInformation.externalSignals.
    signalID: uint
    # Note for triggers, this field is to be ignored
    signalValues: float*
