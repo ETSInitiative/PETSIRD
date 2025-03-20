@@ -69,8 +69,13 @@ function scanner = get_scanner_info(cfg)
         energy_resolution_at_511=0.11 ... % as fraction of 511
     );
 
-    % Now added the efficiencies
+    % Now add the efficiencies
     scanner.detection_efficiencies = get_detection_efficiencies(scanner, cfg);
+
+    scanner_info.coincidence_policy = petsird.CoincidencePolicy.REJECT_MULTIPLES;
+    scanner_info.delayed_coincidences_are_stored = false;
+    scanner_info.triple_events_are_stored = false;
+
 end
 
 function geometry = get_scanner_geometry(cfg)
