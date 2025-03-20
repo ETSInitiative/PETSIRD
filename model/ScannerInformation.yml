@@ -8,8 +8,12 @@ CoincidencePolicy: !enum
     # multiples will be rejected
     - rejectMultiples
 
-    # multiples will be stored as a sequence of pairs, e.g. a triple leads to 3 pairs
-    - storeMultiplesAsPairs
+    # multiples will be stored as a sequence of all pairs, e.g. a triple leads to 3 pairs
+    - multiplesAsAllCoincidences
+
+    # multiples will be stored as a sequence pairs, e.g. a triple leads to 2 pairs
+    # (single1 and single2, single2 and single3)
+    - multiplesAsSequentialCoincidences
 
     # other options, to be listed in the future
     - other
