@@ -92,6 +92,12 @@ ScannerInformation: !record
     # Encode how the scanner handles multiple coincidences
     coincidencePolicy: CoincidencePolicy
 
+    # a flag to indicate of delayed coincidences are recorded in the stream
+    delayedCoincidencesAreStored: bool
+
+    # a flag to indicate of triple events are recorded in the stream
+    tripleEventsAreStored: bool
+
     # coincidence detection efficiencies
     detectionEfficiencies: DetectionEfficiencies
 
