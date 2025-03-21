@@ -213,6 +213,10 @@ get_scanner_info()
 
   scanner_info.detection_efficiencies = get_detection_efficiencies(scanner_info);
 
+  scanner_info.coincidence_policy = petsird::CoincidencePolicy::kRejectMultiples;
+  scanner_info.delayed_coincidences_are_stored = false;
+  scanner_info.triple_events_are_stored = false;
+
   return scanner_info;
 }
 
