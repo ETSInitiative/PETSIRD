@@ -13,7 +13,6 @@ Header: !record
     exam: ExamInformation?
 
 # types of timeBlocks
-# TODO more types could be needed
 TimeBlock: [EventTimeBlock, ExternalSignalTimeBlock, BedMovementTimeBlock, GantryMovementTimeBlock, DeadTimeTimeBlock, SinglesHistogramTimeBlock]
 
 EventTimeBlock: !record
@@ -75,8 +74,7 @@ GantryMovementTimeBlock: !record
     timeInterval: TimeInterval
     transform: RigidTransformation
 
-# A time-block that stores the dead-time information for the given interval
-# TODO require that the complete scanning interval is "covered"?
+# A time block that stores the dead-time information for the given interval
 # Dead-time is encoded as "alive_time_fraction", i.e. 1 - dead_time_fraction
 # A component-based model is used, where the total alive-time for an pair of DetectorIds
 # is computed as the product of the (singles) alive-time of each detector times the
@@ -85,6 +83,7 @@ GantryMovementTimeBlock: !record
 #   singlesAliveTimeFraction[detectorId0, energyIdx0] *
 #   singlesAliveTimeFraction[detectorId1, energyIdx1] *
 #   moduleCoincidenceAliveTimeFraction[module(detectorId0), module(energyIdx0)]
+# Constraint: the time covered by all event time blocks has to be covered by dead-time time blocks
 DeadTimeTimeBlock: !record
   fields:
     # time interval for this time block
@@ -112,11 +111,13 @@ DeadTimeTimeBlock: !record
     sizeOfDetectorIdDimension: size(singlesAliveTimeFraction, 'detectorId')
     sizeOfEnergyIdxDimension: size(singlesAliveTimeFraction, 'energyIdx')
 
-# A time-block that stores a singles histogram.
+# A time block that stores a singles histogram.
 # See SinglesHistogramLevelType for information.
 # Constraint: if ScannerInformation.singlesHistogramLevel == SinglesHistogramLevelType.none, there should
 #     be no time blocks of this type in the stream.
 #     Otherwise, the union of SinglesHistogramTimeBlock.timeInterval should be at least as large as the union of all EventTimeBlocks.timeInterval
+# Constraint: if singles histograms are recorded, the time covered by all event time blocks
+# has to be covered by singles histogram time blocks.
 SinglesHistogramTimeBlock: !record
   fields:
     timeInterval: TimeInterval
