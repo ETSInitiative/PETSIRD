@@ -1,3 +1,11 @@
+# Symmetry Group Identifier Type
+# Most PET scanners have some kind of geometric symmetry, e.g. rotation over a full
+# module, or translation along the axis of the scanner. Module-pairs that are related
+# by such a symmetry often have the same geometric detection efficiencies. PETSIRD
+# calls this a "symmetry group" (SG). Each SG had a unique identifier (SGID).
+# SGIDs are used to efficiently encode module-pair efficiencies etc.
+SGID: uint
+
 # Detection efficiencies for every detecting element and energy window
 # If size along energyBinIdx is 1, the effiencies are assumed to be the same for every energy bin.
 # Constraint: size(DetElEfficiencies, "energyBinIdx") == scannerInformation.numberOfEventEnergyBins or 1
@@ -13,7 +21,7 @@ ModulePairEfficiencies: !record
     values: float[detElIdx1, energyBinIdx1, detElIdx2, energyBinIdx2]
     # Symmetry Group Identifier (SGID)
     # This should be a number between 0 and numberOfSGIDs-1
-    sgid: uint
+    sgid: SGID
 
 
 # Lookup table for SGIDs
@@ -30,11 +38,7 @@ ModulePairEfficienciesVector: ModulePairEfficiencies*
 # The former are stored in detElEfficiencies, and the latter in modulePairEfficienciesVector
 # (a list of ModulePairEfficiencies, each entry corresponding to a module pair).
 #
-# Most PET scanners have some kind of geometric symmetry, e.g. rotation over a full
-# module, or translation along the axis of the scanner. Module-pairs that are related
-# by such a symmetry often have the same geometric detection efficiencies. PETSIRD
-# calls this a "symmetry group" (SG). Each SG had an identifier (SGID). To save memory,
-# the modulePairEfficienciesVector needs to contain only one of element for each SGID.
+# To save memory, the modulePairEfficienciesVector contains only one of element for each SGID.
 # The SGID for a module-pair can be found in modulePairSGIDLUT.
 #
 # Finding the total detection efficiency therefore follows these steps:
