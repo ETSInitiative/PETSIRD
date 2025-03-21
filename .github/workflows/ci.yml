@@ -40,20 +40,18 @@ jobs:
         GH_TOKEN: ${{ github.token }}
     - name: Build model
       run: |
-        cd model
-        yardl generate
+        just generate
     - name: Python
       run: |
-        cd python
-        python -m petsird.helpers.generator | python -m petsird.helpers.analysis
+        just run-python
     - name: cpp
       run: |
         mkdir cpp/build
         cd cpp/build
         cmake -G Ninja -S .. -DHDF5_ROOT="$CONDA_PREFIX"
         ninja
-        ./petsird_generator test.h5
-        ./petsird_analysis test.h5
+        cd ../..
+        just run-cpp
     - name: Copy LICENSE for deployment
       run: |
         cp LICENSE.txt python/LICENSE

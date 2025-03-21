@@ -15,19 +15,23 @@ set shell := ['bash', '-ceuo', 'pipefail']
 @generate:
     cd model && yardl generate
 
-@build: generate ensure-configured
+@build-cpp: generate ensure-configured
     cd cpp/build && ninja
+
+@build-python: generate
+    pip install --editable python
+
+@build: build-cpp build-python
 
 @run: run-cpp run-python
 
-@run-cpp: build
+@run-cpp: build-cpp
     #!/usr/bin/env bash
     cd cpp/build
     ./petsird_generator testdata.petsird
     ./petsird_analysis testdata.petsird
     rm -f testdata.petsird
 
-@run-python: generate
+@run-python: build-python
     #!/usr/bin/env bash
-    cd python
-    python petsird_generator.py | python petsird_analysis.py
+    python -m petsird.helpers.generator | python -m petsird.helpers.analysis
