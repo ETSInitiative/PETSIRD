@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2024 University College London
+  Copyright (C) 2024, 2025 University College London
 
   SPDX-License-Identifier: Apache-2.0
 */
@@ -34,7 +34,7 @@ struct ModuleAndElement
 
 template <class T>
 inline std::vector<ModuleAndElement>
-get_module_and_element(const ScannerGeometry& scanner_geometry, const T& scanner_det_ids)
+get_module_and_element(const ScannerGeometry& scanner_geometry, const T& list_of_detection_bins)
 {
   assert(scanner_geometry.replicated_modules.size() == 1);
   const auto& rep_module = scanner_geometry.replicated_modules[0];
@@ -44,8 +44,9 @@ get_module_and_element(const ScannerGeometry& scanner_geometry, const T& scanner
   const uint32_t num_el_per_module = rep_module.object.detecting_elements[0].ids.size();
 
   std::vector<ModuleAndElement> result;
-  for (auto det : scanner_det_ids)
+  for (auto bin : list_of_detection_bins)
     {
+      const auto& det = bin.det_el_idx;
       result.push_back({ det / num_el_per_module, det % num_el_per_module });
     }
   return result;
@@ -55,11 +56,11 @@ inline float
 get_detection_efficiency(const ScannerInformation& scanner, const CoincidenceEvent& event)
 {
   float eff = 1.0F;
-  const auto& det_el_efficiencies = scanner.detection_efficiencies.det_el_efficiencies;
-  if (det_el_efficiencies)
+  const auto& detection_bin_efficiencies = scanner.detection_efficiencies.detection_bin_efficiencies;
+  if (detection_bin_efficiencies)
     {
-      eff *= ((*det_el_efficiencies)(event.detector_ids[0], event.energy_indices[0])
-              * (*det_el_efficiencies)(event.detector_ids[1], event.energy_indices[1]));
+      eff *= ((*detection_bin_efficiencies)(event.detection_bins[0].det_el_idx, event.detection_bins[0].energy_idx)
+              * (*detection_bin_efficiencies)(event.detection_bins[1].det_el_idx, event.detection_bins[1].energy_idx));
     }
   const auto& module_pair_efficiencies_vector = scanner.detection_efficiencies.module_pair_efficiencies_vector;
   if (module_pair_efficiencies_vector)
@@ -67,15 +68,18 @@ get_detection_efficiency(const ScannerInformation& scanner, const CoincidenceEve
       const auto& module_pair_SGID_LUT = scanner.detection_efficiencies.module_pair_sgidlut;
       assert(module_pair_SGID_LUT);
 
-      const auto mod_and_els = get_module_and_element(scanner.scanner_geometry, event.detector_ids);
+      const auto mod_and_els = get_module_and_element(scanner.scanner_geometry, event.detection_bins);
       assert(scanner.scanner_geometry.replicated_modules.size() == 1);
       const int SGID = (*module_pair_SGID_LUT)(mod_and_els[0].module, mod_and_els[1].module);
-      assert(SGID >= 0);
+      if (SGID < 0)
+        {
+          return 0.;
+        }
 
       const auto& module_pair_efficiencies = (*module_pair_efficiencies_vector)[SGID];
       assert(module_pair_efficiencies.sgid == static_cast<unsigned>(SGID));
-      eff *= module_pair_efficiencies.values(mod_and_els[0].el, event.energy_indices[0], mod_and_els[1].el,
-                                             event.energy_indices[1]);
+      eff *= module_pair_efficiencies.values(mod_and_els[0].el, event.detection_bins[0].energy_idx, mod_and_els[1].el,
+                                             event.detection_bins[1].energy_idx);
     }
   return eff;
 }

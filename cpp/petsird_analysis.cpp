@@ -151,16 +151,16 @@ main(int argc, char const* argv[])
 
           for (auto& event : event_time_block.prompt_events)
             {
-              energy_1 += energy_mid_points[event.energy_indices[0]];
-              energy_2 += energy_mid_points[event.energy_indices[1]];
+              energy_1 += energy_mid_points[event.detection_bins[0].energy_idx];
+              energy_2 += energy_mid_points[event.detection_bins[1].energy_idx];
 
               if (print_events)
                 {
-                  std::cout << "CoincidenceEvent(detectorIds=[" << event.detector_ids[0] << ", " << event.detector_ids[1]
-                            << "], tofIdx=" << event.tof_idx << ", energyIndices=[" << event.energy_indices[0] << ", "
-                            << event.energy_indices[1] << "])\n";
+                  std::cout << "CoincidenceEvent(detElIndices=[" << event.detection_bins[0].det_el_idx << ", "
+                            << event.detection_bins[1].det_el_idx << "], tofIdx=" << event.tof_idx << ", energyIndices=["
+                            << event.detection_bins[0].energy_idx << ", " << event.detection_bins[1].energy_idx << "])\n";
                   const auto module_and_elems
-                      = petsird_helpers::get_module_and_element(header.scanner.scanner_geometry, event.detector_ids);
+                      = petsird_helpers::get_module_and_element(header.scanner.scanner_geometry, event.detection_bins);
                   std::cout << "    "
                             << "[ModuleAndElement(module=" << module_and_elems[0].module << ", "
                             << "el=" << module_and_elems[0].el << "), ModuleAndElement(module=" << module_and_elems[0].module

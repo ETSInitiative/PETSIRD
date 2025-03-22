@@ -84,14 +84,16 @@ if __name__ == "__main__":
                 print("=====================  Events in time block until ",
                       last_time, " ==============")
                 for event in time_block.value.prompt_events:
-                    energy_1 += energy_mid_points[event.energy_indices[0]]
-                    energy_2 += energy_mid_points[event.energy_indices[1]]
+                    energy_1 += energy_mid_points[
+                        event.detection_bins[0].energy_idx]
+                    energy_2 += energy_mid_points[
+                        event.detection_bins[1].energy_idx]
                     if print_events:
                         print(event)
                         print(
                             "   ",
                             get_module_and_element(scanner.scanner_geometry,
-                                                   event.detector_ids),
+                                                   event.detection_bins),
                         )
                         print("    efficiency:",
                               get_detection_efficiency(scanner, event))
