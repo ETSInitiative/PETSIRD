@@ -160,10 +160,10 @@ main(int argc, char const* argv[])
                             << event.detection_bins[1].det_el_idx << "], tofIdx=" << event.tof_idx << ", energyIndices=["
                             << event.detection_bins[0].energy_idx << ", " << event.detection_bins[1].energy_idx << "])\n";
                   const auto module_and_elems
-                      = petsird_helpers::get_module_and_element(header.scanner.scanner_geometry, event.detection_bins);
+                      = petsird_helpers::expand_detection_bins(header.scanner.scanner_geometry, event.detection_bins);
                   std::cout << "    "
-                            << "[ModuleAndElement(module=" << module_and_elems[0].module << ", "
-                            << "el=" << module_and_elems[0].el << "), ModuleAndElement(module=" << module_and_elems[0].module
+                            << "[ExpandedDetectionBin(module=" << module_and_elems[0].module << ", "
+                            << "el=" << module_and_elems[0].el << "), ExpandedDetectionBin(module=" << module_and_elems[0].module
                             << ", "
                             << "el=" << module_and_elems[0].el << ")]\n";
                   std::cout << "    efficiency:" << petsird_helpers::get_detection_efficiency(header.scanner, event) << "\n";

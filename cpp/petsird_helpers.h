@@ -26,15 +26,16 @@ get_num_det_els(const ScannerGeometry& scanner_geometry)
   return num_det_els;
 }
 
-struct ModuleAndElement
+struct ExpandedDetectionBin
 {
   uint32_t module;
   uint32_t el;
+  uint32_t energy_idx;
 };
 
 template <class T>
-inline std::vector<ModuleAndElement>
-get_module_and_element(const ScannerGeometry& scanner_geometry, const T& list_of_detection_bins)
+inline std::vector<ExpandedDetectionBin>
+expand_detection_bins(const ScannerGeometry& scanner_geometry, const T& list_of_detection_bins)
 {
   assert(scanner_geometry.replicated_modules.size() == 1);
   const auto& rep_module = scanner_geometry.replicated_modules[0];
@@ -43,11 +44,11 @@ get_module_and_element(const ScannerGeometry& scanner_geometry, const T& list_of
   // TODO currently ids are uint32_t, so use this type to avoid compiler warnings
   const uint32_t num_el_per_module = rep_module.object.detecting_elements[0].ids.size();
 
-  std::vector<ModuleAndElement> result;
+  std::vector<ExpandedDetectionBin> result;
   for (auto bin : list_of_detection_bins)
     {
       const auto& det = bin.det_el_idx;
-      result.push_back({ det / num_el_per_module, det % num_el_per_module });
+      result.push_back({ det / num_el_per_module, det % num_el_per_module, bin.energy_idx });
     }
   return result;
 }
@@ -68,9 +69,9 @@ get_detection_efficiency(const ScannerInformation& scanner, const CoincidenceEve
       const auto& module_pair_SGID_LUT = scanner.detection_efficiencies.module_pair_sgidlut;
       assert(module_pair_SGID_LUT);
 
-      const auto mod_and_els = get_module_and_element(scanner.scanner_geometry, event.detection_bins);
+      const auto expanded_det_bins = expand_detection_bins(scanner.scanner_geometry, event.detection_bins);
       assert(scanner.scanner_geometry.replicated_modules.size() == 1);
-      const int SGID = (*module_pair_SGID_LUT)(mod_and_els[0].module, mod_and_els[1].module);
+      const int SGID = (*module_pair_SGID_LUT)(expanded_det_bins[0].module, expanded_det_bins[1].module);
       if (SGID < 0)
         {
           return 0.;
@@ -78,7 +79,7 @@ get_detection_efficiency(const ScannerInformation& scanner, const CoincidenceEve
 
       const auto& module_pair_efficiencies = (*module_pair_efficiencies_vector)[SGID];
       assert(module_pair_efficiencies.sgid == static_cast<unsigned>(SGID));
-      eff *= module_pair_efficiencies.values(mod_and_els[0].el, event.detection_bins[0].energy_idx, mod_and_els[1].el,
+      eff *= module_pair_efficiencies.values(expanded_det_bins[0].el, event.detection_bins[0].energy_idx, expanded_det_bins[1].el,
                                              event.detection_bins[1].energy_idx);
     }
   return eff;

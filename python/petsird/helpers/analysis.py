@@ -7,7 +7,7 @@ import argparse
 import sys
 
 import petsird
-from petsird.helpers import (get_detection_efficiency, get_module_and_element,
+from petsird.helpers import (expand_detection_bins, get_detection_efficiency,
                              get_num_det_els)
 
 
@@ -92,8 +92,8 @@ if __name__ == "__main__":
                         print(event)
                         print(
                             "   ",
-                            get_module_and_element(scanner.scanner_geometry,
-                                                   event.detection_bins),
+                            expand_detection_bins(scanner.scanner_geometry,
+                                                  event.detection_bins),
                         )
                         print("    efficiency:",
                               get_detection_efficiency(scanner, event))

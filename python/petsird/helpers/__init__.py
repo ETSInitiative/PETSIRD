@@ -24,7 +24,7 @@ def get_num_det_els(scanner_geometry: petsird.ScannerGeometry) -> int:
 
 
 @dataclass
-class ModuleAndElement:
+class ExpandedDetectionBin:
     """
     Dataclass to store a module ID and element ID, where the latter runs
     over all detecting volumes in the module
@@ -32,21 +32,23 @@ class ModuleAndElement:
 
     module: int
     el: int
+    energy_idx: int
 
 
-def get_module_and_element(
+def expand_detection_bins(
     scanner_geometry: petsird.ScannerGeometry,
     detection_bins: typing.Iterable[petsird.DetectionBin]
-) -> list[ModuleAndElement]:
-    """Find ModuleAndElement for a list of detection_bins"""
+) -> list[ExpandedDetectionBin]:
+    """Find ExpandedDetectionBin for a list of detection_bins"""
     assert len(scanner_geometry.replicated_modules) == 1
     rep_module = scanner_geometry.replicated_modules[0]
     assert len(rep_module.object.detecting_elements) == 1
     num_el_per_module = len(rep_module.object.detecting_elements[0].ids)
 
     return [
-        ModuleAndElement(module=bin.det_el_idx // num_el_per_module,
-                         el=bin.det_el_idx % num_el_per_module)
+        ExpandedDetectionBin(module=bin.det_el_idx // num_el_per_module,
+                             el=bin.det_el_idx % num_el_per_module,
+                             energy_idx=bin.energy_idx)
         for bin in detection_bins
     ]
 
@@ -71,19 +73,19 @@ def get_detection_efficiency(scanner: petsird.ScannerInformation,
     if module_pair_efficiencies_vector is not None:
         module_pair_SGID_LUT = scanner.detection_efficiencies.module_pair_sgidlut
         assert module_pair_SGID_LUT is not None
-        mod_and_els = get_module_and_element(scanner.scanner_geometry,
-                                             event.detection_bins)
+        expanded_det_bins = expand_detection_bins(scanner.scanner_geometry,
+                                                  event.detection_bins)
         assert len(scanner.scanner_geometry.replicated_modules) == 1
-        SGID = module_pair_SGID_LUT[mod_and_els[0].module,
-                                    mod_and_els[1].module]
+        SGID = module_pair_SGID_LUT[expanded_det_bins[0].module,
+                                    expanded_det_bins[1].module]
         if SGID < 0:
             return 0.
         module_pair_efficiencies = module_pair_efficiencies_vector[SGID]
         assert module_pair_efficiencies.sgid == SGID
         eff *= module_pair_efficiencies.values[
-            mod_and_els[0].el,
+            expanded_det_bins[0].el,
             event.detection_bins[0].energy_idx,
-            mod_and_els[1].el,
+            expanded_det_bins[1].el,
             event.detection_bins[1].energy_idx,
         ]
 

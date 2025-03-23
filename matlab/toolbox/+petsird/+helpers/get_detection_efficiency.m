@@ -20,9 +20,9 @@ module_pair_efficiencies_vector = scanner.detection_efficiencies.module_pair_eff
 if module_pair_efficiencies_vector ~= yardl.None
     module_pair_SGID_LUT = scanner.detection_efficiencies.module_pair_sgidlut;
     assert(module_pair_SGID_LUT ~= yardl.None);
-    mod_and_els = petsird.helpers.get_module_and_element(scanner.scanner_geometry, event.detection_bins);
+    expanded_det_bins = petsird.helpers.expand_detection_bins(scanner.scanner_geometry, event.detection_bins);
     assert(length(scanner.scanner_geometry.replicated_modules) == 1);
-    SGID = module_pair_SGID_LUT(mod_and_els(1).module+1, mod_and_els(2).module+1);
+    SGID = module_pair_SGID_LUT(expanded_det_bins(1).module+1, expanded_det_bins(2).module+1);
     if SGID < 0
         eff = 0;
         return
@@ -31,9 +31,9 @@ if module_pair_efficiencies_vector ~= yardl.None
     assert(module_pair_efficiencies.sgid == SGID);
     eff = eff * module_pair_efficiencies.values( ...
         event.detection_bins(2).energy_idx+1, ...
-        mod_and_els(2).el+1, ...
+        expanded_det_bins(2).el+1, ...
         event.detection_bins(1).energy_idx+1, ...
-        mod_and_els(1).el+1 ...
+        expanded_det_bins(1).el+1 ...
     );
 end
 
