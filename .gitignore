@@ -4,6 +4,7 @@
 __pycache__/
 /python/build/
 /python/petsird.egg*
+/matlab/toolbox/+petsird/*.m
 
 # Common editor backups
 /.vscode/
