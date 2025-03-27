@@ -3,7 +3,7 @@
 [![CI](https://github.com/ETSInitiative/PETSIRD/actions/workflows/ci.yml/badge.svg)](https://github.com/ETSInitiative/PETSIRD/actions/workflows/ci.yml)
 [![pre-commit.ci status](https://results.pre-commit.ci/badge/github/ETSInitiative/PETSIRD/main.svg)](https://results.pre-commit.ci/latest/github/ETSInitiative/PETSIRD/main)
 
-The purpose of this repo is to have a working example of a data model for PET imaging (list mode data). This is **not complete**, and aspects do not follow the actual proposal of PETSIRD yet.
+The purpose of this repo is to have a working example of a data model for PET imaging (list mode data). This is **not complete**.
 
 ## Background
 
@@ -24,11 +24,11 @@ If you don't want to modify the yardl model, just `pip install petsird`. More de
 in a [VS Code devcontainer](https://code.visualstudio.com/docs/devcontainers/containers).
 This codespace/container will contain all necessary tools, including `yardl` itself, as well as the current repository.
 2. Browse the [`model`](./model/README.md) directory.
-3. Use `yardl` to generate C++ and Python code for the model:
+3. Use `yardl` to generate C++ and Python code for the model and compile/install:
 
    ```sh
-   cd model
-   yardl generate
+   cd /whereever/PETSIRD
+   just build
    ```
 
 4. Have a look at (and try!) the examples in the [`cpp`](cpp/README.md) and/or
