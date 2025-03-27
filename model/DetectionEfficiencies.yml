@@ -6,17 +6,17 @@
 # SGIDs are used to efficiently encode module-pair efficiencies etc.
 SGID: uint
 
-# Detection efficiencies for every detecting element and energy window
+# Detection efficiencies for every DetectionBin
 # If size along energyBinIdx is 1, the effiencies are assumed to be the same for every energy bin.
-# Constraint: size(DetElEfficiencies, "energyBinIdx") == scannerInformation.numberOfEventEnergyBins or 1
-DetElEfficiencies: float[detElIdx, energyBinIdx]
+# Constraint: size(DetectionBinEfficiencies, "energyBinIdx") == scannerInformation.numberOfEventEnergyBins or 1
+DetectionBinEfficiencies: float[detElIdx, energyBinIdx]
 
-# Efficiency for two detecting elements (det_els) in a pair of modules.
+# Efficiency for two detection bins in a pair of modules.
 # This is one component (often called "geometric") of the detection efficiency model.
 # If size along energyBinIdx is 1, the effiencies are assumed to be the same for every energy bin.
 ModulePairEfficiencies: !record
   fields:
-    # Detection efficiency for a pair of detecting elements
+    # Detection efficiency for a pair of detection bins
     # detElIdx1 and detElIdx2 run from 0 to the number of det_els in each module
     values: float[detElIdx1, energyBinIdx1, detElIdx2, energyBinIdx2]
     # Symmetry Group Identifier (SGID)
@@ -33,28 +33,28 @@ ModulePairEfficienciesVector: ModulePairEfficiencies*
 
 # Component-based information on detection efficiencies
 # This encodes a simple model for the detection efficiency of (true) coincidences
-# consisting of the product of the efficiency of the two detecting elements (det_els)
+# consisting of the product of the efficiency of the two detection bins
 # and a (geometric) component determined by their location in the two modules.
-# The former are stored in detElEfficiencies, and the latter in modulePairEfficienciesVector
+# The former are stored in detectionBinEfficiencies, and the latter in modulePairEfficienciesVector
 # (a list of ModulePairEfficiencies, each entry corresponding to a module pair).
 #
 # To save memory, the modulePairEfficienciesVector contains only one of element for each SGID.
 # The SGID for a module-pair can be found in modulePairSGIDLUT.
 #
-# Finding the total detection efficiency therefore follows these steps:
-# (the following pseudo-code ignores energy bins for simplicity)
-# 1. find modules for each det_el
+# Finding the total detection efficiency therefore follows these steps in pseudo-code
+# 1. find modules for each detection_bin
 # 2. find det_el indices "inside" each module
 # 3. SGID = modulePairSGIDLUT[mod1, mod1]
 # 4. if (SGID < 0) return 0
 # 5. module_pair_efficiencies = modulePairEfficienciesVector[SGID]
-# 6. return detElEfficiencies[det_el1] * detElEfficiencies[det_el2] * module_pair_efficiencies[det_el_in_mod1, det_el_in_mod2]
+# 6. return detectionBinEfficiencies(detection_bin1) * detectionBinEfficiencies(detection_bin2)
+#       * module_pair_efficiencies[det_el_in_mod1, en1, det_el_in_mod2, en2]
 #
 # If either of the components is not present, its value is considered to be 1.
 DetectionEfficiencies: !record
   fields:
-    # Detection efficiencies for every detecting element
-    detElEfficiencies: DetElEfficiencies?
+    # Detection efficiencies for every detection bin
+    detectionBinEfficiencies: DetectionBinEfficiencies?
     # Lookup table for SGIDs.
     # Also indicates if coincidences between a module-pair are recorded.
     modulePairSGIDLUT: ModulePairSGIDLUT?

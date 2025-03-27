@@ -40,14 +40,36 @@ ScannerGeometry: !record
     # shielding etc
     nonDetectingVolumes: GenericSolidVolume*?
 
-# This is the type for detector IDs using in `CoincidenceEvent` and `TripleEvent`.
-# It is an unsigned integer that runs over all the "elementary detector elements" (aka crystals),
-# starting from 0.
-# The correspondence between this integer and a module/det_el is not decided (TODO),
-# but the current proposal is to effectively increment the detectorID in nested loops:
+
+# This is the type for the index over "modules".
+# It is an unsigned integer that runs over all the "modules" starting from 0.
+#
+# The correspondence between this integer and a module is not encoded in this model,
+# but only in the "helpers".
+# It corresponds to effectively incrementing the moduleIdx in nested loops:
+# 1. ScannerGeometry.replicated_modules
+# 2. replicated_module.transforms
+# (with the moduleIdx running faster over the 2nd loop)
+ModuleIdx: uint
+
+# This is the type for the index over "detection elements" (aka "crystals"), e.g. used in `DetectionBin`
+# It is an unsigned integer that runs over all the "detector elements" starting from 0.
+#
+# The correspondence between this integer and a module/det_el is not encoded in this model,
+# but only in the "helpers".
+# It corresponds to effectively incrementing the detElIdx in nested loops:
 # 1. ScannerGeometry.replicated_modules
 # 2. replicated_module.transforms
 # 3. replicated_module.detecting_elements
 # 4. detecting_element.transforms
-# (with therefore the detector IDs running faster over the 4th loop)
-DetectorId: uint
+# (with the detElIdx running faster over the 4th loop)
+DetElIdx: uint
+
+# type for a "single" detection, used in `CoincidenceEvent` and `TripleEvent`.
+DetectionBin: !record
+  fields:
+    # the elementary detector element, see DetElIdx
+    detElIdx: DetElIdx
+    # index (starting from 0) for the energy window
+    # See the ScannerInformation.eventEnergyBinEdges field
+    energyIdx: uint

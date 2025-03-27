@@ -53,15 +53,14 @@ while reader.has_time_blocks()
         fprintf("=====================  Events in time block from %f  ==============\n", last_time);
         for event_idx = 1:length(time_block.value.prompt_events)
             event = time_block.value.prompt_events(event_idx);
-            energy_1 = energy_1 + energy_mid_points(event.energy_indices(1) + 1);
-            energy_2 = energy_2 + energy_mid_points(event.energy_indices(2) + 1);
+            energy_1 = energy_1 + energy_mid_points(event.detection_bins(1).energy_idx + 1);
+            energy_2 = energy_2 + energy_mid_points(event.detection_bins(2).energy_idx + 1);
 
-            fprintf("CoincidenceEvent(detectorIds=[%d, %d], tofIdx=%d, energyIndices=[%d, %d])\n", ...
-                event.detector_ids(1), event.detector_ids(2), event.tof_idx, ...
-                event.energy_indices(1), event.energy_indices(2));
-            mod_and_el = petsird.helpers.get_module_and_element(header.scanner.scanner_geometry, event.detector_ids);
-            fprintf("    [ModuleAndElement(module=%d, el=%d), ModuleAndElement(module=%d, el=%d)]\n", ...
-                mod_and_el(1).module, mod_and_el(1).el, mod_and_el(2).module, mod_and_el(2).el);
+            fprintf("CoincidenceEvent(detElIndices=[%d, %d], tofIdx=%d, energyIndices=[%d, %d])\n", ...
+                event.detection_bins(1).det_el_idx, event.detection_bins(2).det_el_idx, event.tof_idx, ...
+                event.detection_bins(1).energy_idx,  event.detection_bins(2).energy_idx);
+            expanded_det_bins = petsird.helpers.expand_detection_bins(header.scanner.scanner_geometry, event.detection_bins("    [ExpandedDetectionBin(module=%d, el=%d), ExpandedDetectionBin(module=%d, el=%d)]\n", ...
+                expanded_det_bins(1).module, expanded_det_bins(1).el, expanded_det_bins(2).module, expanded_det_bins(2).el);
             fprintf("    efficiency: %f\n", petsird.helpers.get_detection_efficiency(header.scanner, event));
         end
     end
