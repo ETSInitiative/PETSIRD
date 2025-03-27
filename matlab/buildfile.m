@@ -23,7 +23,7 @@ function buildToolbox (outdir)
 
     opts.ToolboxName = "PETSIRD";
 
-    opts.ToolboxVersion = "0.2.0";
+    opts.ToolboxVersion = "0.3.0";
     opts.OutputFile = fullfile(outdir, sprintf("petsird-%s.mltbx", opts.ToolboxVersion));
 
     opts.Description = "Positron Emission Tomography Standardization Initiative Raw Data (PETSIRD) toolbox for MATLAB";
