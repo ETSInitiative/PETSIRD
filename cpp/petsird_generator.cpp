@@ -120,7 +120,7 @@ get_detection_efficiencies(const petsird::ScannerInformation& scanner)
   const auto num_det_els = petsird_helpers::get_num_det_els(scanner.scanner_geometry);
   petsird::DetectionEfficiencies detection_efficiencies;
 
-  detection_efficiencies.det_el_efficiencies = xt::ones<float>({ num_det_els, scanner.NumberOfEventEnergyBins() });
+  detection_efficiencies.detection_bin_efficiencies = xt::ones<float>({ num_det_els, scanner.NumberOfEventEnergyBins() });
 
   // only 1 type of module in the current scanner
   assert(scanner.scanner_geometry.replicated_modules.size() == 1);
@@ -237,14 +237,11 @@ get_header()
   return header;
 }
 
-// return pair of integers between 0 and max
-std::array<unsigned, 2>
-get_random_pair(int max)
+// return uint between 0 and max
+uint32_t
+get_random_uint(int max)
 {
-  unsigned a = rand() % max;
-  unsigned b = rand() % max;
-  std::array<unsigned, 2> p{ a, b };
-  return p;
+  return static_cast<unsigned>(rand() % max);
 }
 
 uint32_t
@@ -268,21 +265,19 @@ get_events(const petsird::Header& header, std::size_t num_events)
   for (std::size_t i = 0; i < num_events; ++i)
     {
       petsird::CoincidenceEvent e;
-      // Generate random detector_ids, where the corresponding modules are distinct
+      e.detection_bins[0].energy_idx = get_random_energy_value();
+      e.detection_bins[1].energy_idx = get_random_energy_value();
+      // Generate random det_el_idxs until detection effficiency is not zero
       while (true)
         {
-          e.detector_ids = get_random_pair(num_det_els);
-          const auto mod_and_els = petsird_helpers::get_module_and_element(header.scanner.scanner_geometry, e.detector_ids);
-          if (!header.scanner.detection_efficiencies.module_pair_sgidlut /* there is no LUT */
-              || ((*header.scanner.detection_efficiencies.module_pair_sgidlut)(mod_and_els[0].module, mod_and_els[1].module)
-                  >= 0))
+          e.detection_bins[0].det_el_idx = get_random_uint(num_det_els);
+          e.detection_bins[1].det_el_idx = get_random_uint(num_det_els);
+          if (petsird_helpers::get_detection_efficiency(header.scanner, e) > 0)
             {
               // in coincidence, we can get out of the loop
               break;
             }
         }
-      e.energy_indices[0] = get_random_energy_value();
-      e.energy_indices[1] = get_random_energy_value();
       e.tof_idx = get_random_tof_value();
       events.push_back(e);
     }

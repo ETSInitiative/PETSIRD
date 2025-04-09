@@ -24,7 +24,7 @@ def get_num_det_els(scanner_geometry: petsird.ScannerGeometry) -> int:
 
 
 @dataclass
-class ModuleAndElement:
+class ExpandedDetectionBin:
     """
     Dataclass to store a module ID and element ID, where the latter runs
     over all detecting volumes in the module
@@ -32,20 +32,24 @@ class ModuleAndElement:
 
     module: int
     el: int
+    energy_idx: int
 
 
-def get_module_and_element(
-        scanner_geometry: petsird.ScannerGeometry,
-        scanner_det_ids: typing.Iterable[int]) -> list[ModuleAndElement]:
-    """Find ModuleAndElement for a list of detector_ids"""
+def expand_detection_bins(
+    scanner_geometry: petsird.ScannerGeometry,
+    detection_bins: typing.Iterable[petsird.DetectionBin]
+) -> list[ExpandedDetectionBin]:
+    """Find ExpandedDetectionBin for a list of detection_bins"""
     assert len(scanner_geometry.replicated_modules) == 1
     rep_module = scanner_geometry.replicated_modules[0]
     assert len(rep_module.object.detecting_elements) == 1
     num_el_per_module = len(rep_module.object.detecting_elements[0].ids)
 
     return [
-        ModuleAndElement(module=det // num_el_per_module,
-                         el=det % num_el_per_module) for det in scanner_det_ids
+        ExpandedDetectionBin(module=bin.det_el_idx // num_el_per_module,
+                             el=bin.det_el_idx % num_el_per_module,
+                             energy_idx=bin.energy_idx)
+        for bin in detection_bins
     ]
 
 
@@ -54,13 +58,14 @@ def get_detection_efficiency(scanner: petsird.ScannerInformation,
     """Compute the detection efficiency for a coincidence event"""
     eff = 1
 
-    # per det_el efficiencies
-    det_el_efficiencies = scanner.detection_efficiencies.det_el_efficiencies
-    if det_el_efficiencies is not None:
-        eff *= (det_el_efficiencies[event.detector_ids[0],
-                                    event.energy_indices[0]] *
-                det_el_efficiencies[event.detector_ids[1],
-                                    event.energy_indices[1]])
+    # per detection_bin efficiencies
+    detection_bin_efficiencies = scanner.detection_efficiencies.detection_bin_efficiencies
+    if detection_bin_efficiencies is not None:
+        eff *= (
+            detection_bin_efficiencies[event.detection_bins[0].det_el_idx,
+                                       event.detection_bins[0].energy_idx] *
+            detection_bin_efficiencies[event.detection_bins[1].det_el_idx,
+                                       event.detection_bins[1].energy_idx])
 
     # per module-pair efficiencies
     module_pair_efficiencies_vector = (
@@ -68,19 +73,20 @@ def get_detection_efficiency(scanner: petsird.ScannerInformation,
     if module_pair_efficiencies_vector is not None:
         module_pair_SGID_LUT = scanner.detection_efficiencies.module_pair_sgidlut
         assert module_pair_SGID_LUT is not None
-        mod_and_els = get_module_and_element(scanner.scanner_geometry,
-                                             event.detector_ids)
+        expanded_det_bins = expand_detection_bins(scanner.scanner_geometry,
+                                                  event.detection_bins)
         assert len(scanner.scanner_geometry.replicated_modules) == 1
-        SGID = module_pair_SGID_LUT[mod_and_els[0].module,
-                                    mod_and_els[1].module]
-        assert SGID >= 0
+        SGID = module_pair_SGID_LUT[expanded_det_bins[0].module,
+                                    expanded_det_bins[1].module]
+        if SGID < 0:
+            return 0.
         module_pair_efficiencies = module_pair_efficiencies_vector[SGID]
         assert module_pair_efficiencies.sgid == SGID
         eff *= module_pair_efficiencies.values[
-            mod_and_els[0].el,
-            event.energy_indices[0],
-            mod_and_els[1].el,
-            event.energy_indices[1],
+            expanded_det_bins[0].el,
+            event.detection_bins[0].energy_idx,
+            expanded_det_bins[1].el,
+            event.detection_bins[1].energy_idx,
         ]
 
     return eff

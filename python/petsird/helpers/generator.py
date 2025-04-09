@@ -9,7 +9,7 @@ from collections.abc import Iterator
 
 import numpy
 import petsird
-from petsird.helpers import get_module_and_element, get_num_det_els
+from petsird.helpers import get_detection_efficiency, get_num_det_els
 
 # these are constants for now
 NUMBER_OF_EVENT_ENERGY_BINS = 3
@@ -105,7 +105,7 @@ def get_detection_efficiencies(
     scanner: petsird.ScannerInformation, ) -> petsird.DetectionEfficiencies:
     """return some (non-physical) detection efficiencies"""
     num_det_els = get_num_det_els(scanner.scanner_geometry)
-    det_el_efficiencies = numpy.ones(
+    detection_bin_efficiencies = numpy.ones(
         (num_det_els, scanner.number_of_event_energy_bins()),
         dtype=numpy.float32)
 
@@ -169,7 +169,7 @@ def get_detection_efficiencies(
         assert len(module_pair_efficiencies_vector) == SGID + 1
 
     return petsird.DetectionEfficiencies(
-        det_el_efficiencies=det_el_efficiencies,
+        detection_bin_efficiencies=detection_bin_efficiencies,
         module_pair_sgidlut=module_pair_SGID_LUT,
         module_pair_efficiencies_vector=module_pair_efficiencies_vector,
     )
@@ -227,29 +227,27 @@ def get_events(header: petsird.Header,
                num_events: int) -> Iterator[petsird.CoincidenceEvent]:
     """Generate some random events"""
     detector_count = get_num_det_els(header.scanner.scanner_geometry)
+    detection_bins = (petsird.DetectionBin(), petsird.DetectionBin())
     for _ in range(num_events):
-        # Generate random detector_ids, where the corresponding modules are
-        # in coincidence
+        event = petsird.CoincidenceEvent(
+            detection_bins=detection_bins,
+            tof_idx=random.randrange(0, NUMBER_OF_TOF_BINS),
+        )
+        event.detection_bins[0].energy_idx = random.randrange(
+            0, NUMBER_OF_EVENT_ENERGY_BINS)
+        event.detection_bins[1].energy_idx = random.randrange(
+            0, NUMBER_OF_EVENT_ENERGY_BINS)
+        # Generate random det_el_idxs until detection effficiency is not zero
         while True:
-            detector_ids = [
-                random.randrange(0, detector_count),
-                random.randrange(0, detector_count),
-            ]
-            mod_and_els = get_module_and_element(
-                header.scanner.scanner_geometry, detector_ids)
-            if header.scanner.detection_efficiencies.module_pair_sgidlut[
-                    mod_and_els[0].module, mod_and_els[1].module] >= 0:
+            event.detection_bins[0].det_el_idx = random.randrange(
+                0, detector_count)
+            event.detection_bins[1].det_el_idx = random.randrange(
+                0, detector_count)
+            if get_detection_efficiency(header.scanner, event) > 0:
                 # in coincidence, we can get out of the loop
                 break
 
-        yield petsird.CoincidenceEvent(
-            detector_ids=detector_ids,
-            energy_indices=[
-                random.randrange(0, NUMBER_OF_EVENT_ENERGY_BINS),
-                random.randrange(0, NUMBER_OF_EVENT_ENERGY_BINS),
-            ],
-            tof_idx=random.randrange(0, NUMBER_OF_TOF_BINS),
-        )
+        yield event
 
 
 if __name__ == "__main__":

@@ -76,13 +76,13 @@ GantryMovementTimeBlock: !record
 
 # A time block that stores the dead-time information for the given interval
 # Dead-time is encoded as "alive_time_fraction", i.e. 1 - dead_time_fraction
-# A component-based model is used, where the total alive-time for an pair of DetectorIds
+# A component-based model is used, where the total alive-time for a pair of DetectionBins
 # is computed as the product of the (singles) alive-time of each detector times the
-# coincidence-alive-time of the corresponding module-pair:
-# aliveTimeFraction(detectorId0, energyIdx0, detectorId1, energyIdx1) =
-#   singlesAliveTimeFraction[detectorId0, energyIdx0] *
-#   singlesAliveTimeFraction[detectorId1, energyIdx1] *
-#   moduleCoincidenceAliveTimeFraction[module(detectorId0), module(energyIdx0)]
+# coincidence-alive-time of the corresponding module-pair, i.e. conceptually
+# aliveTimeFraction(detectionBin0, detectionBin1) =
+#   singlesAliveTimeFraction(detectionBin0) *
+#   singlesAliveTimeFraction(detectionBin1) *
+#   moduleCoincidenceAliveTimeFraction[module(detectionBin0), module(detectionBin1)]
 # Constraint: the time covered by all event time blocks has to be covered by dead-time time blocks
 DeadTimeTimeBlock: !record
   fields:
@@ -92,11 +92,11 @@ DeadTimeTimeBlock: !record
     # (1 means no dead-time, 0 means no detected counts)
     # If sizeOfEnergyIdxDimension == 1, the fraction is assumed to be the same
     # for all energy windows.
-    # Constraint: sizeOfDetectorIdDimension == number of all possible unique DetectorIds
+    # Constraint: sizeOfDetElIdxDimension == number of all possible unique DetElIdxs
     # Constraint: (sizeOfEnergyIdxDimension == 1) or (sizeOfEnergyIdxDimension == ScannerInformation.numberOfEventEnergyBins)
     singlesAliveTimeFraction: !array
       items: float
-      dimensions: [detectorId, energyIdx]
+      dimensions: [detElIdx, energyIdx]
     # coincidence dead-time array for 2 modules in coincidence, stored as fractions of "alive time"
     # (1 means no dead-time, 0 means no detected coincidences)
     # If the size of this 2D array is (1,1), it is assumed that the corresponding alive-fraction is the same for all modules.
@@ -108,7 +108,7 @@ DeadTimeTimeBlock: !record
       dimensions: [moduleId0, moduleId1]
 
   computedFields:
-    sizeOfDetectorIdDimension: size(singlesAliveTimeFraction, 'detectorId')
+    sizeOfDetElIdxDimension: size(singlesAliveTimeFraction, 'detElIdx')
     sizeOfEnergyIdxDimension: size(singlesAliveTimeFraction, 'energyIdx')
 
 # A time block that stores a singles histogram.
@@ -122,7 +122,7 @@ SinglesHistogramTimeBlock: !record
   fields:
     timeInterval: TimeInterval
     # A 2D histogram of all singles (after energy discrimination) occuring in the timeInterval.
-    # The dimensions correspond to positional information (i.e. module or detectorId, see below)
+    # The dimensions correspond to positional information (i.e. moduleIdx or detElIdx, see below)
     # and energy index. The latter index refers to ScannerInformation.singlesHistogramEnergyBinEdges.
     # Note that in future, we might consider also storing singles before energy discremination,
     # but this is currently not supported.
@@ -130,7 +130,7 @@ SinglesHistogramTimeBlock: !record
     # If ScannerInformation.singlesHistogramLevel == SinglesHistogramLevelType.module, the
     # positionalIdx runs over all modules.
     # If ScannerInformation.singlesHistogramLevel == SinglesHistogramLevelType.all, the
-    # positionalIdx runs over all DetectorIds.
+    # positionalIdx runs over all DetElIdxs.
     # Constraint: (singlesHistogramLevel == module && sizeOfPositionalIdxDimension == total number of modules of all types) ||
     #             (singlesHistogramLevel == all && sizeOfPositionalIdxDimension == total number of detecting elements in all modules)
     # Constraint:  sizeOfEnergyIdxDimension == ScannerInformation.numberOfSinglesHistogramEnergyBins

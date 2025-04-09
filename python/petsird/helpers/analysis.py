@@ -7,7 +7,7 @@ import argparse
 import sys
 
 import petsird
-from petsird.helpers import (get_detection_efficiency, get_module_and_element,
+from petsird.helpers import (expand_detection_bins, get_detection_efficiency,
                              get_num_det_els)
 
 
@@ -84,14 +84,16 @@ if __name__ == "__main__":
                 print("=====================  Events in time block until ",
                       last_time, " ==============")
                 for event in time_block.value.prompt_events:
-                    energy_1 += energy_mid_points[event.energy_indices[0]]
-                    energy_2 += energy_mid_points[event.energy_indices[1]]
+                    energy_1 += energy_mid_points[
+                        event.detection_bins[0].energy_idx]
+                    energy_2 += energy_mid_points[
+                        event.detection_bins[1].energy_idx]
                     if print_events:
                         print(event)
                         print(
                             "   ",
-                            get_module_and_element(scanner.scanner_geometry,
-                                                   event.detector_ids),
+                            expand_detection_bins(scanner.scanner_geometry,
+                                                  event.detection_bins),
                         )
                         print("    efficiency:",
                               get_detection_efficiency(scanner, event))
