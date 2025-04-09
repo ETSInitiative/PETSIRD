@@ -19,9 +19,6 @@ ReplicatedGenericSolidVolume: ReplicatedObject< GenericSolidVolume >
 DetectorModule: !record
   fields:
     detectingElements: ReplicatedBoxSolidVolume*
-    # list of unique ids for every replicated solid volume
-    # constraint: size(detectingElements) == size(detectingElementsIds)
-    detectingElementIds: uint*
     # optional list describing shielding/optical reflectors etc
     nonDetectingElements: ReplicatedGenericSolidVolume*
 
@@ -34,9 +31,6 @@ ScannerGeometry: !record
   fields:
     # list of different types of replicated modules
     replicatedModules: ReplicatedDetectorModule*
-    # list of unique ids for every replicated module
-    # constraint: size(replicated_modules) == size(ids)
-    ids: uint*
     # shielding etc
     nonDetectingVolumes: GenericSolidVolume*?
 

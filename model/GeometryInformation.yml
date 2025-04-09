@@ -30,9 +30,6 @@ ReplicatedObject<T>: !record
     # list of transforms
     # constraint: length >= 1
     transforms: RigidTransformation*
-    # list of unique ids for every replicated solid volume
-    # constraint: size(transforms) == size(ids)
-    ids: uint*
   computedFields:
     numberOfObjects: size(transforms)
 

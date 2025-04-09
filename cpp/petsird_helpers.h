@@ -41,8 +41,8 @@ expand_detection_bins(const ScannerGeometry& scanner_geometry, const T& list_of_
   const auto& rep_module = scanner_geometry.replicated_modules[0];
   assert(rep_module.object.detecting_elements.size() == 1);
 
-  // TODO currently ids are uint32_t, so use this type to avoid compiler warnings
-  const uint32_t num_el_per_module = rep_module.object.detecting_elements[0].ids.size();
+  // TODO currently det_el_idx are uint32_t, so use this type to avoid compiler warnings
+  const uint32_t num_el_per_module = rep_module.object.detecting_elements[0].transforms.size();
 
   std::vector<ExpandedDetectionBin> result;
   for (auto bin : list_of_detection_bins)
