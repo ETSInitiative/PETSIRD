@@ -82,7 +82,6 @@ function geometry = get_scanner_geometry(cfg)
     detector_module = get_detector_module(cfg);
 
     rep_module = petsird.ReplicatedDetectorModule(object=detector_module);
-    module_id = 0;
     for i = 0:cfg.NUM_MODULES_ALONG_RING-1
         angle = 2 * pi * i / cfg.NUM_MODULES_ALONG_RING;
         for ax_mod = 0:cfg.NUM_MODULES_ALONG_AXIS-1
@@ -94,12 +93,10 @@ function geometry = get_scanner_geometry(cfg)
                 ]) ...
             );
             rep_module.transforms = [rep_module.transforms transform];
-            rep_module.ids = [rep_module.ids module_id];
-            module_id = module_id + 1;
         end
     end
 
-    geometry = petsird.ScannerGeometry(replicated_modules=[rep_module], ids=[0]);
+    geometry = petsird.ScannerGeometry(replicated_modules=[rep_module]);
 end
 
 function detector = get_detector_module(cfg)
@@ -109,7 +106,6 @@ function detector = get_detector_module(cfg)
     N0 = cfg.NUM_CRYSTALS_PER_MODULE(1);
     N1 = cfg.NUM_CRYSTALS_PER_MODULE(2);
     N2 = cfg.NUM_CRYSTALS_PER_MODULE(3);
-    id = 0;
     for rep0 = 0:N0-1
         for rep1 = 0:N1-1
             for rep2 = 0:N2-1
@@ -120,12 +116,10 @@ function detector = get_detector_module(cfg)
                         0, 0, 1, (rep2 - N2 / 2) * cfg.CRYSTAL_LENGTH(3); ...
                     ]));
                 rep_volume.transforms = [rep_volume.transforms transform];
-                rep_volume.ids = [rep_volume.ids id];
-                id = id + 1;
             end
         end
     end
-    detector = petsird.DetectorModule(detecting_elements=[rep_volume], detecting_element_ids=[0]);
+    detector = petsird.DetectorModule(detecting_elements=[rep_volume]);
 end
 
 function crystal = get_crystal(cfg)

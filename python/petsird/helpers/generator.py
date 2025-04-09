@@ -54,7 +54,6 @@ def get_detector_module() -> petsird.DetectorModule:
     N0 = NUM_CRYSTALS_PER_MODULE[0]
     N1 = NUM_CRYSTALS_PER_MODULE[1]
     N2 = NUM_CRYSTALS_PER_MODULE[2]
-    id = 0
     for rep0 in range(N0):
         for rep1 in range(N1):
             for rep2 in range(N2):
@@ -67,11 +66,8 @@ def get_detector_module() -> petsird.DetectorModule:
                     dtype="float32",
                 ))
                 rep_volume.transforms.append(transform)
-                rep_volume.ids.append(id)
-                id += 1
 
-    return petsird.DetectorModule(detecting_elements=[rep_volume],
-                                  detecting_element_ids=[0])
+    return petsird.DetectorModule(detecting_elements=[rep_volume])
 
 
 def get_scanner_geometry() -> petsird.ScannerGeometry:
@@ -83,7 +79,6 @@ def get_scanner_geometry() -> petsird.ScannerGeometry:
     ]
 
     rep_module = petsird.ReplicatedDetectorModule(object=detector_module)
-    module_id = 0
     for angle in angles:
         for ax_mod in range(NUM_MODULES_ALONG_AXIS):
             transform = petsird.RigidTransformation(matrix=numpy.array(
@@ -94,11 +89,9 @@ def get_scanner_geometry() -> petsird.ScannerGeometry:
                 ),
                 dtype="float32",
             ))
-            rep_module.ids.append(module_id)
-            module_id += 1
             rep_module.transforms.append(transform)
 
-    return petsird.ScannerGeometry(replicated_modules=[rep_module], ids=[0])
+    return petsird.ScannerGeometry(replicated_modules=[rep_module])
 
 
 def get_detection_efficiencies(

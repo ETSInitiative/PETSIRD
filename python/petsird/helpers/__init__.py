@@ -43,7 +43,7 @@ def expand_detection_bins(
     assert len(scanner_geometry.replicated_modules) == 1
     rep_module = scanner_geometry.replicated_modules[0]
     assert len(rep_module.object.detecting_elements) == 1
-    num_el_per_module = len(rep_module.object.detecting_elements[0].ids)
+    num_el_per_module = len(rep_module.object.detecting_elements[0].transforms)
 
     return [
         ExpandedDetectionBin(module=bin.det_el_idx // num_el_per_module,

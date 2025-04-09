@@ -65,7 +65,6 @@ get_detector_module()
     constexpr auto N0 = NUM_CRYSTALS_PER_MODULE[0];
     constexpr auto N1 = NUM_CRYSTALS_PER_MODULE[1];
     constexpr auto N2 = NUM_CRYSTALS_PER_MODULE[2];
-    unsigned id = 0;
     for (int rep0 = 0; rep0 < N0; ++rep0)
       for (int rep1 = 0; rep1 < N1; ++rep1)
         for (int rep2 = 0; rep2 < N2; ++rep2)
@@ -74,13 +73,11 @@ get_detector_module()
                                                       { 0.0, 1.0, 0.0, (rep1 - N1 / 2) * CRYSTAL_LENGTH[1] },
                                                       { 0.0, 0.0, 1.0, (rep2 - N2 / 2) * CRYSTAL_LENGTH[2] } } };
             rep_volume.transforms.push_back(transform);
-            rep_volume.ids.push_back(id++);
           }
   }
 
   petsird::DetectorModule detector_module;
   detector_module.detecting_elements.push_back(rep_volume);
-  detector_module.detecting_element_ids.push_back(0);
 
   return detector_module;
 }
@@ -92,7 +89,6 @@ get_scanner_geometry()
   petsird::ReplicatedDetectorModule rep_module;
   {
     rep_module.object = get_detector_module();
-    uint32_t module_id = 0;
     std::vector<float> angles;
     for (unsigned int i = 0; i < NUM_MODULES_ALONG_RING; ++i)
       {
@@ -104,13 +100,11 @@ get_scanner_geometry()
           petsird::RigidTransformation transform{ { { std::cos(angle), std::sin(angle), 0.F, 0.F },
                                                     { -std::sin(angle), std::cos(angle), 0.F, 0.F },
                                                     { 0.F, 0.F, 1.F, MODULE_AXIS_SPACING * ax_mod } } };
-          rep_module.ids.push_back(module_id++);
           rep_module.transforms.push_back(transform);
         }
   }
   petsird::ScannerGeometry scanner_geometry;
   scanner_geometry.replicated_modules.push_back(rep_module);
-  scanner_geometry.ids.push_back(0);
   return scanner_geometry;
 }
 
