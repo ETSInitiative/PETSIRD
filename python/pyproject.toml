@@ -14,14 +14,13 @@ authors = [
 maintainers = [
     {name = "Casper da Costa-Luis", email = "imaging@cdcl.ml"},
     {name = "Kris Thielemans", email = "k.thielemans@ucl.ac.uk"}]
-license = {text = "Apache-2.0"}
+license = "Apache-2.0"
 requires-python = ">=3.9"
 dependencies = [
     "numpy>=1.22",
 ]
 classifiers = [
     "Development Status :: 3 - Alpha",
-    "License :: OSI Approved :: Apache Software License",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.9",
@@ -31,9 +30,6 @@ classifiers = [
     "Programming Language :: Python :: 3 :: Only",
     "Intended Audience :: Science/Research",
     "Topic :: Scientific/Engineering :: Medical Science Apps."]
-
-[tool.setuptools]
-license-files = [] # see https://github.com/pypa/twine/issues/1216#issuecomment-2609745412
 
 [tool.setuptools.packages.find]
 include = ["petsird", "petsird.*"]
