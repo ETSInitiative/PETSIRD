@@ -19,7 +19,7 @@ set shell := ['bash', '-ceuo', 'pipefail']
     cd cpp/build && ninja
 
 @build-python: generate
-    pip install --editable python
+    pip install --editable ./python
 
 @build: build-cpp build-python
 
