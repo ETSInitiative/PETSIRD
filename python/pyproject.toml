@@ -15,6 +15,7 @@ maintainers = [
     {name = "Casper da Costa-Luis", email = "imaging@cdcl.ml"},
     {name = "Kris Thielemans", email = "k.thielemans@ucl.ac.uk"}]
 license = "Apache-2.0"
+license-files = ["LICENSE"]
 requires-python = ">=3.9"
 dependencies = [
     "numpy>=1.22",
