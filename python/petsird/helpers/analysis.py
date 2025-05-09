@@ -47,13 +47,9 @@ if __name__ == "__main__":
         print("Number of modules of first type: ",
               len(scanner.scanner_geometry.replicated_modules[0].transforms))
         print(
-            "Number of types of detecting elements in modules of first type: ",
+            "Number of elements in modules of first type: ",
             len(scanner.scanner_geometry.replicated_modules[0].object.
-                detecting_elements))
-        print(
-            "Number of elements of first type in modules of first type: ",
-            len(scanner.scanner_geometry.replicated_modules[0].object.
-                detecting_elements[0].transforms))
+                detecting_elements.transforms))
         print("Total number of 'crystals': ",
               get_num_det_els(scanner.scanner_geometry))
         print("Number of TOF bins: ", scanner.number_of_tof_bins())

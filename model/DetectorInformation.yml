@@ -11,14 +11,17 @@ GenericSolidVolume: SolidVolume<GeometricShape>
 # A list of identical SolidVolumes<BoxShape> at different locations
 ReplicatedBoxSolidVolume: ReplicatedObject< BoxSolidVolume >
 
-# A list of identical SolidVolumes<BGeometricShape> at different locations
+# A list of identical SolidVolumes<GeometricShape> at different locations
 ReplicatedGenericSolidVolume: ReplicatedObject< GenericSolidVolume >
 
-# Top-level detector structure, consisting of one or more lists of detecting elements (or "crystals")
-# This allows having different types of detecting elements (e.g. for phoswich detectors)
+# Top-level detector structure, consisting of a group of (elementary) detecting elements (or "crystals")
+# Note: all "crystals" have to be identical, aside from location. This includes properties such as
+# shape, energy and timing resolution.
+# This implies that for scanners with different types of detecting elements (e.g. phoswich detectors),
+# different DetectorModules have to be used (see ScannerGeometry).
 DetectorModule: !record
   fields:
-    detectingElements: ReplicatedBoxSolidVolume*
+    detectingElements: ReplicatedBoxSolidVolume
     # optional list describing shielding/optical reflectors etc
     nonDetectingElements: ReplicatedGenericSolidVolume*
 
@@ -30,9 +33,14 @@ ReplicatedDetectorModule: ReplicatedObject< DetectorModule >
 ScannerGeometry: !record
   fields:
     # list of different types of replicated modules
+    # While most current clinical scanners have only one type of DetectorModule, some
+    # would have different types, e.g. for scanners with phoswich detector, high resolution inserts, etc.
+    # Constraint: numberOfReplicatedModules > 0
     replicatedModules: ReplicatedDetectorModule*
     # shielding etc
     nonDetectingVolumes: GenericSolidVolume*?
+  computedFields:
+    numberOfReplicatedModules: size(replicatedModules)
 
 
 # This is the type for the index over "modules".
@@ -54,9 +62,8 @@ ModuleIdx: uint
 # It corresponds to effectively incrementing the detElIdx in nested loops:
 # 1. ScannerGeometry.replicated_modules
 # 2. replicated_module.transforms
-# 3. replicated_module.detecting_elements
-# 4. detecting_element.transforms
-# (with the detElIdx running faster over the 4th loop)
+# 3. replicated_module.detecting_elements.transforms
+# (with the detElIdx running faster over the 3rd loop)
 DetElIdx: uint
 
 # type for a "single" detection, used in `CoincidenceEvent` and `TripleEvent`.

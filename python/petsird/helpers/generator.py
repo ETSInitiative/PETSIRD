@@ -67,7 +67,7 @@ def get_detector_module() -> petsird.DetectorModule:
                 ))
                 rep_volume.transforms.append(transform)
 
-    return petsird.DetectorModule(detecting_elements=[rep_volume])
+    return petsird.DetectorModule(detecting_elements=rep_volume)
 
 
 def get_scanner_geometry() -> petsird.ScannerGeometry:
@@ -137,8 +137,7 @@ def get_detection_efficiencies(
     # print("SGID LUT:\n", module_pair_SGID_LUT, file=sys.stderr)
     assert numpy.max(module_pair_SGID_LUT) == num_SGIDs - 1
     module_pair_efficiencies_vector = []
-    assert len(rep_module.object.detecting_elements) == 1
-    detecting_elements = rep_module.object.detecting_elements[0]
+    detecting_elements = rep_module.object.detecting_elements
     num_det_els_in_module = len(detecting_elements.transforms)
     for SGID in range(num_SGIDs):
         # Extract first module_pair for this SGID. However, as this

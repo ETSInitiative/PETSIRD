@@ -77,7 +77,7 @@ get_detector_module()
   }
 
   petsird::DetectorModule detector_module;
-  detector_module.detecting_elements.push_back(rep_volume);
+  detector_module.detecting_elements = rep_volume;
 
   return detector_module;
 }
@@ -157,8 +157,7 @@ get_detection_efficiencies(const petsird::ScannerInformation& scanner)
   detection_efficiencies.module_pair_efficiencies_vector = petsird::ModulePairEfficienciesVector();
   detection_efficiencies.module_pair_efficiencies_vector->reserve(num_SGIDs);
 
-  assert(rep_module.object.detecting_elements.size() == 1);
-  const auto& detecting_elements = rep_module.object.detecting_elements[0];
+  const auto& detecting_elements = rep_module.object.detecting_elements;
   const auto num_det_els_in_module = detecting_elements.transforms.size();
   for (unsigned int SGID = 0; SGID < num_SGIDs; ++SGID)
     {

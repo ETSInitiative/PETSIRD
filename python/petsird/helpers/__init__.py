@@ -17,9 +17,7 @@ def get_num_det_els(scanner_geometry: petsird.ScannerGeometry) -> int:
     num_det_els = 0
     for rep_module in scanner_geometry.replicated_modules:
         det_els = rep_module.object.detecting_elements
-        for rep_volume in det_els:
-            num_det_els += len(rep_volume.transforms) * len(
-                rep_module.transforms)
+        num_det_els += len(det_els.transforms) * len(rep_module.transforms)
     return num_det_els
 
 
@@ -42,8 +40,7 @@ def expand_detection_bins(
     """Find ExpandedDetectionBin for a list of detection_bins"""
     assert len(scanner_geometry.replicated_modules) == 1
     rep_module = scanner_geometry.replicated_modules[0]
-    assert len(rep_module.object.detecting_elements) == 1
-    num_el_per_module = len(rep_module.object.detecting_elements[0].transforms)
+    num_el_per_module = len(rep_module.object.detecting_elements.transforms)
 
     return [
         ExpandedDetectionBin(module=bin.det_el_idx // num_el_per_module,
