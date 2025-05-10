@@ -6,6 +6,12 @@ on:
     paths-ignore:
     - '**/*.md'
   pull_request: {branches: [main]}
+  workflow_dispatch:
+    inputs:
+      debug_enabled:
+        description: 'Run the build with tmate debugging enabled (https://github.com/marketplace/actions/debugging-with-tmate)'
+        required: false
+        default: false
 defaults: {run: {shell: 'bash -el {0}'}} # https://github.com/marketplace/actions/setup-miniconda#important
 env:
   YARDL_VERSION: 0.6.3
@@ -38,6 +44,12 @@ jobs:
         echo "$PWD/yardl" >> "$GITHUB_PATH"
       env:
         GH_TOKEN: ${{ github.token }}
+    # Enable tmate debugging of manually-triggered workflows if the input option was provided
+    - name: Setup tmate session if triggered
+      #if: ${{ failure() }}
+      uses: mxschmitt/action-tmate@v3
+      timeout-minutes: 30
+      if: ${{ github.event_name == 'workflow_dispatch' && inputs.debug_enabled == 'true' }}
     - name: Build model
       run: |
         just generate
