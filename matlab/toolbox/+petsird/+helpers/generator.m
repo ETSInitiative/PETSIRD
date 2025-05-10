@@ -119,7 +119,7 @@ function detector = get_detector_module(cfg)
             end
         end
     end
-    detector = petsird.DetectorModule(detecting_elements=[rep_volume]);
+    detector = petsird.DetectorModule(detecting_elements=rep_volume);
 end
 
 function crystal = get_crystal(cfg)
@@ -180,8 +180,7 @@ function efficiencies = get_detection_efficiencies(scanner, cfg)
     % fprint("SGID LUT:\n", module_pair_SGID_LUT, file=sys.stderr)
     assert(max(module_pair_SGID_LUT(:)) == num_SGIDs - 1);
     module_pair_efficiencies_vector = [];
-    assert(length(rep_module.object.detecting_elements) == 1);
-    detecting_elements = rep_module.object.detecting_elements(1);
+    detecting_elements = rep_module.object.detecting_elements;
     num_det_els_in_module = length(detecting_elements.transforms);
     for SGID = 0:num_SGIDs-1
         % Extract first module_pair for this SGID. However, as this

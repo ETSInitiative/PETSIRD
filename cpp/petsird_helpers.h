@@ -18,10 +18,7 @@ get_num_det_els(const ScannerGeometry& scanner_geometry)
   for (const auto& rep_module : scanner_geometry.replicated_modules)
     {
       const auto& det_els = rep_module.object.detecting_elements;
-      for (const auto& rep_volume : det_els)
-        {
-          num_det_els += rep_volume.transforms.size() * rep_module.transforms.size();
-        }
+      num_det_els += det_els.transforms.size() * rep_module.transforms.size();
     }
   return num_det_els;
 }
@@ -39,10 +36,9 @@ expand_detection_bins(const ScannerGeometry& scanner_geometry, const T& list_of_
 {
   assert(scanner_geometry.replicated_modules.size() == 1);
   const auto& rep_module = scanner_geometry.replicated_modules[0];
-  assert(rep_module.object.detecting_elements.size() == 1);
 
   // TODO currently det_el_idx are uint32_t, so use this type to avoid compiler warnings
-  const uint32_t num_el_per_module = rep_module.object.detecting_elements[0].transforms.size();
+  const uint32_t num_el_per_module = rep_module.object.detecting_elements.transforms.size();
 
   std::vector<ExpandedDetectionBin> result;
   for (auto bin : list_of_detection_bins)
