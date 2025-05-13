@@ -170,6 +170,9 @@ def get_detection_efficiencies(
 def get_scanner_info() -> petsird.ScannerInformation:
 
     scanner_geometry = get_scanner_geometry()
+    num_types_of_modules = scanner_geometry.number_of_replicated_modules()
+    # Example code below is restricted to the following case
+    assert num_types_of_modules == 1
 
     # TODO scanner_info.bulk_materials
 
@@ -182,16 +185,30 @@ def get_scanner_info() -> petsird.ScannerInformation:
                                     650,
                                     NUMBER_OF_EVENT_ENERGY_BINS + 1,
                                     dtype="float32")
+    # In this example, use the same bin edges etc for all module-types
+    allTofBinEdges = numpy.ndarray(
+        (num_types_of_modules, num_types_of_modules),
+        dtype=petsird.get_dtype(petsird.BinEdges))
+    allTofBinEdges[0, 0] = [tofBinEdges]
+    tofResolution = numpy.ndarray((num_types_of_modules, num_types_of_modules),
+                                  dtype=numpy.float32)
+    tofResolution[:] = 9.4  # in mm
+    allEnergyBinEdges = numpy.ndarray(
+        (num_types_of_modules), dtype=petsird.get_dtype(petsird.BinEdges))
+    allEnergyBinEdges[0] = [energyBinEdges]
+    energyResolutionAt511 = numpy.ndarray((num_types_of_modules),
+                                          dtype=numpy.float32)
+    energyResolutionAt511[:] = 0.11  # as fraction of 511
+
     # We need energy bin info before being able to construct the detection
     # efficiencies, so we first construct a scanner without the efficiencies
     scanner = petsird.ScannerInformation(
         model_name="PETSIRD_TEST",
         scanner_geometry=scanner_geometry,
-        tof_bin_edges=tofBinEdges,
-        tof_resolution=9.4,  # in mm
-        event_energy_bin_edges=energyBinEdges,
-        energy_resolution_at_511=0.11,  # as fraction of 511
-    )
+        tof_bin_edges=allTofBinEdges,
+        tof_resolution=tofResolution,
+        event_energy_bin_edges=allEnergyBinEdges,
+        energy_resolution_at_511=energyResolutionAt511)
 
     # Now added the efficiencies
     scanner.detection_efficiencies = get_detection_efficiencies(scanner)
