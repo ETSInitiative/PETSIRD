@@ -68,34 +68,35 @@ ScannerInformation: !record
 
     # Edge information for TOF bins in mm
     #
-    # This is a list of either size 1 (all module-pairs have the same information) or
-    # the number of SGIDs (see the documentation for SGID).
+    # This is a 2D array with elements of type BinEdges, i.e. it specifies the edges for every module-pair
+    # (actually pair of module-types).
     #
     # 0 corresponds to the same arrival time. Negative numbers indicate that the first detector detected first.
     # For instance, a coincidence event is stored as 2 detectionBins, denoting the arrival time at the first
     # detecting element t1 and the arrival time at the second detecting element t2, we store (t1-t2)*c/2.
     # Note: for non-TOF scanners, this defines the coincidence window
     # TODO: this currently assumes equal size for each TOF bin, but some scanners "stretch" TOF bins depending on length of LOR
-    tofBinEdges: BinEdges*
+    # Constraint: this 2D array has to be symmetric.
+    tofBinEdges: BinEdges[typeOfModule1, typeOfModule2]
 
     # TOF resolution (as FWHM) in mm
     # Scanner coincidence timing resolution (CTR) without tof-binning
     #
-    # This is a list of either size 1 (all module-pairs have the same information) or
-    # the number of SGIDs (see the documentation for SGID).
-    tofResolution: float*
+    # This is a 2D array specifying the CTR for every module-pair (actually pair of module-types).
+    # Constraint: this 2D array has to be symmetric.
+    tofResolution: float[typeOfModule1, typeOfModule2]
 
     # Edge information (in keV) for energy windows used for coincidences, triples etc
     #
     # This is a list of values for every module type.
     # Constraint: size(energyResolutionAt511) == size(ScannerGeometry.replicatedModules)
-    eventEnergyBinEdges: BinEdges*
+    eventEnergyBinEdges: BinEdges[typeOfModule]
 
     # FWHM of photopeak for incoming gamma of 511 keV, expressed as a ratio w.r.t. 511
     #
     # This is a list of values for every module type.
     # Constraint: size(energyResolutionAt511) == size(ScannerGeometry.replicatedModules)
-    energyResolutionAt511: float*
+    energyResolutionAt511: float[typeOfModule]
 
     # level at which the singles histograms are stored
     singlesHistogramLevel: SinglesHistogramLevelType
@@ -107,7 +108,7 @@ ScannerInformation: !record
     # for flexibility.
     # Constraint: (singlesHistogramLevel == SinglesHistogramLevelType.none && numberOfSinglesHistogramEnergyBins >= 1) ||
     #             (singlesHistogramLevel != SinglesHistogramLevelType.none && size(singlesHistogramEnergyBinEdges) == 0)
-    singlesHistogramEnergyBinEdges: BinEdges*
+    singlesHistogramEnergyBinEdges: BinEdges[typeOfModule]
 
     # Encode how the scanner handles multiple coincidences
     coincidencePolicy: CoincidencePolicy

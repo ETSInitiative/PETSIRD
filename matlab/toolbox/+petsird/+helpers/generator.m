@@ -54,6 +54,8 @@ end
 function scanner = get_scanner_info(cfg)
     scanner_geometry = get_scanner_geometry(cfg);
 
+    % TODO This code does not yet take multiple module-types into account
+
     % TOF info (in mm)
     tofBinEdges = single(linspace(-cfg.RADIUS, cfg.RADIUS, cfg.NUMBER_OF_TOF_BINS + 1));
     energyBinEdges = single(linspace(430, 650, cfg.NUMBER_OF_EVENT_ENERGY_BINS + 1));

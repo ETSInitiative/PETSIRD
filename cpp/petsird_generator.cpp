@@ -1,6 +1,6 @@
 /*
   Copyright (C) 2022-2023 Microsoft Corporation
-  Copyright (C) 2023-2024 University College London
+  Copyright (C) 2023-2025 University College London
 
   SPDX-License-Identifier: Apache-2.0
 */
@@ -183,25 +183,47 @@ get_scanner_info()
   scanner_info.model_name = "PETSIRD_TEST";
 
   scanner_info.scanner_geometry = get_scanner_geometry();
+  const auto num_types_of_modules = scanner.scanner_geometry.replicated_modules.size();
+  // only 1 type of module in the current scanner
+  assert(num_types_of_modules == 1);
 
   // TODO scanner_info.bulk_materials
 
   // TOF and energy information
   {
     typedef yardl::NDArray<float, 1> FArray1D;
+    typedef yardl::NDArray<float, 2> FArray2D;
     // TOF info (in mm)
     FArray1D::shape_type tof_bin_edges_shape = { NUMBER_OF_TOF_BINS + 1 };
-    FArray1D tof_bin_edges(tof_bin_edges_shape);
-    for (std::size_t i = 0; i < tof_bin_edges.size(); ++i)
-      tof_bin_edges[i] = (i - NUMBER_OF_TOF_BINS / 2.F) / NUMBER_OF_TOF_BINS * 2 * RADIUS;
+    FArray1D tof_bin_edges_arr(tof_bin_edges_shape);
+    for (std::size_t i = 0; i < tof_bin_edges_arr.size(); ++i)
+      tof_bin_edges_arr[i] = (i - NUMBER_OF_TOF_BINS / 2.F) / NUMBER_OF_TOF_BINS * 2 * RADIUS;
+    const petsird::BinEdges tof_bin_edges{ tof_bin_edges_arr };
+    typedef yardl::NDArray<petsird::BinEdges, 2> TOFBinEdges;
+    TOFBinEdges::shape_type all_tof_bin_edges_shape = { num_types_of_modules, num_types_of_modules };
+    TOFBinEdges all_tof_bin_edges(all_tof_bin_edges_shape);
+    all_tof_bin_edges(0, 0) = tof_bin_edges;
+    FArray2D::shape_type all_tof_bin_resolutions_shape = { num_types_of_modules, num_types_of_modules };
+    FArray2D all_tof_resolutions(all_tof_bin_resolutions_shape);
+    all_tof_resolutions(0, 0) = 9.4F; // in mm
+
     FArray1D::shape_type event_energy_bin_edges_shape = { NUMBER_OF_EVENT_ENERGY_BINS + 1 };
-    FArray1D event_energy_bin_edges(event_energy_bin_edges_shape);
-    for (std::size_t i = 0; i < event_energy_bin_edges.size(); ++i)
-      event_energy_bin_edges[i] = 430.F + i * (650.F - 430.F) / NUMBER_OF_EVENT_ENERGY_BINS;
-    scanner_info.tof_bin_edges = tof_bin_edges;
-    scanner_info.tof_resolution = 9.4F; // in mm
-    scanner_info.event_energy_bin_edges = event_energy_bin_edges;
-    scanner_info.energy_resolution_at_511 = .11F; // as fraction of 511
+    FArray1D event_energy_bin_edges_arr(event_energy_bin_edges_shape);
+    for (std::size_t i = 0; i < event_energy_bin_edges_arr.size(); ++i)
+      event_energy_bin_edges_arr[i] = 430.F + i * (650.F - 430.F) / NUMBER_OF_EVENT_ENERGY_BINS;
+    petsird::BinEdges event_energy_bin_edges{ event_energy_bin_edges_arr };
+    typedef yardl::NDArray<petsird::BinEdges, 1> EnergyBinEdges;
+    EnergyBinEdges::shape_type all_event_energy_bin_edges_shape = { num_types_of_modules };
+    EnergyBinEdges all_event_energy_bin_edges(all_event_energy_bin_edges_shape);
+    all_event_energy_bin_edges[0] = event_energy_bin_edges;
+    FArray1D::shape_type all_event_energy_resolutions_shape = { num_types_of_modules };
+    FArray1D all_event_energy_resolutions(all_event_energy_resolutions_shape);
+    all_event_energy_resolutions(0) = .11F; // as fraction of 511
+
+    scanner_info.tof_bin_edges = all_tof_bin_edges;
+    scanner_info.tof_resolution = all_tof_resolutions;
+    scanner_info.event_energy_bin_edges = all_event_energy_bin_edges;
+    scanner_info.energy_resolution_at_511 = all_event_energy_resolutions;
   }
 
   scanner_info.detection_efficiencies = get_detection_efficiencies(scanner_info);
