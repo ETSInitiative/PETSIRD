@@ -96,15 +96,16 @@ main(int argc, char const* argv[])
             << header.scanner.scanner_geometry.replicated_modules[0].object.detecting_elements.transforms.size() << std::endl;
   std::cout << "Total number of 'crystals': " << petsird_helpers::get_num_det_els(header.scanner.scanner_geometry) << std::endl;
 
-  std::cout << "Number of TOF bins: " << header.scanner.NumberOfTOFBins() << std::endl;
-  std::cout << "Number of energy bins: " << header.scanner.NumberOfEventEnergyBins() << std::endl;
-
-  const auto& tof_bin_edges = header.scanner.tof_bin_edges;
-  std::cout << "TOF bin edges: " << tof_bin_edges << std::endl;
-  const auto& event_energy_bin_edges = header.scanner.event_energy_bin_edges;
-  std::cout << "Event energy bin edges: " << event_energy_bin_edges << std::endl;
-  const auto energy_mid_points = (xt::view(event_energy_bin_edges, xt::range(0, event_energy_bin_edges.size() - 1))
-                                  + xt::view(event_energy_bin_edges, xt::range(1, event_energy_bin_edges.size())))
+  const auto& tof_bin_edges = header.scanner.tof_bin_edges[0];
+  const auto num_tof_bins = tof_bin_edges.NumberOfBins();
+  std::cout << "Number of TOF bins: " << num_tof_bins << std::endl;
+  std::cout << "TOF bin edges: " << tof_bin_edges.edges << std::endl;
+  const auto& event_energy_bin_edges = header.scanner.event_energy_bin_edges[0];
+  const auto num_event_energy_bins = event_energy_bin_edges.NumberOfBins();
+  std::cout << "Number of energy bins: " << num_event_energy_bins << std::endl;
+  std::cout << "Event energy bin edges: " << event_energy_bin_edges.edges << std::endl;
+  const auto energy_mid_points = (xt::view(event_energy_bin_edges.edges, xt::range(0, event_energy_bin_edges.edges.size() - 1))
+                                  + xt::view(event_energy_bin_edges.edges, xt::range(1, event_energy_bin_edges.edges.size())))
                                  / 2;
   std::cout << "Event energy mid points: " << energy_mid_points << std::endl;
 
@@ -123,8 +124,9 @@ main(int argc, char const* argv[])
     }
   if (header.scanner.singles_histogram_level != petsird::SinglesHistogramLevelType::kNone)
     {
-      std::cout << "Singles Histogram Energy Bin Edges: " << header.scanner.singles_histogram_energy_bin_edges << std::endl;
-      std::cout << "Number of Singles Histogram Energy Windows: " << header.scanner.NumberOfSinglesHistogramEnergyBins()
+      const auto& singles_histogram_energy_bin_edges = header.scanner.singles_histogram_energy_bin_edges[0];
+      std::cout << "Singles Histogram Energy Bin Edges: " << singles_histogram_energy_bin_edges.edges << std::endl;
+      std::cout << "Number of Singles Histogram Energy Windows: " << singles_histogram_energy_bin_edges.NumberOfBins()
                 << std::endl;
     }
 

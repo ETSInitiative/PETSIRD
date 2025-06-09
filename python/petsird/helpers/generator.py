@@ -97,13 +97,16 @@ def get_scanner_geometry() -> petsird.ScannerGeometry:
 def get_detection_efficiencies(
     scanner: petsird.ScannerInformation, ) -> petsird.DetectionEfficiencies:
     """return some (non-physical) detection efficiencies"""
-    num_det_els = get_num_det_els(scanner.scanner_geometry)
-    detection_bin_efficiencies = numpy.ones(
-        (num_det_els, scanner.number_of_event_energy_bins()),
-        dtype=numpy.float32)
-
     # only 1 type of module in the current scanner
     assert len(scanner.scanner_geometry.replicated_modules) == 1
+    num_det_els = get_num_det_els(scanner.scanner_geometry)
+    # TODO not sure why we need an extra [0] here.
+    event_energy_bin_edges = scanner.event_energy_bin_edges[0][0]
+    # num_event_energy_bins = event_energy_bin_edges.number_of_bins();
+    num_event_energy_bins = len(event_energy_bin_edges)
+    detection_bin_efficiencies = numpy.ones(
+        (num_det_els, num_event_energy_bins), dtype=numpy.float32)
+
     rep_module = scanner.scanner_geometry.replicated_modules[0]
     num_modules = len(rep_module.transforms)
     # We will use rotational symmetries translation along the axis
@@ -139,6 +142,11 @@ def get_detection_efficiencies(
     module_pair_efficiencies_vector = []
     detecting_elements = rep_module.object.detecting_elements
     num_det_els_in_module = len(detecting_elements.transforms)
+    # TODO not sure why we need an extra [0] here.
+    event_energy_bin_edges = scanner.event_energy_bin_edges[0][0]
+    # num_event_energy_bins = event_energy_bin_edges.number_of_bins();
+    num_event_energy_bins = len(event_energy_bin_edges)
+
     for SGID in range(num_SGIDs):
         # Extract first module_pair for this SGID. However, as this
         # currently unused, it is commented out
@@ -147,9 +155,9 @@ def get_detection_efficiencies(
         module_pair_efficiencies = numpy.ones(
             (
                 num_det_els_in_module,
-                scanner.number_of_event_energy_bins(),
+                num_event_energy_bins,
                 num_det_els_in_module,
-                scanner.number_of_event_energy_bins(),
+                num_event_energy_bins,
             ),
             dtype=numpy.float32,
         )
@@ -177,14 +185,10 @@ def get_scanner_info() -> petsird.ScannerInformation:
     # TODO scanner_info.bulk_materials
 
     # TOF info (in mm)
-    tofBinEdges = numpy.linspace(-RADIUS,
-                                 RADIUS,
-                                 NUMBER_OF_TOF_BINS + 1,
-                                 dtype="float32")
-    energyBinEdges = numpy.linspace(430,
-                                    650,
-                                    NUMBER_OF_EVENT_ENERGY_BINS + 1,
-                                    dtype="float32")
+    tofBinEdges = petsird.BinEdges(edges=numpy.linspace(
+        -RADIUS, RADIUS, NUMBER_OF_TOF_BINS + 1, dtype="float32"))
+    energyBinEdges = petsird.BinEdges(edges=numpy.linspace(
+        430, 650, NUMBER_OF_EVENT_ENERGY_BINS + 1, dtype="float32"))
     # In this example, use the same bin edges etc for all module-types
     allTofBinEdges = numpy.ndarray(
         (num_types_of_modules, num_types_of_modules),

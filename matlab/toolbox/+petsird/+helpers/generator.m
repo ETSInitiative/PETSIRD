@@ -57,8 +57,9 @@ function scanner = get_scanner_info(cfg)
     % TODO This code does not yet take multiple module-types into account
 
     % TOF info (in mm)
-    tofBinEdges = single(linspace(-cfg.RADIUS, cfg.RADIUS, cfg.NUMBER_OF_TOF_BINS + 1));
-    energyBinEdges = single(linspace(430, 650, cfg.NUMBER_OF_EVENT_ENERGY_BINS + 1));
+    tofBinEdges = petsird.BinEdges(edges=single(linspace(-cfg.RADIUS, cfg.RADIUS, cfg.NUMBER_OF_TOF_BINS + 1)));
+    energyBinEdges = petsird.BinEdges(edges=single(linspace(430, 650, cfg.NUMBER_OF_EVENT_ENERGY_BINS + 1)));
+    % TODO not sure how to convert the above to the relevant array
 
     % We need energy bin info before being able to construct the detection
     % efficiencies, so we first construct a scanner without the efficiencies
@@ -142,13 +143,18 @@ end
 
 function efficiencies = get_detection_efficiencies(scanner, cfg)
     % Return some (non-physical) detection efficiencies
-    num_det_els = petsird.helpers.get_num_detecting_elements(scanner.scanner_geometry);
-
-    % detection_bin_efficiencies = ones(num_det_els, scanner.number_of_event_energy_bins(), "single");
-    detection_bin_efficiencies = ones(scanner.number_of_event_energy_bins(), num_det_els, "single");
-
     % Only 1 type of module in the current scanner
     assert(length(scanner.scanner_geometry.replicated_modules) == 1);
+
+    num_det_els = petsird.helpers.get_num_detecting_elements(scanner.scanner_geometry);
+    % TODO not sure how to access this.
+    event_energy_bin_edges = scanner.event_energy_bin_edges(0)(0);
+    % num_event_energy_bins = event_energy_bin_edges.number_of_bins();
+    num_event_energy_bins = length(event_energy_bin_edges);
+
+    % detection_bin_efficiencies = ones(num_det_els, num_event_energy_bins, "single");
+    detection_bin_efficiencies = ones(num_event_energy_bins, num_det_els, "single");
+
     rep_module = scanner.scanner_geometry.replicated_modules(1);
     num_modules = int32(length(rep_module.transforms));
 
@@ -184,15 +190,19 @@ function efficiencies = get_detection_efficiencies(scanner, cfg)
     module_pair_efficiencies_vector = [];
     detecting_elements = rep_module.object.detecting_elements;
     num_det_els_in_module = length(detecting_elements.transforms);
+    % TODO not sure how to access this.
+    event_energy_bin_edges = scanner.event_energy_bin_edges(0)(0);
+    % num_event_energy_bins = event_energy_bin_edges.number_of_bins();
+    num_event_energy_bins = length(event_energy_bin_edges);
     for SGID = 0:num_SGIDs-1
         % Extract first module_pair for this SGID. However, as this
         % currently unused, it is commented out
         % module_pair = numpy.argwhere(module_pair_SGID_LUT == SGID)[0]
         % print(module_pair, file=sys.stderr)
         module_pair_efficiencies = ones(...
-                scanner.number_of_event_energy_bins(), ...
+                num_event_energy_bins, ...
                 num_det_els_in_module, ...
-                scanner.number_of_event_energy_bins(), ...
+                num_event_energy_bins, ...
                 num_det_els_in_module ...
         );
         % give some (non-physical) value

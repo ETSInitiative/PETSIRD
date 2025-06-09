@@ -111,13 +111,17 @@ get_scanner_geometry()
 petsird::DetectionEfficiencies
 get_detection_efficiencies(const petsird::ScannerInformation& scanner)
 {
+  // only 1 type of module in the current scanner
+  assert(scanner.scanner_geometry.replicated_modules.size() == 1);
+
   const auto num_det_els = petsird_helpers::get_num_det_els(scanner.scanner_geometry);
   petsird::DetectionEfficiencies detection_efficiencies;
 
-  detection_efficiencies.detection_bin_efficiencies = xt::ones<float>({ num_det_els, scanner.NumberOfEventEnergyBins() });
+  const auto& event_energy_bin_edges = scanner.event_energy_bin_edges[0];
+  const auto num_event_energy_bins = event_energy_bin_edges.NumberOfBins();
 
-  // only 1 type of module in the current scanner
-  assert(scanner.scanner_geometry.replicated_modules.size() == 1);
+  detection_efficiencies.detection_bin_efficiencies = xt::ones<float>({ num_det_els, num_event_energy_bins });
+
   const auto& rep_module = scanner.scanner_geometry.replicated_modules[0];
   const auto num_modules = rep_module.transforms.size();
 
@@ -165,7 +169,7 @@ get_detection_efficiencies(const petsird::ScannerInformation& scanner)
       // const auto& module_pair = *std::find(module_pair_SGID_LUT.begin(), module_pair_SGID_LUT.end(), SGID);
       petsird::ModulePairEfficiencies module_pair_efficiencies;
       module_pair_efficiencies.values = yardl::NDArray<float, 4>(
-          { num_det_els_in_module, scanner.NumberOfEventEnergyBins(), num_det_els_in_module, scanner.NumberOfEventEnergyBins() });
+          { num_det_els_in_module, num_event_energy_bins, num_det_els_in_module, num_event_energy_bins });
       // give some (non-physical) value
       module_pair_efficiencies.values.fill(SGID);
       module_pair_efficiencies.sgid = SGID;
@@ -183,7 +187,7 @@ get_scanner_info()
   scanner_info.model_name = "PETSIRD_TEST";
 
   scanner_info.scanner_geometry = get_scanner_geometry();
-  const auto num_types_of_modules = scanner.scanner_geometry.replicated_modules.size();
+  const auto num_types_of_modules = scanner_info.scanner_geometry.replicated_modules.size();
   // only 1 type of module in the current scanner
   assert(num_types_of_modules == 1);
 
