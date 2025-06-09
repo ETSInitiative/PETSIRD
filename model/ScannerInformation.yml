@@ -11,7 +11,7 @@ CoincidencePolicy: !enum
     # multiples will be stored as a sequence of all pairs, e.g. a triple leads to 3 pairs
     - multiplesAsAllCoincidences
 
-    # multiples will be stored as a sequence pairs, e.g. a triple leads to 2 pairs
+    # multiples will be stored as a sequence of pairs, e.g. a triple leads to 2 pairs
     # (single1 and single2, single2 and single3)
     - multiplesAsSequentialCoincidences
 
@@ -19,13 +19,10 @@ CoincidencePolicy: !enum
     - other
 
 # Type definition for how single histograms are stored.
-# Many scanners are able to store singles accumulated in some time intervals, i.e.
+# Many scanners are able to store singles accumulated in time intervals, i.e.
 # histogrammed (as opposed to a list of singles with their corresponding DetElIdx).
 # However, some scanners do not store this information at the smallest detector resolution.
 # Therefore, PETSIRD currently supports a total singles count for each module as well.
-#
-# Note that PETSIRD allows giving singles count summed over all energy windows. This is
-# currently not encode in this enum, but is derived from the size of the histogram.
 # See SinglesHistogramTimeBlock.
 SinglesHistogramLevelType: !enum
   values:
