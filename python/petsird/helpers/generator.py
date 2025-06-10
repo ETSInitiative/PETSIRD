@@ -100,10 +100,8 @@ def get_detection_efficiencies(
     # only 1 type of module in the current scanner
     assert len(scanner.scanner_geometry.replicated_modules) == 1
     num_det_els = get_num_det_els(scanner.scanner_geometry)
-    # TODO not sure why we need an extra [0] here.
-    event_energy_bin_edges = scanner.event_energy_bin_edges[0][0]
-    # num_event_energy_bins = event_energy_bin_edges.number_of_bins();
-    num_event_energy_bins = len(event_energy_bin_edges)
+    event_energy_bin_edges = scanner.event_energy_bin_edges[0]
+    num_event_energy_bins = event_energy_bin_edges.number_of_bins()
     detection_bin_efficiencies = numpy.ones(
         (num_det_els, num_event_energy_bins), dtype=numpy.float32)
 
@@ -142,10 +140,8 @@ def get_detection_efficiencies(
     module_pair_efficiencies_vector = []
     detecting_elements = rep_module.object.detecting_elements
     num_det_els_in_module = len(detecting_elements.transforms)
-    # TODO not sure why we need an extra [0] here.
-    event_energy_bin_edges = scanner.event_energy_bin_edges[0][0]
-    # num_event_energy_bins = event_energy_bin_edges.number_of_bins();
-    num_event_energy_bins = len(event_energy_bin_edges)
+    event_energy_bin_edges = scanner.event_energy_bin_edges[0]
+    num_event_energy_bins = event_energy_bin_edges.number_of_bins()
 
     for SGID in range(num_SGIDs):
         # Extract first module_pair for this SGID. However, as this
@@ -190,16 +186,17 @@ def get_scanner_info() -> petsird.ScannerInformation:
     energyBinEdges = petsird.BinEdges(edges=numpy.linspace(
         430, 650, NUMBER_OF_EVENT_ENERGY_BINS + 1, dtype="float32"))
     # In this example, use the same bin edges etc for all module-types
-    allTofBinEdges = numpy.ndarray(
-        (num_types_of_modules, num_types_of_modules),
-        dtype=petsird.get_dtype(petsird.BinEdges))
-    allTofBinEdges[0, 0] = [tofBinEdges]
+    # allTofBinEdges = numpy.ndarray(
+    #     (num_types_of_modules, num_types_of_modules),
+    #     dtype=petsird.get_dtype(petsird.BinEdges))
+    # allTofBinEdges[0][0] = tofBinEdges
+    allTofBinEdges = [[tofBinEdges]]
     tofResolution = numpy.ndarray((num_types_of_modules, num_types_of_modules),
                                   dtype=numpy.float32)
     tofResolution[:] = 9.4  # in mm
-    allEnergyBinEdges = numpy.ndarray(
-        (num_types_of_modules), dtype=petsird.get_dtype(petsird.BinEdges))
-    allEnergyBinEdges[0] = [energyBinEdges]
+    # allEnergyBinEdges = numpy.ndarray(
+    #    (num_types_of_modules), dtype=petsird.get_dtype(petsird.BinEdges))
+    allEnergyBinEdges = [energyBinEdges]
     energyResolutionAt511 = numpy.ndarray((num_types_of_modules),
                                           dtype=numpy.float32)
     energyResolutionAt511[:] = 0.11  # as fraction of 511

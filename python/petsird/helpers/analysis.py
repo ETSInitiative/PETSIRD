@@ -52,19 +52,14 @@ if __name__ == "__main__":
                 detecting_elements.transforms))
         print("Total number of 'crystals': ",
               get_num_det_els(scanner.scanner_geometry))
-        tof_bin_edges = scanner.tof_bin_edges[0, 0]
-        # TODO currently need another [0] to get at the "edges" field.
-        # num_tof_bins = tof_bin_edges.number_of_bins()
-        tof_bin_edges = tof_bin_edges[0]
-        num_tof_bins = len(tof_bin_edges)
+        tof_bin_edges = scanner.tof_bin_edges[0][0]
+        num_tof_bins = tof_bin_edges.number_of_bins()
         event_energy_bin_edges = scanner.event_energy_bin_edges[0]
-        # TODO as above
-        # num_event_energy_bins = event_energy_bin_edges.number_of_bins()
-        event_energy_bin_edges = event_energy_bin_edges[0]
-        num_event_energy_bins = len(event_energy_bin_edges)
+        num_event_energy_bins = event_energy_bin_edges.number_of_bins()
         print("Number of TOF bins: ", num_tof_bins)
         print("Tof bin edges: ", tof_bin_edges)
         print("Number of energy bins: ", num_event_energy_bins)
+        event_energy_bin_edges = event_energy_bin_edges.edges
         print("Event energy bin edges: ", event_energy_bin_edges)
         energy_mid_points = (event_energy_bin_edges[:-1] +
                              event_energy_bin_edges[1:]) / 2

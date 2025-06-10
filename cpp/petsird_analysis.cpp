@@ -96,7 +96,7 @@ main(int argc, char const* argv[])
             << header.scanner.scanner_geometry.replicated_modules[0].object.detecting_elements.transforms.size() << std::endl;
   std::cout << "Total number of 'crystals': " << petsird_helpers::get_num_det_els(header.scanner.scanner_geometry) << std::endl;
 
-  const auto& tof_bin_edges = header.scanner.tof_bin_edges[0];
+  const auto& tof_bin_edges = header.scanner.tof_bin_edges[0][0];
   const auto num_tof_bins = tof_bin_edges.NumberOfBins();
   std::cout << "Number of TOF bins: " << num_tof_bins << std::endl;
   std::cout << "TOF bin edges: " << tof_bin_edges.edges << std::endl;
