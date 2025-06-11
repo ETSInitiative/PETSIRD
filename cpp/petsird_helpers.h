@@ -5,6 +5,7 @@
 */
 
 #include "generated/types.h"
+#include <array>
 
 namespace petsird_helpers
 {
@@ -32,10 +33,10 @@ struct ExpandedDetectionBin
 
 template <class T>
 inline std::vector<ExpandedDetectionBin>
-expand_detection_bins(const ScannerGeometry& scanner_geometry, const T& list_of_detection_bins)
+expand_detection_bins(const ScannerGeometry& scanner_geometry, const TypeOfModule& module_type, const T& list_of_detection_bins)
 {
-  assert(scanner_geometry.replicated_modules.size() == 1);
-  const auto& rep_module = scanner_geometry.replicated_modules[0];
+  assert(module_type < scanner_geometry.replicated_modules.size());
+  const auto& rep_module = scanner_geometry.replicated_modules[module_type];
 
   // TODO currently det_el_idx are uint32_t, so use this type to avoid compiler warnings
   const uint32_t num_el_per_module = rep_module.object.detecting_elements.transforms.size();
@@ -49,34 +50,47 @@ expand_detection_bins(const ScannerGeometry& scanner_geometry, const T& list_of_
   return result;
 }
 
+inline ExpandedDetectionBin
+expand_detection_bin(const ScannerGeometry& scanner_geometry, const TypeOfModule& module_type, const DetectionBin& detection_bin)
+{
+  // TODO very inefficient, but avoid re-implementation of code above.
+  std::vector<DetectionBin> bins{ detection_bin };
+  const auto expanded_bins = expand_detection_bins(scanner_geometry, module_type, bins);
+  return expanded_bins[0];
+}
+
 inline float
-get_detection_efficiency(const ScannerInformation& scanner, const CoincidenceEvent& event)
+get_detection_efficiency(const ScannerInformation& scanner, const TypeOfModulePair& module_type_pair,
+                         const CoincidenceEvent& event)
 {
   float eff = 1.0F;
   const auto& detection_bin_efficiencies = scanner.detection_efficiencies.detection_bin_efficiencies;
   if (detection_bin_efficiencies)
     {
-      eff *= ((*detection_bin_efficiencies)(event.detection_bins[0].det_el_idx, event.detection_bins[0].energy_idx)
-              * (*detection_bin_efficiencies)(event.detection_bins[1].det_el_idx, event.detection_bins[1].energy_idx));
+      eff *= ((*detection_bin_efficiencies)[module_type_pair[0]](event.detection_bins[0].det_el_idx,
+                                                                 event.detection_bins[0].energy_idx)
+              * (*detection_bin_efficiencies)[module_type_pair[1]](event.detection_bins[1].det_el_idx,
+                                                                   event.detection_bins[1].energy_idx));
     }
-  const auto& module_pair_efficiencies_vector = scanner.detection_efficiencies.module_pair_efficiencies_vector;
-  if (module_pair_efficiencies_vector)
+  const auto& module_pair_efficiencies_vectors = scanner.detection_efficiencies.module_pair_efficiencies_vectors;
+  if (module_pair_efficiencies_vectors)
     {
-      const auto& module_pair_SGID_LUT = scanner.detection_efficiencies.module_pair_sgidlut;
-      assert(module_pair_SGID_LUT);
+      assert(scanner.detection_efficiencies.module_pair_sgidlut);
+      const auto& module_pair_SGID_LUT
+          = (*scanner.detection_efficiencies.module_pair_sgidlut)[module_type_pair[0]][module_type_pair[1]];
 
-      const auto expanded_det_bins = expand_detection_bins(scanner.scanner_geometry, event.detection_bins);
-      assert(scanner.scanner_geometry.replicated_modules.size() == 1);
-      const int SGID = (*module_pair_SGID_LUT)(expanded_det_bins[0].module, expanded_det_bins[1].module);
+      const auto expanded_det_bin0 = expand_detection_bin(scanner.scanner_geometry, module_type_pair[0], event.detection_bins[0]);
+      const auto expanded_det_bin1 = expand_detection_bin(scanner.scanner_geometry, module_type_pair[1], event.detection_bins[1]);
+      const int SGID = module_pair_SGID_LUT(expanded_det_bin0.module, expanded_det_bin1.module);
       if (SGID < 0)
         {
           return 0.;
         }
 
-      const auto& module_pair_efficiencies = (*module_pair_efficiencies_vector)[SGID];
+      const auto& module_pair_efficiencies = (*module_pair_efficiencies_vectors)[module_type_pair[0]][module_type_pair[1]][SGID];
       assert(module_pair_efficiencies.sgid == static_cast<unsigned>(SGID));
-      eff *= module_pair_efficiencies.values(expanded_det_bins[0].el, event.detection_bins[0].energy_idx, expanded_det_bins[1].el,
-                                             event.detection_bins[1].energy_idx);
+      eff *= module_pair_efficiencies.values(expanded_det_bin0.el, expanded_det_bin0.energy_idx, expanded_det_bin1.el,
+                                             expanded_det_bin1.energy_idx);
     }
   return eff;
 }

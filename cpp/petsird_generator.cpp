@@ -111,8 +111,9 @@ get_scanner_geometry()
 petsird::DetectionEfficiencies
 get_detection_efficiencies(const petsird::ScannerInformation& scanner)
 {
+  const auto num_module_types = scanner.scanner_geometry.replicated_modules.size();
   // only 1 type of module in the current scanner
-  assert(scanner.scanner_geometry.replicated_modules.size() == 1);
+  assert(num_module_types == 1);
 
   const auto num_det_els = petsird_helpers::get_num_det_els(scanner.scanner_geometry);
   petsird::DetectionEfficiencies detection_efficiencies;
@@ -120,7 +121,20 @@ get_detection_efficiencies(const petsird::ScannerInformation& scanner)
   const auto& event_energy_bin_edges = scanner.event_energy_bin_edges[0];
   const auto num_event_energy_bins = event_energy_bin_edges.NumberOfBins();
 
-  detection_efficiencies.detection_bin_efficiencies = xt::ones<float>({ num_det_els, num_event_energy_bins });
+  std::vector<petsird::DetectionBinEfficiencies> detection_bin_efficiencies(num_module_types);
+  detection_efficiencies.detection_bin_efficiencies = detection_bin_efficiencies;
+  detection_efficiencies.module_pair_sgidlut = std::vector<std::vector<petsird::ModulePairSGIDLUT>>(num_module_types);
+  for (auto& elem : *detection_efficiencies.module_pair_sgidlut)
+    {
+      elem.resize(num_module_types);
+    }
+  detection_efficiencies.module_pair_efficiencies_vectors
+      = std::vector<std::vector<petsird::ModulePairEfficienciesVector>>(num_module_types);
+  for (auto& elem : *detection_efficiencies.module_pair_efficiencies_vectors)
+    {
+      elem.resize(num_module_types);
+    }
+  (*detection_efficiencies.detection_bin_efficiencies)[0] = xt::ones<float>({ num_det_els, num_event_energy_bins });
 
   const auto& rep_module = scanner.scanner_geometry.replicated_modules[0];
   const auto num_modules = rep_module.transforms.size();
@@ -135,8 +149,8 @@ get_detection_efficiencies(const petsird::ScannerInformation& scanner)
   constexpr auto num_SGIDs = NUM_MODULES_ALONG_AXIS * NUM_MODULES_ALONG_AXIS * (NUM_MODULES_ALONG_RING - 1);
   // SGID = z1 + NZ * (z2 + NZ * abs(a2 - a1) - 1)
   constexpr auto NZ = NUM_MODULES_ALONG_AXIS;
-  detection_efficiencies.module_pair_sgidlut = yardl::NDArray<int, 2>({ num_modules, num_modules });
-  auto& module_pair_SGID_LUT = *detection_efficiencies.module_pair_sgidlut;
+  (*detection_efficiencies.module_pair_sgidlut)[0][0] = yardl::NDArray<int, 2>({ num_modules, num_modules });
+  auto& module_pair_SGID_LUT = (*detection_efficiencies.module_pair_sgidlut)[0][0];
   for (unsigned int mod1 = 0; mod1 < num_modules; ++mod1)
     {
       for (unsigned int mod2 = 0; mod2 < num_modules; ++mod2)
@@ -157,9 +171,11 @@ get_detection_efficiencies(const petsird::ScannerInformation& scanner)
     }
   // assert(module_pair_SGID_LUT).max() == num_SGIDs - 1);
 
+  // initialise module_pair_efficiencies (for the (0,0) module-pair types)
+  auto& module_pair_efficiencies_vector = (*detection_efficiencies.module_pair_efficiencies_vectors)[0][0];
   // assign an empty vector first, and reserve correct size
-  detection_efficiencies.module_pair_efficiencies_vector = petsird::ModulePairEfficienciesVector();
-  detection_efficiencies.module_pair_efficiencies_vector->reserve(num_SGIDs);
+  module_pair_efficiencies_vector = petsird::ModulePairEfficienciesVector();
+  module_pair_efficiencies_vector.reserve(num_SGIDs);
 
   const auto& detecting_elements = rep_module.object.detecting_elements;
   const auto num_det_els_in_module = detecting_elements.transforms.size();
@@ -173,8 +189,8 @@ get_detection_efficiencies(const petsird::ScannerInformation& scanner)
       // give some (non-physical) value
       module_pair_efficiencies.values.fill(SGID);
       module_pair_efficiencies.sgid = SGID;
-      detection_efficiencies.module_pair_efficiencies_vector->emplace_back(module_pair_efficiencies);
-      assert(detection_efficiencies.module_pair_efficiencies_vector->size() == unsigned(SGID + 1));
+      module_pair_efficiencies_vector.emplace_back(module_pair_efficiencies);
+      assert(module_pair_efficiencies_vector.size() == unsigned(SGID + 1));
     }
 
   return detection_efficiencies;
@@ -283,6 +299,7 @@ get_events(const petsird::Header& header, std::size_t num_events)
 {
   std::vector<petsird::CoincidenceEvent> events;
   events.reserve(num_events);
+  const petsird::TypeOfModulePair module_type_pair{ 0, 0 };
   const auto num_det_els = petsird_helpers::get_num_det_els(header.scanner.scanner_geometry);
   for (std::size_t i = 0; i < num_events; ++i)
     {
@@ -294,7 +311,7 @@ get_events(const petsird::Header& header, std::size_t num_events)
         {
           e.detection_bins[0].det_el_idx = get_random_uint(num_det_els);
           e.detection_bins[1].det_el_idx = get_random_uint(num_det_els);
-          if (petsird_helpers::get_detection_efficiency(header.scanner, e) > 0)
+          if (petsird_helpers::get_detection_efficiency(header.scanner, module_type_pair, e) > 0)
             {
               // in coincidence, we can get out of the loop
               break;

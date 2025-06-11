@@ -165,9 +165,9 @@ def get_detection_efficiencies(
         assert len(module_pair_efficiencies_vector) == SGID + 1
 
     return petsird.DetectionEfficiencies(
-        detection_bin_efficiencies=detection_bin_efficiencies,
-        module_pair_sgidlut=module_pair_SGID_LUT,
-        module_pair_efficiencies_vector=module_pair_efficiencies_vector,
+        detection_bin_efficiencies=[detection_bin_efficiencies],
+        module_pair_sgidlut=[[module_pair_SGID_LUT]],
+        module_pair_efficiencies_vectors=[[module_pair_efficiencies_vector]],
     )
 
 
@@ -234,6 +234,7 @@ def get_header() -> petsird.Header:
 
 
 def get_events(header: petsird.Header,
+               module_type_pair: petsird.TypeOfModulePair,
                num_events: int) -> Iterator[petsird.CoincidenceEvent]:
     """Generate some random events"""
     detector_count = get_num_det_els(header.scanner.scanner_geometry)
@@ -253,7 +254,8 @@ def get_events(header: petsird.Header,
                 0, detector_count)
             event.detection_bins[1].det_el_idx = random.randrange(
                 0, detector_count)
-            if get_detection_efficiency(header.scanner, event) > 0:
+            if get_detection_efficiency(header.scanner, module_type_pair,
+                                        event) > 0:
                 # in coincidence, we can get out of the loop
                 break
 
@@ -274,8 +276,11 @@ if __name__ == "__main__":
                 stop=(t + 1) * EVENT_TIME_BLOCK_DURATION)
             average_num = EVENT_TIME_BLOCK_DURATION * COUNT_RATE
             num_prompts_this_block = rng.poisson(average_num)
+            module_type_pair = petsird.TypeOfModulePair((0, 0))
             prompts_this_block = [[
-                list(get_events(header, num_prompts_this_block))
+                list(
+                    get_events(header, module_type_pair,
+                               num_prompts_this_block))
             ]]
             # Normally we'd write multiple blocks, but here we have just one,
             # so let's write a tuple with just one element

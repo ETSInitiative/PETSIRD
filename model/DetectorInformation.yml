@@ -42,6 +42,14 @@ ScannerGeometry: !record
   computedFields:
     numberOfReplicatedModules: size(replicatedModules)
 
+# This is the type for the index over "module-types".
+# It is an unsigned integer that runs over all the types starting from 0.
+#
+# This index runs over ScannerGeometry.replicated_modules
+TypeOfModule: uint
+
+# This is a pair of 2 "module-types".
+TypeOfModulePair: TypeOfModule*2
 
 # This is the type for the index over "modules".
 # It is an unsigned integer that runs over all the "modules" starting from 0.

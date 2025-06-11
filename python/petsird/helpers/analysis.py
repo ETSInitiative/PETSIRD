@@ -7,7 +7,7 @@ import argparse
 import sys
 
 import petsird
-from petsird.helpers import (expand_detection_bins, get_detection_efficiency,
+from petsird.helpers import (expand_detection_bin, get_detection_efficiency,
                              get_num_det_els)
 
 
@@ -66,8 +66,9 @@ if __name__ == "__main__":
         print("Event energy mid points: ", energy_mid_points)
         print("Singles histogram level: ", scanner.singles_histogram_level)
         if scanner.singles_histogram_level != petsird.SinglesHistogramLevelType.NONE:
-            print("Number of singles histograms energy windows: ",
-                  scanner.number_of_singles_histogram_energy_bins())
+            print(
+                "Number of singles histograms energy windows for first module-type: ",
+                scanner.singles_histogram_energy_bin_edges[0].number_of_bins())
             print("Singles histogram energy bin edges: ",
                   scanner.singles_histogram_energy_bin_edges)
         print("SGID LUT:\n",
@@ -78,7 +79,8 @@ if __name__ == "__main__":
         last_time = 0
         for time_block in reader.read_time_blocks():
             if isinstance(time_block, petsird.TimeBlock.EventTimeBlock):
-                # Note: just doing one module-type ATM
+                # TODO just doing one module-type ATM
+                type_of_module_pair = petsird.TypeOfModulePair((0, 0))
                 last_time = time_block.value.time_interval.stop
                 num_prompts += len(time_block.value.prompt_events[0][0])
                 if time_block.value.delayed_events is not None:
@@ -94,11 +96,19 @@ if __name__ == "__main__":
                         print(event)
                         print(
                             "   ",
-                            expand_detection_bins(scanner.scanner_geometry,
-                                                  event.detection_bins),
+                            expand_detection_bin(scanner.scanner_geometry,
+                                                 type_of_module_pair[0],
+                                                 event.detection_bins[0]),
+                            ", ",
+                            expand_detection_bin(scanner.scanner_geometry,
+                                                 type_of_module_pair[1],
+                                                 event.detection_bins[1]),
                         )
-                        print("    efficiency:",
-                              get_detection_efficiency(scanner, event))
+                        print(
+                            "    efficiency:",
+                            get_detection_efficiency(scanner,
+                                                     type_of_module_pair,
+                                                     event))
 
         print(f"Last time block at {last_time} ms")
         print(f"Number of prompt events: {num_prompts}")

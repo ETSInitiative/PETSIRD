@@ -36,26 +36,28 @@ ModulePairEfficienciesVector: ModulePairEfficiencies*
 # The former are stored in detectionBinEfficiencies, and the latter in modulePairEfficienciesVector
 # (a list of ModulePairEfficiencies, each entry corresponding to a module pair).
 #
-# To save memory, the modulePairEfficienciesVector contains only one of element for each SGID.
+# To save memory, the modulePairEfficienciesVector contains only one element for each SGID.
 # The SGID for a module-pair can be found in modulePairSGIDLUT.
 #
 # Finding the total detection efficiency therefore follows these steps in pseudo-code
+# 0. obtain module-types
 # 1. find modules for each detection_bin
 # 2. find det_el indices "inside" each module
-# 3. SGID = modulePairSGIDLUT[mod1, mod1]
+# 3. SGID = modulePairSGIDLUT[module_type1][module_type2][mod1, mod1]
 # 4. if (SGID < 0) return 0
-# 5. module_pair_efficiencies = modulePairEfficienciesVector[SGID]
-# 6. return detectionBinEfficiencies(detection_bin1) * detectionBinEfficiencies(detection_bin2)
+# 5. module_pair_efficiencies = modulePairEfficienciesVector[module_type1][module_type2][SGID]
+# 6. return detectionBinEfficiencies[module_type1](detection_bin1) * detectionBinEfficiencies[module_type2](detection_bin2)
 #       * module_pair_efficiencies[det_el_in_mod1, en1, det_el_in_mod2, en2]
 #
 # If either of the components is not present, its value is considered to be 1.
 DetectionEfficiencies: !record
   fields:
-    # Detection efficiencies for every detection bin
-    detectionBinEfficiencies: DetectionBinEfficiencies?
-    # Lookup table for SGIDs.
+    # List of detection efficiencies for every detection bin (one for each module-type).
+    # Constraint: size(detectionBinEfficiencies) == ScannerInformation.numberOfReplicatedModules
+    detectionBinEfficiencies: DetectionBinEfficiencies*?
+    # Nested list of lookup tables for SGIDs, one for each module-type pair.
     # Also indicates if coincidences between a module-pair are recorded.
-    modulePairSGIDLUT: ModulePairSGIDLUT?
-    # Vector of all modulePairEfficiencies (one for each SGID)
-    # Constraint: size(modulePairEfficienciesVector) == max(modulePairSGIDLUT) + 1
-    modulePairEfficienciesVector: ModulePairEfficienciesVector?
+    modulePairSGIDLUT: ModulePairSGIDLUT**?
+    # Nested list of all modulePairEfficienciesVectors (one for each module-type pair)
+    # Constraint: size(modulePairEfficienciesVectors) == max(modulePairSGIDLUT) + 1
+    modulePairEfficienciesVectors: ModulePairEfficienciesVector**?

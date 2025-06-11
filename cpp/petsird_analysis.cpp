@@ -143,6 +143,7 @@ main(int argc, char const* argv[])
         {
           auto& event_time_block = std::get<petsird::EventTimeBlock>(time_block);
           last_time = event_time_block.time_interval.stop;
+          const petsird::TypeOfModulePair module_type_pair{ 0, 0 };
           num_prompts += event_time_block.prompt_events[0][0].size();
           if (event_time_block.delayed_events)
             num_delayeds += (*event_time_block.delayed_events)[0][0].size();
@@ -160,14 +161,17 @@ main(int argc, char const* argv[])
                   std::cout << "CoincidenceEvent(detElIndices=[" << event.detection_bins[0].det_el_idx << ", "
                             << event.detection_bins[1].det_el_idx << "], tofIdx=" << event.tof_idx << ", energyIndices=["
                             << event.detection_bins[0].energy_idx << ", " << event.detection_bins[1].energy_idx << "])\n";
-                  const auto module_and_elems
-                      = petsird_helpers::expand_detection_bins(header.scanner.scanner_geometry, event.detection_bins);
+                  const auto expanded_det_bin0 = petsird_helpers::expand_detection_bin(
+                      header.scanner.scanner_geometry, module_type_pair[0], event.detection_bins[0]);
+                  const auto expanded_det_bin1 = petsird_helpers::expand_detection_bin(
+                      header.scanner.scanner_geometry, module_type_pair[1], event.detection_bins[1]);
                   std::cout << "    "
-                            << "[ExpandedDetectionBin(module=" << module_and_elems[0].module << ", "
-                            << "el=" << module_and_elems[0].el << "), ExpandedDetectionBin(module=" << module_and_elems[0].module
+                            << "[ExpandedDetectionBin(module=" << expanded_det_bin0.module << ", "
+                            << "el=" << expanded_det_bin0.el << "), ExpandedDetectionBin(module=" << expanded_det_bin1.module
                             << ", "
-                            << "el=" << module_and_elems[0].el << ")]\n";
-                  std::cout << "    efficiency:" << petsird_helpers::get_detection_efficiency(header.scanner, event) << "\n";
+                            << "el=" << expanded_det_bin1.el << ")]\n";
+                  std::cout << "    efficiency:"
+                            << petsird_helpers::get_detection_efficiency(header.scanner, module_type_pair, event) << "\n";
                 }
             }
         }
