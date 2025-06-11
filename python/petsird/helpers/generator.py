@@ -274,8 +274,9 @@ if __name__ == "__main__":
                 stop=(t + 1) * EVENT_TIME_BLOCK_DURATION)
             average_num = EVENT_TIME_BLOCK_DURATION * COUNT_RATE
             num_prompts_this_block = rng.poisson(average_num)
-            prompts_this_block = list(
-                get_events(header, num_prompts_this_block))
+            prompts_this_block = [[
+                list(get_events(header, num_prompts_this_block))
+            ]]
             # Normally we'd write multiple blocks, but here we have just one,
             # so let's write a tuple with just one element
             writer.write_time_blocks((petsird.TimeBlock.EventTimeBlock(

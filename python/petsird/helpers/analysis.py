@@ -78,13 +78,14 @@ if __name__ == "__main__":
         last_time = 0
         for time_block in reader.read_time_blocks():
             if isinstance(time_block, petsird.TimeBlock.EventTimeBlock):
+                # Note: just doing one module-type ATM
                 last_time = time_block.value.time_interval.stop
-                num_prompts += len(time_block.value.prompt_events)
+                num_prompts += len(time_block.value.prompt_events[0][0])
                 if time_block.value.delayed_events is not None:
-                    num_delayeds += len(time_block.value.delayed_events)
+                    num_delayeds += len(time_block.value.delayed_events[0][0])
                 print("=====================  Events in time block until ",
                       last_time, " ==============")
-                for event in time_block.value.prompt_events:
+                for event in time_block.value.prompt_events[0][0]:
                     energy_1 += energy_mid_points[
                         event.detection_bins[0].energy_idx]
                     energy_2 += energy_mid_points[

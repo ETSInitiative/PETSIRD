@@ -143,13 +143,14 @@ main(int argc, char const* argv[])
         {
           auto& event_time_block = std::get<petsird::EventTimeBlock>(time_block);
           last_time = event_time_block.time_interval.stop;
-          num_prompts += event_time_block.prompt_events.size();
+          num_prompts += event_time_block.prompt_events[0][0].size();
           if (event_time_block.delayed_events)
-            num_delayeds += event_time_block.delayed_events->size();
+            num_delayeds += (*event_time_block.delayed_events)[0][0].size();
           if (print_events)
             std::cout << "=====================  Prompt events in time block from " << last_time << " ==============\n";
 
-          for (auto& event : event_time_block.prompt_events)
+          // Note: just doing one module-type ATM
+          for (auto& event : event_time_block.prompt_events[0][0])
             {
               energy_1 += energy_mid_points[event.detection_bins[0].energy_idx];
               energy_2 += energy_mid_points[event.detection_bins[1].energy_idx];

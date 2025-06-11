@@ -334,7 +334,9 @@ main(int argc, char* argv[])
       petsird::EventTimeBlock time_block;
       time_block.time_interval.start = t * EVENT_TIME_BLOCK_DURATION;
       time_block.time_interval.stop = (t + 1) * EVENT_TIME_BLOCK_DURATION;
-      time_block.prompt_events = prompts_this_block;
+      time_block.prompt_events.resize(1);
+      time_block.prompt_events[0].resize(1);
+      time_block.prompt_events[0][0] = prompts_this_block;
       writer.WriteTimeBlocks(time_block);
     }
   writer.EndTimeBlocks();
