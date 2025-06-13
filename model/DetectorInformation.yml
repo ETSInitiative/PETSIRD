@@ -68,10 +68,9 @@ ModuleIdx: uint
 # The correspondence between this integer and a module/det_el is not encoded in this model,
 # but only in the "helpers".
 # It corresponds to effectively incrementing the detElIdx in nested loops:
-# 1. ScannerGeometry.replicated_modules
-# 2. replicated_module.transforms
-# 3. replicated_module.detecting_elements.transforms
-# (with the detElIdx running faster over the 3rd loop)
+# 1. replicated_module.transforms
+# 2. replicated_module.detecting_elements.transforms
+# (with the detElIdx running faster over the 2nd loop)
 DetElIdx: uint
 
 # type for a "single" detection, used in `CoincidenceEvent` and `TripleEvent`.

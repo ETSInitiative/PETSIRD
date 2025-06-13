@@ -97,15 +97,16 @@ def get_scanner_geometry() -> petsird.ScannerGeometry:
 def get_detection_efficiencies(
     scanner: petsird.ScannerInformation, ) -> petsird.DetectionEfficiencies:
     """return some (non-physical) detection efficiencies"""
-    # only 1 type of module in the current scanner
+    # TODO only 1 type of module in the current scanner
     assert len(scanner.scanner_geometry.replicated_modules) == 1
-    num_det_els = get_num_det_els(scanner.scanner_geometry)
-    event_energy_bin_edges = scanner.event_energy_bin_edges[0]
+    type_of_module = 0
+    num_det_els = get_num_det_els(scanner.scanner_geometry, type_of_module)
+    event_energy_bin_edges = scanner.event_energy_bin_edges[type_of_module]
     num_event_energy_bins = event_energy_bin_edges.number_of_bins()
     detection_bin_efficiencies = numpy.ones(
         (num_det_els, num_event_energy_bins), dtype=numpy.float32)
 
-    rep_module = scanner.scanner_geometry.replicated_modules[0]
+    rep_module = scanner.scanner_geometry.replicated_modules[type_of_module]
     num_modules = len(rep_module.transforms)
     # We will use rotational symmetries translation along the axis
     # We assume all module-pairs are in coincidence, except those
@@ -140,7 +141,7 @@ def get_detection_efficiencies(
     module_pair_efficiencies_vector = []
     detecting_elements = rep_module.object.detecting_elements
     num_det_els_in_module = len(detecting_elements.transforms)
-    event_energy_bin_edges = scanner.event_energy_bin_edges[0]
+    event_energy_bin_edges = scanner.event_energy_bin_edges[type_of_module]
     num_event_energy_bins = event_energy_bin_edges.number_of_bins()
 
     for SGID in range(num_SGIDs):
@@ -234,10 +235,13 @@ def get_header() -> petsird.Header:
 
 
 def get_events(header: petsird.Header,
-               module_type_pair: petsird.TypeOfModulePair,
+               type_of_module_pair: petsird.TypeOfModulePair,
                num_events: int) -> Iterator[petsird.CoincidenceEvent]:
     """Generate some random events"""
-    detector_count = get_num_det_els(header.scanner.scanner_geometry)
+    detector_count0 = get_num_det_els(header.scanner.scanner_geometry,
+                                      type_of_module_pair[0])
+    detector_count1 = get_num_det_els(header.scanner.scanner_geometry,
+                                      type_of_module_pair[1])
     detection_bins = (petsird.DetectionBin(), petsird.DetectionBin())
     for _ in range(num_events):
         event = petsird.CoincidenceEvent(
@@ -251,10 +255,10 @@ def get_events(header: petsird.Header,
         # Generate random det_el_idxs until detection effficiency is not zero
         while True:
             event.detection_bins[0].det_el_idx = random.randrange(
-                0, detector_count)
+                0, detector_count0)
             event.detection_bins[1].det_el_idx = random.randrange(
-                0, detector_count)
-            if get_detection_efficiency(header.scanner, module_type_pair,
+                0, detector_count1)
+            if get_detection_efficiency(header.scanner, type_of_module_pair,
                                         event) > 0:
                 # in coincidence, we can get out of the loop
                 break
@@ -276,10 +280,10 @@ if __name__ == "__main__":
                 stop=(t + 1) * EVENT_TIME_BLOCK_DURATION)
             average_num = EVENT_TIME_BLOCK_DURATION * COUNT_RATE
             num_prompts_this_block = rng.poisson(average_num)
-            module_type_pair = petsird.TypeOfModulePair((0, 0))
+            type_of_module_pair = petsird.TypeOfModulePair((0, 0))
             prompts_this_block = [[
                 list(
-                    get_events(header, module_type_pair,
+                    get_events(header, type_of_module_pair,
                                num_prompts_this_block))
             ]]
             # Normally we'd write multiple blocks, but here we have just one,

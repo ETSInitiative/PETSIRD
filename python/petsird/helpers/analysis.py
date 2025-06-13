@@ -42,19 +42,22 @@ if __name__ == "__main__":
         if header.exam is not None:
             print(f"Subject ID: {header.exam.subject.id}")
         print(f"Scanner name: {scanner.model_name}")
+        type_of_module = 0
         print("Types of modules: ",
               len(scanner.scanner_geometry.replicated_modules))
-        print("Number of modules of first type: ",
-              len(scanner.scanner_geometry.replicated_modules[0].transforms))
+        print(
+            "Number of modules of first type: ",
+            len(scanner.scanner_geometry.replicated_modules[type_of_module].
+                transforms))
         print(
             "Number of elements in modules of first type: ",
-            len(scanner.scanner_geometry.replicated_modules[0].object.
-                detecting_elements.transforms))
+            len(scanner.scanner_geometry.replicated_modules[type_of_module].
+                object.detecting_elements.transforms))
         print("Total number of 'crystals': ",
-              get_num_det_els(scanner.scanner_geometry))
-        tof_bin_edges = scanner.tof_bin_edges[0][0]
+              get_num_det_els(scanner.scanner_geometry, type_of_module))
+        tof_bin_edges = scanner.tof_bin_edges[type_of_module][type_of_module]
         num_tof_bins = tof_bin_edges.number_of_bins()
-        event_energy_bin_edges = scanner.event_energy_bin_edges[0]
+        event_energy_bin_edges = scanner.event_energy_bin_edges[type_of_module]
         num_event_energy_bins = event_energy_bin_edges.number_of_bins()
         print("Number of TOF bins: ", num_tof_bins)
         print("Tof bin edges: ", tof_bin_edges)
@@ -68,7 +71,8 @@ if __name__ == "__main__":
         if scanner.singles_histogram_level != petsird.SinglesHistogramLevelType.NONE:
             print(
                 "Number of singles histograms energy windows for first module-type: ",
-                scanner.singles_histogram_energy_bin_edges[0].number_of_bins())
+                scanner.singles_histogram_energy_bin_edges[type_of_module].
+                number_of_bins())
             print("Singles histogram energy bin edges: ",
                   scanner.singles_histogram_energy_bin_edges)
         print("SGID LUT:\n",
@@ -85,9 +89,11 @@ if __name__ == "__main__":
                 num_prompts += len(time_block.value.prompt_events[0][0])
                 if time_block.value.delayed_events is not None:
                     num_delayeds += len(time_block.value.delayed_events[0][0])
-                print("=====================  Events in time block until ",
-                      last_time, " ==============")
-                for event in time_block.value.prompt_events[0][0]:
+                print("=====================  Events between module-types ",
+                      type_of_module_pair, " in time block until ", last_time,
+                      " ==============")
+                for event in time_block.value.prompt_events[
+                        type_of_module_pair[0]][type_of_module_pair[1]]:
                     energy_1 += energy_mid_points[
                         event.detection_bins[0].energy_idx]
                     energy_2 += energy_mid_points[
