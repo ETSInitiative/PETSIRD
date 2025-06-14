@@ -21,10 +21,19 @@ fprintf("Number of elements in modules of first type: %d\n", ...
     length(header.scanner.scanner_geometry.replicated_modules(1).object.detecting_elements.transforms));
 fprintf("Total number of 'crystals': %d\n", ...
     petsird.helpers.get_num_detecting_elements(header.scanner.scanner_geometry));
-fprintf("Number of TOF bins: %d\n", header.scanner.number_of_tof_bins());
-fprintf("Number of energy bins: %d\n", header.scanner.number_of_event_energy_bins());
+tof_bin_edges = header.scanner.tof_bin_edges(0, 0)
+% TODO not sure how to access this.
+% num_tof_bins = tof_bin_edges.number_of_bins()
+tof_bin_edges = tof_bin_edges[0]
+num_tof_bins = length(tof_bin_edges)
 
-event_energy_bin_edges = header.scanner.event_energy_bin_edges;
+event_energy_bin_edges = header.scanner.event_energy_bin_edges(0)(0);
+% TODO not sure how to access this.
+% num_event_energy_bins = event_energy_bin_edges.number_of_bins();
+num_event_energy_bins = length(event_energy_bin_edges);
+fprintf("Number of TOF bins: %d\n", num_tof_bins);
+fprintf("Number of energy bins: %d\n", num_event_energy_bins);
+
 fprintf("Energy bin edges: " + join(repelem("%f", length(event_energy_bin_edges))) + "\n", event_energy_bin_edges);
 
 energy_mid_points = (event_energy_bin_edges(1:end-1) + event_energy_bin_edges(2:end)) / 2;
