@@ -86,9 +86,11 @@ if __name__ == "__main__":
                 # TODO just doing one module-type ATM
                 type_of_module_pair = petsird.TypeOfModulePair((0, 0))
                 last_time = time_block.value.time_interval.stop
-                num_prompts += len(time_block.value.prompt_events[0][0])
+                num_prompts += len(time_block.value.prompt_events[
+                    type_of_module_pair[0]][type_of_module_pair[1]])
                 if time_block.value.delayed_events is not None:
-                    num_delayeds += len(time_block.value.delayed_events[0][0])
+                    num_delayeds += len(time_block.value.delayed_events[
+                        type_of_module_pair[0]][type_of_module_pair[1]])
                 print("=====================  Events between module-types ",
                       type_of_module_pair, " in time block until ", last_time,
                       " ==============")

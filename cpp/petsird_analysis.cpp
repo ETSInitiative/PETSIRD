@@ -150,7 +150,7 @@ main(int argc, char const* argv[])
           const petsird::TypeOfModulePair type_of_module_pair{ 0, 0 };
           num_prompts += event_time_block.prompt_events[type_of_module_pair[0]][type_of_module_pair[1]].size();
           if (event_time_block.delayed_events)
-            num_delayeds += (*event_time_block.delayed_events)[0][0].size();
+            num_delayeds += (*event_time_block.delayed_events)[type_of_module_pair[0]][type_of_module_pair[1]].size();
           if (print_events)
             std::cout << "=====================  Prompt events in time block from " << last_time << " ==============\n";
 
