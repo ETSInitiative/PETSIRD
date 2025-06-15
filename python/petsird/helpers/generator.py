@@ -186,17 +186,12 @@ def get_scanner_info() -> petsird.ScannerInformation:
         -RADIUS, RADIUS, NUMBER_OF_TOF_BINS + 1, dtype="float32"))
     energyBinEdges = petsird.BinEdges(edges=numpy.linspace(
         430, 650, NUMBER_OF_EVENT_ENERGY_BINS + 1, dtype="float32"))
-    # In this example, there is only 1 module-type, therefore we need a 1x1 "nested list"
+    # In this example, there is only 1 module-type, therefore we need 1x1 "nested lists"
     allTofBinEdges = [[tofBinEdges]]
-    tofResolution = numpy.ndarray((num_types_of_modules, num_types_of_modules),
-                                  dtype=numpy.float32)
-    tofResolution[:] = 9.4  # in mm
-    # allEnergyBinEdges = numpy.ndarray(
-    #    (num_types_of_modules), dtype=petsird.get_dtype(petsird.BinEdges))
+    tofResolution = [[9.4]]  # in mm
+    # 1-element list for energy info
     allEnergyBinEdges = [energyBinEdges]
-    energyResolutionAt511 = numpy.ndarray((num_types_of_modules),
-                                          dtype=numpy.float32)
-    energyResolutionAt511[:] = 0.11  # as fraction of 511
+    energyResolutionAt511 = [0.11]  # as fraction of 511
 
     # We need energy bin info before being able to construct the detection
     # efficiencies, so we first construct a scanner without the efficiencies

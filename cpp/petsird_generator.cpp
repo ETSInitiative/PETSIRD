@@ -206,45 +206,39 @@ get_scanner_info()
 
   scanner_info.scanner_geometry = get_scanner_geometry();
   const auto num_types_of_modules = scanner_info.scanner_geometry.replicated_modules.size();
-  // only 1 type of module in the current scanner
-  assert(num_types_of_modules == 1);
-  const petsird::TypeOfModule type_of_module{ 0 };
 
   // TODO scanner_info.bulk_materials
 
   // TOF and energy information
   {
+    auto all_tof_bin_edges
+        = petsird_helpers::construct_2D_nested_vector<petsird::BinEdges>(num_types_of_modules, num_types_of_modules);
+    auto all_tof_resolutions = petsird_helpers::construct_2D_nested_vector<float>(num_types_of_modules, num_types_of_modules);
+    auto all_event_energy_bin_edges = petsird_helpers::construct_vector<petsird::BinEdges>(num_types_of_modules);
+    auto all_event_energy_resolutions = petsird_helpers::construct_vector<float>(num_types_of_modules);
+
+    // only 1 type of module in the current scanner
+    assert(num_types_of_modules == 1);
+    const petsird::TypeOfModule type_of_module{ 0 };
+
     typedef yardl::NDArray<float, 1> FArray1D;
-    typedef yardl::NDArray<float, 2> FArray2D;
     // TOF info (in mm)
     FArray1D::shape_type tof_bin_edges_shape = { NUMBER_OF_TOF_BINS + 1 };
     FArray1D tof_bin_edges_arr(tof_bin_edges_shape);
     for (std::size_t i = 0; i < tof_bin_edges_arr.size(); ++i)
       tof_bin_edges_arr[i] = (i - NUMBER_OF_TOF_BINS / 2.F) / NUMBER_OF_TOF_BINS * 2 * RADIUS;
     const petsird::BinEdges tof_bin_edges{ tof_bin_edges_arr };
-    typedef std::vector<std::vector<petsird::BinEdges>> TOFBinEdges;
-    TOFBinEdges all_tof_bin_edges(num_types_of_modules);
-    for (auto& one_of_them : all_tof_bin_edges)
-      {
-        one_of_them.resize(num_types_of_modules);
-      }
     all_tof_bin_edges[type_of_module][type_of_module] = tof_bin_edges;
 
-    FArray2D::shape_type all_tof_bin_resolutions_shape = { num_types_of_modules, num_types_of_modules };
-    FArray2D all_tof_resolutions(all_tof_bin_resolutions_shape);
-    all_tof_resolutions(type_of_module, type_of_module) = 9.4F; // in mm
+    all_tof_resolutions[type_of_module][type_of_module] = 9.4F; // in mm
 
     FArray1D::shape_type event_energy_bin_edges_shape = { NUMBER_OF_EVENT_ENERGY_BINS + 1 };
     FArray1D event_energy_bin_edges_arr(event_energy_bin_edges_shape);
     for (std::size_t i = 0; i < event_energy_bin_edges_arr.size(); ++i)
       event_energy_bin_edges_arr[i] = 430.F + i * (650.F - 430.F) / NUMBER_OF_EVENT_ENERGY_BINS;
     petsird::BinEdges event_energy_bin_edges{ event_energy_bin_edges_arr };
-    typedef std::vector<petsird::BinEdges> EnergyBinEdges;
-    EnergyBinEdges all_event_energy_bin_edges(num_types_of_modules);
     all_event_energy_bin_edges[type_of_module] = event_energy_bin_edges;
-    FArray1D::shape_type all_event_energy_resolutions_shape = { num_types_of_modules };
-    FArray1D all_event_energy_resolutions(all_event_energy_resolutions_shape);
-    all_event_energy_resolutions(type_of_module) = .11F; // as fraction of 511
+    all_event_energy_resolutions[type_of_module] = .11F; // as fraction of 511
 
     scanner_info.tof_bin_edges = all_tof_bin_edges;
     scanner_info.tof_resolution = all_tof_resolutions;
