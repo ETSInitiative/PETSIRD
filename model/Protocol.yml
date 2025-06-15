@@ -15,6 +15,12 @@ Header: !record
 # types of timeBlocks
 TimeBlock: [EventTimeBlock, ExternalSignalTimeBlock, BedMovementTimeBlock, GantryMovementTimeBlock, DeadTimeTimeBlock, SinglesHistogramTimeBlock]
 
+# Type definition for a list of coincidences, where all coincidences are between 2 modules of specific types
+ListOfCoincidenceEvents: CoincidenceEvent*
+
+# Type definition for a list of triples, where all triples are between 3 modules of specific types
+ListOfTripleEvents: TripleEvent*
+
 EventTimeBlock: !record
   fields:
    # time interval for this time block
@@ -22,13 +28,34 @@ EventTimeBlock: !record
    # of a photon is used for deciding which time block the event is entered in.
    # However, the impact of this choice is negligible and therefore can be vendor dependent.
    timeInterval: TimeInterval
-   # list of prompts in this time block
-   # TODO might be better to use !array
-   promptEvents: CoincidenceEvent*
-   # optional list of delayed coincidences in this time block
-   delayedEvents: CoincidenceEvent*?
-   # optional list of triple coincidences in this time block
-   tripleEvents: TripleEvent*?
+   # Nested vector with lists of prompts in this time block
+   # There is one separate list for every pair of module types.
+   # To get the list of prompts for 2 types of modules where the first `detectionBin`
+   # given in the `CoincidenceEvent` is in a module of the first type, use
+   #  promptEvents[typeOfModule1][typeOfModule2]
+   # Note that the ListOfCoincidenceEvents could be empty for a particular module-pair.
+   # Note that in principle, this nested vector could be made "upper diagonal",
+   # but this is currently not enforced. Therefore, to check all coincidences between two
+   # different types of modules, a user will have to check two lists, i.e. also
+   #  promptEvents[typeOfModule2][typeOfModule1]
+   # Constraint: size(promptsEvents) == ScannerInformation.numberOfReplicatedModules
+   # Constraint: size(promptsEvents[*]) == ScannerInformation.numberOfReplicatedModules
+   promptEvents: ListOfCoincidenceEvents**
+   # optional nested vector with lists of delayed coincidences in this time block
+   # To get the list of delayeds for 2 types of modules, use
+   #  delayedEvents[typeOfModule1][typeOfModule2]
+   # See promptEvents for more information.
+   # Constraint: size(delayedEvents) == ScannerInformation.numberOfReplicatedModules
+   # Constraint: size(delayedEvents[*]) == ScannerInformation.numberOfReplicatedModules
+   delayedEvents: ListOfCoincidenceEvents**?
+   # optional nested vector with lists of triple coincidences in this time block
+   # To get the list of triples for 3 types of modules, use
+   #  tripleEvents[typeOfModule1][typeOfModule2][typeOfModule3]
+   # See promptEvents for more information.
+   # Constraint: size(tripleEvents) == ScannerInformation.numberOfReplicatedModules
+   # Constraint: size(tripleEvents[*]) == ScannerInformation.numberOfReplicatedModules
+   # Constraint: size(tripleEvents[*][*]) == ScannerInformation.numberOfReplicatedModules
+   tripleEvents: ListOfTripleEvents***?
 
 ExternalSignalTypeEnum: !enum
   values:
@@ -90,10 +117,8 @@ DeadTimeTimeBlock: !record
     timeInterval: TimeInterval
     # Singles dead-time array for the time interval, stored as fractions of "alive time"
     # (1 means no dead-time, 0 means no detected counts)
-    # If sizeOfEnergyIdxDimension == 1, the fraction is assumed to be the same
-    # for all energy windows.
     # Constraint: sizeOfDetElIdxDimension == number of all possible unique DetElIdxs
-    # Constraint: (sizeOfEnergyIdxDimension == 1) or (sizeOfEnergyIdxDimension == ScannerInformation.numberOfEventEnergyBins)
+    # Constraint: (sizeOfEnergyIdxDimension == ScannerInformation.numberOfEventEnergyBins)
     singlesAliveTimeFraction: !array
       items: float
       dimensions: [detElIdx, energyIdx]
@@ -116,15 +141,13 @@ DeadTimeTimeBlock: !record
 # Constraint: if ScannerInformation.singlesHistogramLevel == SinglesHistogramLevelType.none, there should
 #     be no time blocks of this type in the stream.
 #     Otherwise, the union of SinglesHistogramTimeBlock.timeInterval should be at least as large as the union of all EventTimeBlocks.timeInterval
-# Constraint: if singles histograms are recorded, the time covered by all event time blocks
-# has to be covered by singles histogram time blocks.
 SinglesHistogramTimeBlock: !record
   fields:
     timeInterval: TimeInterval
     # A 2D histogram of all singles (after energy discrimination) occuring in the timeInterval.
     # The dimensions correspond to positional information (i.e. moduleIdx or detElIdx, see below)
     # and energy index. The latter index refers to ScannerInformation.singlesHistogramEnergyBinEdges.
-    # Note that in future, we might consider also storing singles before energy discremination,
+    # Note that in future, we might consider also storing singles before energy discrimination,
     # but this is currently not supported.
     #
     # If ScannerInformation.singlesHistogramLevel == SinglesHistogramLevelType.module, the

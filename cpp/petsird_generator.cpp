@@ -1,6 +1,6 @@
 /*
   Copyright (C) 2022-2023 Microsoft Corporation
-  Copyright (C) 2023-2024 University College London
+  Copyright (C) 2023-2025 University College London
 
   SPDX-License-Identifier: Apache-2.0
 */
@@ -111,14 +111,32 @@ get_scanner_geometry()
 petsird::DetectionEfficiencies
 get_detection_efficiencies(const petsird::ScannerInformation& scanner)
 {
-  const auto num_det_els = petsird_helpers::get_num_det_els(scanner.scanner_geometry);
+  const auto num_module_types = scanner.scanner_geometry.replicated_modules.size();
+  // only 1 type of module in the current scanner
+  assert(num_module_types == 1);
+  const petsird::TypeOfModule type_of_module{ 0 };
+  const auto num_det_els = petsird_helpers::get_num_det_els(scanner.scanner_geometry, type_of_module);
   petsird::DetectionEfficiencies detection_efficiencies;
 
-  detection_efficiencies.detection_bin_efficiencies = xt::ones<float>({ num_det_els, scanner.NumberOfEventEnergyBins() });
+  const auto& event_energy_bin_edges = scanner.event_energy_bin_edges[type_of_module];
+  const auto num_event_energy_bins = event_energy_bin_edges.NumberOfBins();
 
-  // only 1 type of module in the current scanner
-  assert(scanner.scanner_geometry.replicated_modules.size() == 1);
-  const auto& rep_module = scanner.scanner_geometry.replicated_modules[0];
+  std::vector<petsird::DetectionBinEfficiencies> detection_bin_efficiencies(num_module_types);
+  detection_efficiencies.detection_bin_efficiencies = detection_bin_efficiencies;
+  detection_efficiencies.module_pair_sgidlut = std::vector<std::vector<petsird::ModulePairSGIDLUT>>(num_module_types);
+  for (auto& elem : *detection_efficiencies.module_pair_sgidlut)
+    {
+      elem.resize(num_module_types);
+    }
+  detection_efficiencies.module_pair_efficiencies_vectors
+      = std::vector<std::vector<petsird::ModulePairEfficienciesVector>>(num_module_types);
+  for (auto& elem : *detection_efficiencies.module_pair_efficiencies_vectors)
+    {
+      elem.resize(num_module_types);
+    }
+  (*detection_efficiencies.detection_bin_efficiencies)[type_of_module] = xt::ones<float>({ num_det_els, num_event_energy_bins });
+
+  const auto& rep_module = scanner.scanner_geometry.replicated_modules[type_of_module];
   const auto num_modules = rep_module.transforms.size();
 
   // We will only use rotational symmetries (no translation along the axis yet)
@@ -131,8 +149,9 @@ get_detection_efficiencies(const petsird::ScannerInformation& scanner)
   constexpr auto num_SGIDs = NUM_MODULES_ALONG_AXIS * NUM_MODULES_ALONG_AXIS * (NUM_MODULES_ALONG_RING - 1);
   // SGID = z1 + NZ * (z2 + NZ * abs(a2 - a1) - 1)
   constexpr auto NZ = NUM_MODULES_ALONG_AXIS;
-  detection_efficiencies.module_pair_sgidlut = yardl::NDArray<int, 2>({ num_modules, num_modules });
-  auto& module_pair_SGID_LUT = *detection_efficiencies.module_pair_sgidlut;
+  (*detection_efficiencies.module_pair_sgidlut)[type_of_module][type_of_module]
+      = yardl::NDArray<int, 2>({ num_modules, num_modules });
+  auto& module_pair_SGID_LUT = (*detection_efficiencies.module_pair_sgidlut)[type_of_module][type_of_module];
   for (unsigned int mod1 = 0; mod1 < num_modules; ++mod1)
     {
       for (unsigned int mod2 = 0; mod2 < num_modules; ++mod2)
@@ -153,9 +172,12 @@ get_detection_efficiencies(const petsird::ScannerInformation& scanner)
     }
   // assert(module_pair_SGID_LUT).max() == num_SGIDs - 1);
 
+  // initialise module_pair_efficiencies
+  auto& module_pair_efficiencies_vector
+      = (*detection_efficiencies.module_pair_efficiencies_vectors)[type_of_module][type_of_module];
   // assign an empty vector first, and reserve correct size
-  detection_efficiencies.module_pair_efficiencies_vector = petsird::ModulePairEfficienciesVector();
-  detection_efficiencies.module_pair_efficiencies_vector->reserve(num_SGIDs);
+  module_pair_efficiencies_vector = petsird::ModulePairEfficienciesVector();
+  module_pair_efficiencies_vector.reserve(num_SGIDs);
 
   const auto& detecting_elements = rep_module.object.detecting_elements;
   const auto num_det_els_in_module = detecting_elements.transforms.size();
@@ -165,12 +187,12 @@ get_detection_efficiencies(const petsird::ScannerInformation& scanner)
       // const auto& module_pair = *std::find(module_pair_SGID_LUT.begin(), module_pair_SGID_LUT.end(), SGID);
       petsird::ModulePairEfficiencies module_pair_efficiencies;
       module_pair_efficiencies.values = yardl::NDArray<float, 4>(
-          { num_det_els_in_module, scanner.NumberOfEventEnergyBins(), num_det_els_in_module, scanner.NumberOfEventEnergyBins() });
+          { num_det_els_in_module, num_event_energy_bins, num_det_els_in_module, num_event_energy_bins });
       // give some (non-physical) value
       module_pair_efficiencies.values.fill(SGID);
       module_pair_efficiencies.sgid = SGID;
-      detection_efficiencies.module_pair_efficiencies_vector->emplace_back(module_pair_efficiencies);
-      assert(detection_efficiencies.module_pair_efficiencies_vector->size() == unsigned(SGID + 1));
+      module_pair_efficiencies_vector.emplace_back(module_pair_efficiencies);
+      assert(module_pair_efficiencies_vector.size() == unsigned(SGID + 1));
     }
 
   return detection_efficiencies;
@@ -183,25 +205,45 @@ get_scanner_info()
   scanner_info.model_name = "PETSIRD_TEST";
 
   scanner_info.scanner_geometry = get_scanner_geometry();
+  const auto num_types_of_modules = scanner_info.scanner_geometry.replicated_modules.size();
 
   // TODO scanner_info.bulk_materials
 
   // TOF and energy information
   {
+    auto all_tof_bin_edges
+        = petsird_helpers::construct_2D_nested_vector<petsird::BinEdges>(num_types_of_modules, num_types_of_modules);
+    auto all_tof_resolutions = petsird_helpers::construct_2D_nested_vector<float>(num_types_of_modules, num_types_of_modules);
+    auto all_event_energy_bin_edges = petsird_helpers::construct_vector<petsird::BinEdges>(num_types_of_modules);
+    auto all_event_energy_resolutions = petsird_helpers::construct_vector<float>(num_types_of_modules);
+
+    // only 1 type of module in the current scanner
+    assert(num_types_of_modules == 1);
+    const petsird::TypeOfModule type_of_module{ 0 };
+
     typedef yardl::NDArray<float, 1> FArray1D;
     // TOF info (in mm)
     FArray1D::shape_type tof_bin_edges_shape = { NUMBER_OF_TOF_BINS + 1 };
-    FArray1D tof_bin_edges(tof_bin_edges_shape);
-    for (std::size_t i = 0; i < tof_bin_edges.size(); ++i)
-      tof_bin_edges[i] = (i - NUMBER_OF_TOF_BINS / 2.F) / NUMBER_OF_TOF_BINS * 2 * RADIUS;
+    FArray1D tof_bin_edges_arr(tof_bin_edges_shape);
+    for (std::size_t i = 0; i < tof_bin_edges_arr.size(); ++i)
+      tof_bin_edges_arr[i] = (i - NUMBER_OF_TOF_BINS / 2.F) / NUMBER_OF_TOF_BINS * 2 * RADIUS;
+    const petsird::BinEdges tof_bin_edges{ tof_bin_edges_arr };
+    all_tof_bin_edges[type_of_module][type_of_module] = tof_bin_edges;
+
+    all_tof_resolutions[type_of_module][type_of_module] = 9.4F; // in mm
+
     FArray1D::shape_type event_energy_bin_edges_shape = { NUMBER_OF_EVENT_ENERGY_BINS + 1 };
-    FArray1D event_energy_bin_edges(event_energy_bin_edges_shape);
-    for (std::size_t i = 0; i < event_energy_bin_edges.size(); ++i)
-      event_energy_bin_edges[i] = 430.F + i * (650.F - 430.F) / NUMBER_OF_EVENT_ENERGY_BINS;
-    scanner_info.tof_bin_edges = tof_bin_edges;
-    scanner_info.tof_resolution = 9.4F; // in mm
-    scanner_info.event_energy_bin_edges = event_energy_bin_edges;
-    scanner_info.energy_resolution_at_511 = .11F; // as fraction of 511
+    FArray1D event_energy_bin_edges_arr(event_energy_bin_edges_shape);
+    for (std::size_t i = 0; i < event_energy_bin_edges_arr.size(); ++i)
+      event_energy_bin_edges_arr[i] = 430.F + i * (650.F - 430.F) / NUMBER_OF_EVENT_ENERGY_BINS;
+    petsird::BinEdges event_energy_bin_edges{ event_energy_bin_edges_arr };
+    all_event_energy_bin_edges[type_of_module] = event_energy_bin_edges;
+    all_event_energy_resolutions[type_of_module] = .11F; // as fraction of 511
+
+    scanner_info.tof_bin_edges = all_tof_bin_edges;
+    scanner_info.tof_resolution = all_tof_resolutions;
+    scanner_info.event_energy_bin_edges = all_event_energy_bin_edges;
+    scanner_info.energy_resolution_at_511 = all_event_energy_resolutions;
   }
 
   scanner_info.detection_efficiencies = get_detection_efficiencies(scanner_info);
@@ -254,7 +296,9 @@ get_events(const petsird::Header& header, std::size_t num_events)
 {
   std::vector<petsird::CoincidenceEvent> events;
   events.reserve(num_events);
-  const auto num_det_els = petsird_helpers::get_num_det_els(header.scanner.scanner_geometry);
+  const petsird::TypeOfModulePair type_of_module_pair{ 0, 0 };
+  const auto num_det_els0 = petsird_helpers::get_num_det_els(header.scanner.scanner_geometry, type_of_module_pair[0]);
+  const auto num_det_els1 = petsird_helpers::get_num_det_els(header.scanner.scanner_geometry, type_of_module_pair[1]);
   for (std::size_t i = 0; i < num_events; ++i)
     {
       petsird::CoincidenceEvent e;
@@ -263,9 +307,9 @@ get_events(const petsird::Header& header, std::size_t num_events)
       // Generate random det_el_idxs until detection effficiency is not zero
       while (true)
         {
-          e.detection_bins[0].det_el_idx = get_random_uint(num_det_els);
-          e.detection_bins[1].det_el_idx = get_random_uint(num_det_els);
-          if (petsird_helpers::get_detection_efficiency(header.scanner, e) > 0)
+          e.detection_bins[0].det_el_idx = get_random_uint(num_det_els0);
+          e.detection_bins[1].det_el_idx = get_random_uint(num_det_els1);
+          if (petsird_helpers::get_detection_efficiency(header.scanner, type_of_module_pair, e) > 0)
             {
               // in coincidence, we can get out of the loop
               break;
@@ -298,6 +342,7 @@ main(int argc, char* argv[])
   std::mt19937 gen(rd());
   for (std::size_t t = 0; t < NUMBER_OF_TIME_BLOCKS; ++t)
     {
+      const petsird::TypeOfModule type_of_module{ 0 };
       constexpr auto average_num = EVENT_TIME_BLOCK_DURATION * COUNT_RATE;
       std::poisson_distribution<> poisson(average_num);
       const auto num_prompts_this_block = poisson(gen);
@@ -305,7 +350,9 @@ main(int argc, char* argv[])
       petsird::EventTimeBlock time_block;
       time_block.time_interval.start = t * EVENT_TIME_BLOCK_DURATION;
       time_block.time_interval.stop = (t + 1) * EVENT_TIME_BLOCK_DURATION;
-      time_block.prompt_events = prompts_this_block;
+      time_block.prompt_events.resize(1);
+      time_block.prompt_events[type_of_module].resize(1);
+      time_block.prompt_events[type_of_module][type_of_module] = prompts_this_block;
       writer.WriteTimeBlocks(time_block);
     }
   writer.EndTimeBlocks();
