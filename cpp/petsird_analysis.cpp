@@ -6,7 +6,7 @@
 */
 
 // (un)comment if you want HDF5 or binary output
-#define USE_HDF5
+// #define USE_HDF5
 
 #ifdef USE_HDF5
 #  include "generated/hdf5/protocols.h"
@@ -98,7 +98,7 @@ main(int argc, char const* argv[])
             << header.scanner.scanner_geometry.replicated_modules[type_of_module].object.detecting_elements.transforms.size()
             << std::endl;
   std::cout << "Total number of 'crystals' in modules of first type : "
-            << petsird_helpers::get_num_det_els(header.scanner.scanner_geometry, type_of_module) << std::endl;
+            << petsird_helpers::get_num_det_els(header.scanner, type_of_module) << std::endl;
 
   const auto& tof_bin_edges = header.scanner.tof_bin_edges[type_of_module][type_of_module];
   const auto num_tof_bins = tof_bin_edges.NumberOfBins();
@@ -157,23 +157,24 @@ main(int argc, char const* argv[])
           // Note: just doing one module-type ATM
           for (auto& event : event_time_block.prompt_events[type_of_module_pair[0]][type_of_module_pair[1]])
             {
-              energy_1 += energy_mid_points[event.detection_bins[0].energy_idx];
-              energy_2 += energy_mid_points[event.detection_bins[1].energy_idx];
+              const auto expanded_det_bin0
+                  = petsird_helpers::expand_detection_bin(header.scanner, type_of_module_pair[0], event.detection_bins[0]);
+              const auto expanded_det_bin1
+                  = petsird_helpers::expand_detection_bin(header.scanner, type_of_module_pair[1], event.detection_bins[1]);
+              energy_1 += energy_mid_points[expanded_det_bin0.energy_index];
+              energy_2 += energy_mid_points[expanded_det_bin1.energy_index];
 
               if (print_events)
                 {
-                  std::cout << "CoincidenceEvent(detElIndices=[" << event.detection_bins[0].det_el_idx << ", "
-                            << event.detection_bins[1].det_el_idx << "], tofIdx=" << event.tof_idx << ", energyIndices=["
-                            << event.detection_bins[0].energy_idx << ", " << event.detection_bins[1].energy_idx << "])\n";
-                  const auto expanded_det_bin0 = petsird_helpers::expand_detection_bin(
-                      header.scanner.scanner_geometry, type_of_module_pair[0], event.detection_bins[0]);
-                  const auto expanded_det_bin1 = petsird_helpers::expand_detection_bin(
-                      header.scanner.scanner_geometry, type_of_module_pair[1], event.detection_bins[1]);
+                  std::cout << "CoincidenceEvent(detectionBins=[" << event.detection_bins[0] << ", " << event.detection_bins[1]
+                            << "], tofIdx=" << event.tof_idx << "])\n";
                   std::cout << "    "
-                            << "[ExpandedDetectionBin(module=" << expanded_det_bin0.module << ", "
-                            << "el=" << expanded_det_bin0.el << "), ExpandedDetectionBin(module=" << expanded_det_bin1.module
-                            << ", "
-                            << "el=" << expanded_det_bin1.el << ")]\n";
+                            << "[ExpandedDetectionBin(module=" << expanded_det_bin0.module_index << ", "
+                            << "el=" << expanded_det_bin0.element_index << ", "
+                            << "energy_index=" << expanded_det_bin0.energy_index
+                            << "), ExpandedDetectionBin(module=" << expanded_det_bin1.module_index << ", "
+                            << "el=" << expanded_det_bin1.element_index << ", "
+                            << "energy_index=" << expanded_det_bin0.energy_index << ")]\n";
                   std::cout << "    efficiency:"
                             << petsird_helpers::get_detection_efficiency(header.scanner, type_of_module_pair, event) << "\n";
                 }

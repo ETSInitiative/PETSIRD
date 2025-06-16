@@ -11,7 +11,7 @@
 #include <algorithm>
 
 // (un)comment if you want HDF5 or binary output
-#define USE_HDF5
+// #define USE_HDF5
 
 #ifdef USE_HDF5
 #  include "generated/hdf5/protocols.h"
@@ -115,7 +115,7 @@ get_detection_efficiencies(const petsird::ScannerInformation& scanner)
   // only 1 type of module in the current scanner
   assert(num_module_types == 1);
   const petsird::TypeOfModule type_of_module{ 0 };
-  const auto num_det_els = petsird_helpers::get_num_det_els(scanner.scanner_geometry, type_of_module);
+  const auto num_detection_bins = petsird_helpers::get_num_detection_bins(scanner, type_of_module);
   petsird::DetectionEfficiencies detection_efficiencies;
 
   const auto& event_energy_bin_edges = scanner.event_energy_bin_edges[type_of_module];
@@ -134,7 +134,7 @@ get_detection_efficiencies(const petsird::ScannerInformation& scanner)
     {
       elem.resize(num_module_types);
     }
-  (*detection_efficiencies.detection_bin_efficiencies)[type_of_module] = xt::ones<float>({ num_det_els, num_event_energy_bins });
+  (*detection_efficiencies.detection_bin_efficiencies)[type_of_module] = xt::ones<float>({ num_detection_bins });
 
   const auto& rep_module = scanner.scanner_geometry.replicated_modules[type_of_module];
   const auto num_modules = rep_module.transforms.size();
@@ -181,13 +181,13 @@ get_detection_efficiencies(const petsird::ScannerInformation& scanner)
 
   const auto& detecting_elements = rep_module.object.detecting_elements;
   const auto num_det_els_in_module = detecting_elements.transforms.size();
+  const auto num_detection_bins_in_module = num_det_els_in_module * num_event_energy_bins;
   for (unsigned int SGID = 0; SGID < num_SGIDs; ++SGID)
     {
       // extract first module_pair for this SGID. However, as this currently unused, it is commented out
       // const auto& module_pair = *std::find(module_pair_SGID_LUT.begin(), module_pair_SGID_LUT.end(), SGID);
       petsird::ModulePairEfficiencies module_pair_efficiencies;
-      module_pair_efficiencies.values = yardl::NDArray<float, 4>(
-          { num_det_els_in_module, num_event_energy_bins, num_det_els_in_module, num_event_energy_bins });
+      module_pair_efficiencies.values = yardl::NDArray<float, 2>({ num_detection_bins_in_module, num_detection_bins_in_module });
       // give some (non-physical) value
       module_pair_efficiencies.values.fill(SGID);
       module_pair_efficiencies.sgid = SGID;
@@ -280,12 +280,6 @@ get_random_uint(int max)
 }
 
 uint32_t
-get_random_energy_value()
-{
-  return rand() % NUMBER_OF_EVENT_ENERGY_BINS;
-}
-
-uint32_t
 get_random_tof_value()
 {
   return rand() % NUMBER_OF_TOF_BINS;
@@ -297,18 +291,16 @@ get_events(const petsird::Header& header, std::size_t num_events)
   std::vector<petsird::CoincidenceEvent> events;
   events.reserve(num_events);
   const petsird::TypeOfModulePair type_of_module_pair{ 0, 0 };
-  const auto num_det_els0 = petsird_helpers::get_num_det_els(header.scanner.scanner_geometry, type_of_module_pair[0]);
-  const auto num_det_els1 = petsird_helpers::get_num_det_els(header.scanner.scanner_geometry, type_of_module_pair[1]);
+  const auto num_bins0 = petsird_helpers::get_num_detection_bins(header.scanner, type_of_module_pair[0]);
+  const auto num_bins1 = petsird_helpers::get_num_detection_bins(header.scanner, type_of_module_pair[1]);
   for (std::size_t i = 0; i < num_events; ++i)
     {
       petsird::CoincidenceEvent e;
-      e.detection_bins[0].energy_idx = get_random_energy_value();
-      e.detection_bins[1].energy_idx = get_random_energy_value();
-      // Generate random det_el_idxs until detection effficiency is not zero
+      // Generate random detections_bins until detection effficiency is not zero
       while (true)
         {
-          e.detection_bins[0].det_el_idx = get_random_uint(num_det_els0);
-          e.detection_bins[1].det_el_idx = get_random_uint(num_det_els1);
+          e.detection_bins[0] = get_random_uint(num_bins0);
+          e.detection_bins[1] = get_random_uint(num_bins1);
           if (petsird_helpers::get_detection_efficiency(header.scanner, type_of_module_pair, e) > 0)
             {
               // in coincidence, we can get out of the loop

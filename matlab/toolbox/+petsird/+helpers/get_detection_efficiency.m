@@ -20,8 +20,8 @@ if detection_bin_efficiencies ~= yardl.None
     detection_bin_efficiencies_2 = ...
         detection_efficiencies.detection_bin_efficiencies(type_of_module_pair_2)
 
-    eff = eff .* (detection_bin_efficiencies_1(event.detection_bins(1).energy_idx+1, event.detection_bins(1).det_el_idx+1) .* ...
-            detection_bin_efficiencies_2(event.detection_bins(2).energy_idx+1, event.detection_bins(2).det_el_idx+1));
+  eff = eff .* (detection_bin_efficiencies_1(event.detection_bins(1)+1) .* ...
+            detection_bin_efficiencies_2(event.detection_bins(2)+1));
 end
 
 % Per module-pair efficiencies

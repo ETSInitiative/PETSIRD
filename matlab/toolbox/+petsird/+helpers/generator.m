@@ -155,12 +155,11 @@ function efficiencies = get_detection_efficiencies(scanner, cfg)
     assert(length(scanner.scanner_geometry.replicated_modules) == 1);
 
     type_of_module = 1;
-    num_det_els = petsird.helpers.get_num_detecting_elements(scanner.scanner_geometry, type_of_module);
+    num_detection_bins = petsird.helpers.get_num_detection_bins(scanner, type_of_module);
     event_energy_bin_edges = scanner.event_energy_bin_edges(type_of_module)(type_of_module);
     num_event_energy_bins = length(event_energy_bin_edges);
 
-    % detection_bin_efficiencies = ones(num_det_els, num_event_energy_bins, "single");
-    detection_bin_efficiencies = ones(num_event_energy_bins, num_det_els, "single");
+    detection_bin_efficiencies = ones(num_detection_bins, "single");
 
     rep_module = scanner.scanner_geometry.replicated_modules(1);
     num_modules = int32(length(rep_module.transforms));
@@ -206,10 +205,8 @@ function efficiencies = get_detection_efficiencies(scanner, cfg)
         % module_pair = numpy.argwhere(module_pair_SGID_LUT == SGID)[0]
         % print(module_pair, file=sys.stderr)
         module_pair_efficiencies = ones(...
-                num_event_energy_bins, ...
-                num_det_els_in_module, ...
-                num_event_energy_bins, ...
-                num_det_els_in_module ...
+                num_event_energy_bins * num_det_els_in_module, ...
+                num_event_energy_bins * num_det_els_in_module ...
         );
         % give some (non-physical) value
         module_pair_efficiencies = module_pair_efficiencies * SGID;
@@ -228,17 +225,15 @@ end
 
 function events = get_events(header, type_of_module_pair, num_events, cfg)
     % Generate some random events
-    detector_count1 = petsird.helpers.get_num_detecting_elements(header.scanner.scanner_geometry, type_of_module_pair(1));
-    detector_count2 = petsird.helpers.get_num_detecting_elements(header.scanner.scanner_geometry, type_of_module_pair(2));
+    count1 = petsird.helpers.get_num_detection_bins(header.scanner, type_of_module_pair(1));
+    count2 = petsird.helpers.get_num_detection_bins(header.scanner, type_of_module_pair(2));
     events = [];
     detection_bins = [petsird.DetectionBin(), petsird.DetectionBin()]
     for i = 1:num_events
-        detection_bins(1).energy_idx = randi([0, cfg.NUMBER_OF_EVENT_ENERGY_BINS-1];
-        detection_bins(2).energy_idx = randi([0, cfg.NUMBER_OF_EVENT_ENERGY_BINS-1];
-        % Generate random det_el_idxs until detection effficiency is not zero
+        % Generate random detection_bins until detection effficiency is not zero
         while true
-            detection_bins[1].det_el_idx = randi([0, detector_count1-1]);
-            detection_bins(2).det_el_idx = randi([0, detector_count2-1]);
+            detection_bins[1] = randi([0, count1-1]);
+            detection_bins(2) = randi([0, count2-1]);
             if petsird.helpers.get_detection_efficiency(header.scanner, type_of_module_pair, detection_bins) > 0
                 % in coincidence, we can get out of the loop
                 break

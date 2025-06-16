@@ -62,22 +62,23 @@ TypeOfModulePair: TypeOfModule*2
 # (with the moduleIdx running faster over the 2nd loop)
 ModuleIdx: uint
 
-# This is the type for the index over "detection elements" (aka "crystals"), e.g. used in `DetectionBin`
-# It is an unsigned integer that runs over all the "detector elements" starting from 0.
-#
-# The correspondence between this integer and a module/det_el is not encoded in this model,
-# but only in the "helpers".
-# It corresponds to effectively incrementing the detElIdx in nested loops:
-# 1. replicated_module.transforms
-# 2. replicated_module.detecting_elements.transforms
-# (with the detElIdx running faster over the 2nd loop)
-DetElIdx: uint
-
-# type for a "single" detection, used in `CoincidenceEvent` and `TripleEvent`.
-DetectionBin: !record
+# type for a "single" detection (of a particular type of module), expanded into
+# indices into the `ScannerGeometry`
+ExpandedDetectionBin: !record
   fields:
-    # the elementary detector element, see DetElIdx
-    detElIdx: DetElIdx
+    # index (starting from 0) into ScannerGeometry.replicatedModules.transforms
+    moduleIndex: uint
+    # index (starting from 0) into DetectorModule.detectingElements.transforms
+    elementIndex: uint
     # index (starting from 0) for the energy window
     # See the ScannerInformation.eventEnergyBinEdges field
-    energyIdx: uint
+    energyIndex: uint
+
+# type for a "single" detection (of a particular type of module), used in `CoincidenceEvent` and `TripleEvent`.
+# This a single number (starting from 0), encoding the indices in `ExpandedDetectionBin`
+# into a single number.
+# For a particular type of module, the number of modules, (detecting) elements in each module and
+# energy windows is fixed. Given an `ExpandedDetectionBin`, a `DetectionBin` is computed as
+#    energyIndex + (elementIndex + moduleIndex * numberOfElementsIndices) * numberOfModules
+# TODO is uint big enough?
+DetectionBin: uint

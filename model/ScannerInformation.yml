@@ -20,7 +20,7 @@ CoincidencePolicy: !enum
 
 # Type definition for how single histograms are stored.
 # Many scanners are able to store singles accumulated in time intervals, i.e.
-# histogrammed (as opposed to a list of singles with their corresponding DetElIdx).
+# histogrammed (as opposed to a list of singles with their corresponding DetectionBin).
 # However, some scanners do not store this information at the smallest detector resolution.
 # Therefore, PETSIRD currently supports a total singles count for each module as well.
 # See SinglesHistogramTimeBlock.
@@ -30,7 +30,7 @@ SinglesHistogramLevelType: !enum
     - none
     # singles counts per module
     - module
-    # singles counts for each DetElIdx
+    # singles counts for each DetectionBin
     - all
 
 # Type definition for histogram bins specified in terms of edges
