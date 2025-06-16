@@ -30,7 +30,8 @@ for t = 0:config.NUMBER_OF_TIME_BLOCKS-1
     % NOTE: Need Statistics and Machine Learning Toolbox for Poisson distribution functions
     % num_prompts_this_block = poissrnd(average_num);
     num_prompts_this_block = randi(config.average_num);
-    prompts_this_block = get_events(header, num_prompts_this_block, config);
+    type_of_module_pair = petsird.TypeOfModulePair((1, 1));
+    prompts_this_block = [[get_events(header, type_of_module_pair, num_prompts_this_block, config)]];
 
     tb = petsird.TimeBlock.EventTimeBlock(...
         petsird.EventTimeBlock(time_interval=time_interval, prompt_events=prompts_this_block) ...
@@ -54,12 +55,19 @@ end
 function scanner = get_scanner_info(cfg)
     scanner_geometry = get_scanner_geometry(cfg);
 
+    num_types_of_modules = scanner_geometry.number_of_replicated_modules()
     % TODO This code does not yet take multiple module-types into account
+    assert(num_types_of_modules == 1);
 
     % TOF info (in mm)
     tofBinEdges = petsird.BinEdges(edges=single(linspace(-cfg.RADIUS, cfg.RADIUS, cfg.NUMBER_OF_TOF_BINS + 1)));
     energyBinEdges = petsird.BinEdges(edges=single(linspace(430, 650, cfg.NUMBER_OF_EVENT_ENERGY_BINS + 1)));
-    % TODO not sure how to convert the above to the relevant array
+    % In this example, there is only 1 module-type, therefore we need 1x1 "nested lists"
+    allTofBinEdges = [[tofBinEdges]]
+    tofResolution = [[9.4]]  % in mm
+    % 1-element list for energy info
+    allEnergyBinEdges = [energyBinEdges]
+    energyResolutionAt511 = [0.11]  % as fraction of 511
 
     % We need energy bin info before being able to construct the detection
     % efficiencies, so we first construct a scanner without the efficiencies
@@ -67,9 +75,9 @@ function scanner = get_scanner_info(cfg)
         model_name="PETSIRD_TEST", ...
         scanner_geometry=scanner_geometry, ...
         tof_bin_edges=tofBinEdges, ...
-        tof_resolution=9.4, ... % in mm
+        tof_resolution=tofResolution, ...
         event_energy_bin_edges=energyBinEdges, ...
-        energy_resolution_at_511=0.11 ... % as fraction of 511
+        energy_resolution_at_511=energyResolutionAt511
     );
 
     % Now add the efficiencies
@@ -146,10 +154,9 @@ function efficiencies = get_detection_efficiencies(scanner, cfg)
     % Only 1 type of module in the current scanner
     assert(length(scanner.scanner_geometry.replicated_modules) == 1);
 
-    num_det_els = petsird.helpers.get_num_detecting_elements(scanner.scanner_geometry);
-    % TODO not sure how to access this.
-    event_energy_bin_edges = scanner.event_energy_bin_edges(0)(0);
-    % num_event_energy_bins = event_energy_bin_edges.number_of_bins();
+    type_of_module = 1;
+    num_det_els = petsird.helpers.get_num_detecting_elements(scanner.scanner_geometry, type_of_module);
+    event_energy_bin_edges = scanner.event_energy_bin_edges(type_of_module)(type_of_module);
     num_event_energy_bins = length(event_energy_bin_edges);
 
     % detection_bin_efficiencies = ones(num_det_els, num_event_energy_bins, "single");
@@ -190,10 +197,9 @@ function efficiencies = get_detection_efficiencies(scanner, cfg)
     module_pair_efficiencies_vector = [];
     detecting_elements = rep_module.object.detecting_elements;
     num_det_els_in_module = length(detecting_elements.transforms);
-    % TODO not sure how to access this.
-    event_energy_bin_edges = scanner.event_energy_bin_edges(0)(0);
-    % num_event_energy_bins = event_energy_bin_edges.number_of_bins();
-    num_event_energy_bins = length(event_energy_bin_edges);
+    event_energy_bin_edges = scanner.event_energy_bin_edges(type_of_module);
+    num_event_energy_bins = event_energy_bin_edges.number_of_bins();
+
     for SGID = 0:num_SGIDs-1
         % Extract first module_pair for this SGID. However, as this
         % currently unused, it is commented out
@@ -213,26 +219,27 @@ function efficiencies = get_detection_efficiencies(scanner, cfg)
     end
 
     efficiencies = petsird.DetectionEfficiencies(...
-        detection_bin_efficiencies=detection_bin_efficiencies, ...
-        module_pair_sgidlut=module_pair_SGID_LUT, ...
-        module_pair_efficiencies_vector=module_pair_efficiencies_vector ...
+        detection_bin_efficiencies=[detection_bin_efficiencies], ...
+        module_pair_sgidlut=[[module_pair_SGID_LUT]], ...
+        module_pair_efficiencies_vector=[[module_pair_efficiencies_vector]] ...
     );
 end
 
 
-function events = get_events(header, num_events, cfg)
+function events = get_events(header, type_of_module_pair, num_events, cfg)
     % Generate some random events
-    detector_count = petsird.helpers.get_num_detecting_elements(header.scanner.scanner_geometry);
+    detector_count1 = petsird.helpers.get_num_detecting_elements(header.scanner.scanner_geometry, type_of_module_pair(1));
+    detector_count2 = petsird.helpers.get_num_detecting_elements(header.scanner.scanner_geometry, type_of_module_pair(2));
     events = [];
     detection_bins = [petsird.DetectionBin(), petsird.DetectionBin()]
     for i = 1:num_events
-        detection_bins[0].energy_idx = randi([0, cfg.NUMBER_OF_EVENT_ENERGY_BINS-1]
-        detection_bins[1].energy_idx = randi([0, cfg.NUMBER_OF_EVENT_ENERGY_BINS-1]
+        detection_bins(1).energy_idx = randi([0, cfg.NUMBER_OF_EVENT_ENERGY_BINS-1];
+        detection_bins(2).energy_idx = randi([0, cfg.NUMBER_OF_EVENT_ENERGY_BINS-1];
         % Generate random det_el_idxs until detection effficiency is not zero
         while true
-            detection_bins[0].det_el_idx = randi([0, detector_count-1])
-            detection_bins[1].det_el_idx = randi([0, detector_count-1])
-            if petsird.helpers.get_detection_efficiency(header.scanner, detection_bins) > 0
+            detection_bins[1].det_el_idx = randi([0, detector_count1-1]);
+            detection_bins(2).det_el_idx = randi([0, detector_count2-1]);
+            if petsird.helpers.get_detection_efficiency(header.scanner, type_of_module_pair, detection_bins) > 0
                 % in coincidence, we can get out of the loop
                 break
             end
