@@ -38,11 +38,9 @@ construct_2D_nested_vector(std::size_t size0, std::size_t size1)
 inline std::size_t
 get_num_det_els(const ScannerGeometry& scanner_geometry, const TypeOfModule& type_of_module)
 {
-  std::size_t num_det_els = 0;
   const auto& rep_module = scanner_geometry.replicated_modules[type_of_module];
   const auto& det_els = rep_module.object.detecting_elements;
-  num_det_els += det_els.transforms.size() * rep_module.transforms.size();
-  return num_det_els;
+  return det_els.transforms.size() * rep_module.transforms.size();
 }
 
 struct ExpandedDetectionBin
@@ -94,6 +92,8 @@ get_detection_efficiency(const ScannerInformation& scanner, const TypeOfModulePa
                                                                     event.detection_bins[0].energy_idx)
               * (*detection_bin_efficiencies)[type_of_module_pair[1]](event.detection_bins[1].det_el_idx,
                                                                       event.detection_bins[1].energy_idx));
+      if (eff == 0.F)
+        return 0.F;
     }
   const auto& module_pair_efficiencies_vectors = scanner.detection_efficiencies.module_pair_efficiencies_vectors;
   if (module_pair_efficiencies_vectors)

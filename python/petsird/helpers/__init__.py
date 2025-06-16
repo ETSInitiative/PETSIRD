@@ -15,11 +15,9 @@ import petsird
 def get_num_det_els(scanner_geometry: petsird.ScannerGeometry,
                     type_of_module: petsird.TypeOfModule) -> int:
     """Compute total number of detecting elements in all modules of the given type"""
-    num_det_els = 0
     rep_module = scanner_geometry.replicated_modules[type_of_module]
     det_els = rep_module.object.detecting_elements
-    num_det_els += len(det_els.transforms) * len(rep_module.transforms)
-    return num_det_els
+    return len(det_els.transforms) * len(rep_module.transforms)
 
 
 @dataclass
@@ -79,6 +77,8 @@ def get_detection_efficiency(scanner: petsird.ScannerInformation,
                                         event.detection_bins[0].energy_idx] *
             detection_bin_efficiencies1[event.detection_bins[1].det_el_idx,
                                         event.detection_bins[1].energy_idx])
+        if eff == 0:
+            return 0.
 
     # per module-pair efficiencies
     module_pair_efficiencies_vectors = (
