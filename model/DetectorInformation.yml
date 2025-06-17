@@ -42,6 +42,14 @@ ScannerGeometry: !record
   computedFields:
     numberOfReplicatedModules: size(replicatedModules)
 
+# This is the type for the index over "module-types".
+# It is an unsigned integer that runs over all the types starting from 0.
+#
+# This index runs over ScannerGeometry.replicated_modules
+TypeOfModule: uint
+
+# This is a pair of 2 "module-types".
+TypeOfModulePair: TypeOfModule*2
 
 # This is the type for the index over "modules".
 # It is an unsigned integer that runs over all the "modules" starting from 0.
@@ -60,10 +68,9 @@ ModuleIdx: uint
 # The correspondence between this integer and a module/det_el is not encoded in this model,
 # but only in the "helpers".
 # It corresponds to effectively incrementing the detElIdx in nested loops:
-# 1. ScannerGeometry.replicated_modules
-# 2. replicated_module.transforms
-# 3. replicated_module.detecting_elements.transforms
-# (with the detElIdx running faster over the 3rd loop)
+# 1. replicated_module.transforms
+# 2. replicated_module.detecting_elements.transforms
+# (with the detElIdx running faster over the 2nd loop)
 DetElIdx: uint
 
 # type for a "single" detection, used in `CoincidenceEvent` and `TripleEvent`.

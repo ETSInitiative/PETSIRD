@@ -7,7 +7,7 @@ import argparse
 import sys
 
 import petsird
-from petsird.helpers import (expand_detection_bins, get_detection_efficiency,
+from petsird.helpers import (expand_detection_bin, get_detection_efficiency,
                              get_num_det_els)
 
 
@@ -42,27 +42,37 @@ if __name__ == "__main__":
         if header.exam is not None:
             print(f"Subject ID: {header.exam.subject.id}")
         print(f"Scanner name: {scanner.model_name}")
+        type_of_module = 0
         print("Types of modules: ",
               len(scanner.scanner_geometry.replicated_modules))
-        print("Number of modules of first type: ",
-              len(scanner.scanner_geometry.replicated_modules[0].transforms))
+        print(
+            "Number of modules of first type: ",
+            len(scanner.scanner_geometry.replicated_modules[type_of_module].
+                transforms))
         print(
             "Number of elements in modules of first type: ",
-            len(scanner.scanner_geometry.replicated_modules[0].object.
-                detecting_elements.transforms))
+            len(scanner.scanner_geometry.replicated_modules[type_of_module].
+                object.detecting_elements.transforms))
         print("Total number of 'crystals': ",
-              get_num_det_els(scanner.scanner_geometry))
-        print("Number of TOF bins: ", scanner.number_of_tof_bins())
-        print("Number of energy bins: ", scanner.number_of_event_energy_bins())
-        event_energy_bin_edges = scanner.event_energy_bin_edges
+              get_num_det_els(scanner.scanner_geometry, type_of_module))
+        tof_bin_edges = scanner.tof_bin_edges[type_of_module][type_of_module]
+        num_tof_bins = tof_bin_edges.number_of_bins()
+        event_energy_bin_edges = scanner.event_energy_bin_edges[type_of_module]
+        num_event_energy_bins = event_energy_bin_edges.number_of_bins()
+        print("Number of TOF bins: ", num_tof_bins)
+        print("Tof bin edges: ", tof_bin_edges)
+        print("Number of energy bins: ", num_event_energy_bins)
+        event_energy_bin_edges = event_energy_bin_edges.edges
         print("Event energy bin edges: ", event_energy_bin_edges)
         energy_mid_points = (event_energy_bin_edges[:-1] +
                              event_energy_bin_edges[1:]) / 2
         print("Event energy mid points: ", energy_mid_points)
         print("Singles histogram level: ", scanner.singles_histogram_level)
         if scanner.singles_histogram_level != petsird.SinglesHistogramLevelType.NONE:
-            print("Number of singles histograms energy windows: ",
-                  scanner.number_of_singles_histogram_energy_bins())
+            print(
+                "Number of singles histograms energy windows for first module-type: ",
+                scanner.singles_histogram_energy_bin_edges[type_of_module].
+                number_of_bins())
             print("Singles histogram energy bin edges: ",
                   scanner.singles_histogram_energy_bin_edges)
         print("SGID LUT:\n",
@@ -73,13 +83,19 @@ if __name__ == "__main__":
         last_time = 0
         for time_block in reader.read_time_blocks():
             if isinstance(time_block, petsird.TimeBlock.EventTimeBlock):
+                # TODO just doing one module-type ATM
+                type_of_module_pair = petsird.TypeOfModulePair((0, 0))
                 last_time = time_block.value.time_interval.stop
-                num_prompts += len(time_block.value.prompt_events)
+                num_prompts += len(time_block.value.prompt_events[
+                    type_of_module_pair[0]][type_of_module_pair[1]])
                 if time_block.value.delayed_events is not None:
-                    num_delayeds += len(time_block.value.delayed_events)
-                print("=====================  Events in time block until ",
-                      last_time, " ==============")
-                for event in time_block.value.prompt_events:
+                    num_delayeds += len(time_block.value.delayed_events[
+                        type_of_module_pair[0]][type_of_module_pair[1]])
+                print("=====================  Events between module-types ",
+                      type_of_module_pair, " in time block until ", last_time,
+                      " ==============")
+                for event in time_block.value.prompt_events[
+                        type_of_module_pair[0]][type_of_module_pair[1]]:
                     energy_1 += energy_mid_points[
                         event.detection_bins[0].energy_idx]
                     energy_2 += energy_mid_points[
@@ -88,11 +104,19 @@ if __name__ == "__main__":
                         print(event)
                         print(
                             "   ",
-                            expand_detection_bins(scanner.scanner_geometry,
-                                                  event.detection_bins),
+                            expand_detection_bin(scanner.scanner_geometry,
+                                                 type_of_module_pair[0],
+                                                 event.detection_bins[0]),
+                            ", ",
+                            expand_detection_bin(scanner.scanner_geometry,
+                                                 type_of_module_pair[1],
+                                                 event.detection_bins[1]),
                         )
-                        print("    efficiency:",
-                              get_detection_efficiency(scanner, event))
+                        print(
+                            "    efficiency:",
+                            get_detection_efficiency(scanner,
+                                                     type_of_module_pair,
+                                                     event))
 
         print(f"Last time block at {last_time} ms")
         print(f"Number of prompt events: {num_prompts}")

@@ -90,21 +90,26 @@ main(int argc, char const* argv[])
   if (header.exam) // only do this if present
     std::cout << "Subject ID: " << header.exam->subject.id << std::endl;
   std::cout << "Types of modules: " << header.scanner.scanner_geometry.replicated_modules.size() << std::endl;
-  std::cout << "Number of modules of first type: " << header.scanner.scanner_geometry.replicated_modules[0].transforms.size()
-            << std::endl;
+  // TODO more than 1 type of module
+  const petsird::TypeOfModule type_of_module{ 0 };
+  std::cout << "Number of modules of first type: "
+            << header.scanner.scanner_geometry.replicated_modules[type_of_module].transforms.size() << std::endl;
   std::cout << "Number of elements in modules of first type: "
-            << header.scanner.scanner_geometry.replicated_modules[0].object.detecting_elements.transforms.size() << std::endl;
-  std::cout << "Total number of 'crystals': " << petsird_helpers::get_num_det_els(header.scanner.scanner_geometry) << std::endl;
+            << header.scanner.scanner_geometry.replicated_modules[type_of_module].object.detecting_elements.transforms.size()
+            << std::endl;
+  std::cout << "Total number of 'crystals' in modules of first type : "
+            << petsird_helpers::get_num_det_els(header.scanner.scanner_geometry, type_of_module) << std::endl;
 
-  std::cout << "Number of TOF bins: " << header.scanner.NumberOfTOFBins() << std::endl;
-  std::cout << "Number of energy bins: " << header.scanner.NumberOfEventEnergyBins() << std::endl;
-
-  const auto& tof_bin_edges = header.scanner.tof_bin_edges;
-  std::cout << "TOF bin edges: " << tof_bin_edges << std::endl;
-  const auto& event_energy_bin_edges = header.scanner.event_energy_bin_edges;
-  std::cout << "Event energy bin edges: " << event_energy_bin_edges << std::endl;
-  const auto energy_mid_points = (xt::view(event_energy_bin_edges, xt::range(0, event_energy_bin_edges.size() - 1))
-                                  + xt::view(event_energy_bin_edges, xt::range(1, event_energy_bin_edges.size())))
+  const auto& tof_bin_edges = header.scanner.tof_bin_edges[type_of_module][type_of_module];
+  const auto num_tof_bins = tof_bin_edges.NumberOfBins();
+  std::cout << "Number of TOF bins: " << num_tof_bins << std::endl;
+  std::cout << "TOF bin edges: " << tof_bin_edges.edges << std::endl;
+  const auto& event_energy_bin_edges = header.scanner.event_energy_bin_edges[type_of_module];
+  const auto num_event_energy_bins = event_energy_bin_edges.NumberOfBins();
+  std::cout << "Number of energy bins: " << num_event_energy_bins << std::endl;
+  std::cout << "Event energy bin edges: " << event_energy_bin_edges.edges << std::endl;
+  const auto energy_mid_points = (xt::view(event_energy_bin_edges.edges, xt::range(0, event_energy_bin_edges.edges.size() - 1))
+                                  + xt::view(event_energy_bin_edges.edges, xt::range(1, event_energy_bin_edges.edges.size())))
                                  / 2;
   std::cout << "Event energy mid points: " << energy_mid_points << std::endl;
 
@@ -123,8 +128,9 @@ main(int argc, char const* argv[])
     }
   if (header.scanner.singles_histogram_level != petsird::SinglesHistogramLevelType::kNone)
     {
-      std::cout << "Singles Histogram Energy Bin Edges: " << header.scanner.singles_histogram_energy_bin_edges << std::endl;
-      std::cout << "Number of Singles Histogram Energy Windows: " << header.scanner.NumberOfSinglesHistogramEnergyBins()
+      const auto& singles_histogram_energy_bin_edges = header.scanner.singles_histogram_energy_bin_edges[type_of_module];
+      std::cout << "Singles Histogram Energy Bin Edges: " << singles_histogram_energy_bin_edges.edges << std::endl;
+      std::cout << "Number of Singles Histogram Energy Windows: " << singles_histogram_energy_bin_edges.NumberOfBins()
                 << std::endl;
     }
 
@@ -141,13 +147,15 @@ main(int argc, char const* argv[])
         {
           auto& event_time_block = std::get<petsird::EventTimeBlock>(time_block);
           last_time = event_time_block.time_interval.stop;
-          num_prompts += event_time_block.prompt_events.size();
+          const petsird::TypeOfModulePair type_of_module_pair{ 0, 0 };
+          num_prompts += event_time_block.prompt_events[type_of_module_pair[0]][type_of_module_pair[1]].size();
           if (event_time_block.delayed_events)
-            num_delayeds += event_time_block.delayed_events->size();
+            num_delayeds += (*event_time_block.delayed_events)[type_of_module_pair[0]][type_of_module_pair[1]].size();
           if (print_events)
             std::cout << "=====================  Prompt events in time block from " << last_time << " ==============\n";
 
-          for (auto& event : event_time_block.prompt_events)
+          // Note: just doing one module-type ATM
+          for (auto& event : event_time_block.prompt_events[type_of_module_pair[0]][type_of_module_pair[1]])
             {
               energy_1 += energy_mid_points[event.detection_bins[0].energy_idx];
               energy_2 += energy_mid_points[event.detection_bins[1].energy_idx];
@@ -157,14 +165,17 @@ main(int argc, char const* argv[])
                   std::cout << "CoincidenceEvent(detElIndices=[" << event.detection_bins[0].det_el_idx << ", "
                             << event.detection_bins[1].det_el_idx << "], tofIdx=" << event.tof_idx << ", energyIndices=["
                             << event.detection_bins[0].energy_idx << ", " << event.detection_bins[1].energy_idx << "])\n";
-                  const auto module_and_elems
-                      = petsird_helpers::expand_detection_bins(header.scanner.scanner_geometry, event.detection_bins);
+                  const auto expanded_det_bin0 = petsird_helpers::expand_detection_bin(
+                      header.scanner.scanner_geometry, type_of_module_pair[0], event.detection_bins[0]);
+                  const auto expanded_det_bin1 = petsird_helpers::expand_detection_bin(
+                      header.scanner.scanner_geometry, type_of_module_pair[1], event.detection_bins[1]);
                   std::cout << "    "
-                            << "[ExpandedDetectionBin(module=" << module_and_elems[0].module << ", "
-                            << "el=" << module_and_elems[0].el << "), ExpandedDetectionBin(module=" << module_and_elems[0].module
+                            << "[ExpandedDetectionBin(module=" << expanded_det_bin0.module << ", "
+                            << "el=" << expanded_det_bin0.el << "), ExpandedDetectionBin(module=" << expanded_det_bin1.module
                             << ", "
-                            << "el=" << module_and_elems[0].el << ")]\n";
-                  std::cout << "    efficiency:" << petsird_helpers::get_detection_efficiency(header.scanner, event) << "\n";
+                            << "el=" << expanded_det_bin1.el << ")]\n";
+                  std::cout << "    efficiency:"
+                            << petsird_helpers::get_detection_efficiency(header.scanner, type_of_module_pair, event) << "\n";
                 }
             }
         }
