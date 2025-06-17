@@ -61,3 +61,35 @@ DetectionEfficiencies: !record
     # Nested list of all modulePairEfficienciesVectors (one for each module-type pair)
     # Constraint: size(modulePairEfficienciesVectors) == max(modulePairSGIDLUT) + 1
     modulePairEfficienciesVectors: ModulePairEfficienciesVector**?
+
+# Constraint: sizeOfDetElIdxDimension == number of all possible unique DetElIdxs
+# Constraint: (sizeOfEnergyIdxDimension == ScannerInformation.eventEnergyBinEdges[type_of_module]).number_of_bins()
+SinglesAliveTimeFractions: !array
+  items: float
+  dimensions: [detElIdx, energyIdx]
+
+# Type for coincidence alive time fractions array for 2 modules in coincidence
+ModuleCoincidenceAliveTimeFractions: !array
+      items: float
+      dimensions: [moduleId0, moduleId1]
+
+# Type for alive-time fraction information
+# (1 means no dead-time, 0 means no detected counts)
+# A component-based model is used, where the total alive-time for a pair of DetectionBins
+# is computed as the product of the (singles) alive-time of each detector times the
+# coincidence-alive-time of the corresponding module-pair, i.e. conceptually
+# aliveTimeFraction((type_of_module1, detectionBin1), (type_of_module2, detectionBin2)) =
+#   singlesAliveTimeFractions[type_of_module1](detectionBin1) *
+#   singlesAliveTimeFractions[type_of_module2](detectionBin2) *
+#   moduleCoincidenceAliveTimeFractions[type_of_module1][type_of_module2][module(detectionBin1), module(detectionBin2)]
+AliveTimeFractions: !record
+  fields:
+    # List of singles alive-time fractions (one for each type of module)
+    singlesAliveTimeFractions: SinglesAliveTimeFractions*
+    # Nested list of all-time fractions for 2 modules in coincidence.
+    # If the size of an element of this nested list is (1,1), it is assumed that the corresponding alive-fraction is the same for all modules.
+    # Constraint: size(moduleCoincidenceAliveTimeFractions, 0) == 1 or total number of modules of type 1
+    # Constraint: size(moduleCoincidenceAliveTimeFractions, 1) == 1 or total number of modules of types 2
+    # Constraint: moduleCoincidenceAliveTimeFractions[type_of_module1][type_of_module2][mod1, mod2] ==
+    #   moduleCoincidenceAliveTimeFractions[type_of_module2][type_of_module1][mod2, mod1]
+    moduleCoincidenceAliveTimeFractions: ModuleCoincidenceAliveTimeFractions**
