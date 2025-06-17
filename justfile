@@ -16,7 +16,7 @@ set shell := ['bash', '-ceuo', 'pipefail']
     cd model && yardl generate
 
 @build-cpp: generate ensure-configured
-    cd cpp/build && ninja
+    cd cpp/build && cmake --build .
 
 @build-python: generate
     pip install --editable ./python
