@@ -8,7 +8,7 @@ import sys
 
 import petsird
 from petsird.helpers import (expand_detection_bin, get_detection_efficiency,
-                             get_num_det_els, make_detection_bin)
+                             get_num_det_els)
 
 
 def parserCreator():
@@ -102,11 +102,6 @@ if __name__ == "__main__":
                     expanded_detection_bin1 = expand_detection_bin(
                         scanner, type_of_module_pair[1],
                         event.detection_bins[1])
-
-                    # TODO move this test to separate unit-tests
-                    assert event.detection_bins[0] == make_detection_bin(
-                        scanner, type_of_module_pair[0],
-                        expanded_detection_bin0)
 
                     energy_1 += energy_mid_points[
                         expanded_detection_bin0.energy_index]

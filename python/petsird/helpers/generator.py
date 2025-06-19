@@ -223,22 +223,50 @@ def get_header() -> petsird.Header:
     )
 
 
+def get_random_uint(max):
+    return random.randrange(0, max)
+
+
 def get_events(header: petsird.Header,
                type_of_module_pair: petsird.TypeOfModulePair,
                num_events: int) -> Iterator[petsird.CoincidenceEvent]:
     """Generate some random events"""
-    count0 = get_num_detection_bins(header.scanner, type_of_module_pair[0])
+    num_modules0 = len(header.scanner.scanner_geometry.replicated_modules[
+        type_of_module_pair[0]].transforms)
+    num_detecting_elements0 = len(
+        header.scanner.scanner_geometry.replicated_modules[
+            type_of_module_pair[0]].object.detecting_elements.transforms)
+    event_energy_bin_edges0 = header.scanner.event_energy_bin_edges[
+        type_of_module_pair[0]]
+    num_event_energy_bins0 = event_energy_bin_edges0.number_of_bins()
+    tof_bin_edges = header.scanner.tof_bin_edges[type_of_module_pair[0]][
+        type_of_module_pair[1]]
+    num_tof_bins = tof_bin_edges.number_of_bins()
     count1 = get_num_detection_bins(header.scanner, type_of_module_pair[1])
+
     detection_bins = [petsird.DetectionBin(), petsird.DetectionBin()]
     for _ in range(num_events):
         event = petsird.CoincidenceEvent(
             detection_bins=detection_bins,
-            tof_idx=random.randrange(0, NUMBER_OF_TOF_BINS),
+            tof_idx=get_random_uint(num_tof_bins),
         )
         # Generate random detection_bins until detection effficiency is not zero
         while True:
-            event.detection_bins[0] = random.randrange(0, count0)
-            event.detection_bins[1] = random.randrange(0, count1)
+            expanded_detection_bin0 = petsird.ExpandedDetectionBin(
+                module_index=get_random_uint(num_modules0),
+                element_index=get_random_uint(num_detecting_elements0),
+                energy_index=get_random_uint(num_event_energy_bins0),
+            )
+            event.detection_bins[0] = petsird.helpers.make_detection_bin(
+                header.scanner, type_of_module_pair[0],
+                expanded_detection_bin0)
+            # TODO move test to separate function
+            assert expanded_detection_bin0 == petsird.helpers.expand_detection_bin(
+                header.scanner, type_of_module_pair[0], detection_bins[0])
+
+            # short-cut to directly generate a random detection bin
+            event.detection_bins[1] = get_random_uint(count1)
+
             if get_detection_efficiency(header.scanner, type_of_module_pair,
                                         event) > 0:
                 # in coincidence, we can get out of the loop

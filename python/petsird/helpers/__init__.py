@@ -59,7 +59,7 @@ def expand_detection_bin(
 def make_detection_bins(
     scanner: petsird.ScannerInformation, type_of_module: petsird.TypeOfModule,
     expanded_detection_bins: typing.Iterable[petsird.ExpandedDetectionBin]
-) -> list[petsird.ExpandedDetectionBin]:
+) -> list[petsird.DetectionBin]:
     """Find DetectionBin for a list of expanded_detection_bins"""
     rep_module = scanner.scanner_geometry.replicated_modules[type_of_module]
     num_el_per_module = len(rep_module.object.detecting_elements.transforms)
@@ -75,8 +75,8 @@ def make_detection_bins(
 
 def make_detection_bin(
     scanner: petsird.ScannerInformation, type_of_module: petsird.TypeOfModule,
-    expanded_detection_bin: petsird.DetectionBin
-) -> petsird.ExpandedDetectionBin:
+    expanded_detection_bin: petsird.ExpandedDetectionBin
+) -> petsird.DetectionBin:
     """Find DetectionBin for an expanded_detection_bin"""
     # TODO probably slow implementation, but avoids re-implementation for now
     return make_detection_bins(scanner, type_of_module,

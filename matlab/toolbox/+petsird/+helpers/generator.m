@@ -225,6 +225,8 @@ end
 
 function events = get_events(header, type_of_module_pair, num_events, cfg)
     % Generate some random events
+    % TODO adapt code to use ExpandedDetectionBin as a better example for a user.
+    % See the python/C++ code for how to do this.
     count1 = petsird.helpers.get_num_detection_bins(header.scanner, type_of_module_pair(1));
     count2 = petsird.helpers.get_num_detection_bins(header.scanner, type_of_module_pair(2));
     events = [];

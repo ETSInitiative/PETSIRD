@@ -272,17 +272,11 @@ get_header()
   return header;
 }
 
-// return uint between 0 and max
+// return uint between 0 and max-1
 uint32_t
 get_random_uint(int max)
 {
   return static_cast<unsigned>(rand() % max);
-}
-
-uint32_t
-get_random_tof_value()
-{
-  return rand() % NUMBER_OF_TOF_BINS;
 }
 
 std::vector<petsird::CoincidenceEvent>
@@ -291,23 +285,41 @@ get_events(const petsird::Header& header, std::size_t num_events)
   std::vector<petsird::CoincidenceEvent> events;
   events.reserve(num_events);
   const petsird::TypeOfModulePair type_of_module_pair{ 0, 0 };
-  const auto num_bins0 = petsird_helpers::get_num_detection_bins(header.scanner, type_of_module_pair[0]);
+  const auto num_modules0 = header.scanner.scanner_geometry.replicated_modules[type_of_module_pair[0]].transforms.size();
+  const auto num_detecting_elements0
+      = header.scanner.scanner_geometry.replicated_modules[type_of_module_pair[0]].object.detecting_elements.transforms.size();
+  const auto& event_energy_bin_edges0 = header.scanner.event_energy_bin_edges[type_of_module_pair[0]];
+  const auto num_event_energy_bins0 = event_energy_bin_edges0.NumberOfBins();
   const auto num_bins1 = petsird_helpers::get_num_detection_bins(header.scanner, type_of_module_pair[1]);
+  const auto& tof_bin_edges = header.scanner.tof_bin_edges[type_of_module_pair[0]][type_of_module_pair[1]];
+  const auto num_tof_bins = tof_bin_edges.NumberOfBins();
   for (std::size_t i = 0; i < num_events; ++i)
     {
       petsird::CoincidenceEvent e;
       // Generate random detections_bins until detection effficiency is not zero
       while (true)
         {
-          e.detection_bins[0] = get_random_uint(num_bins0);
+          // fill in some random numbers here for the detections
+          petsird::ExpandedDetectionBin expanded_detection_bin0;
+          expanded_detection_bin0.module_index = get_random_uint(num_modules0);
+          expanded_detection_bin0.element_index = get_random_uint(num_detecting_elements0);
+          expanded_detection_bin0.energy_index = get_random_uint(num_event_energy_bins0);
+          e.detection_bins[0]
+              = petsird_helpers::make_detection_bin(header.scanner, type_of_module_pair[0], expanded_detection_bin0);
+          // TODO move test to separate function
+          assert(expanded_detection_bin0
+                 == petsird_helpers::expand_detection_bin(header.scanner, type_of_module_pair[0], e.detection_bins[0]));
+
+          // short-cut to directly generate a random detection bin
           e.detection_bins[1] = get_random_uint(num_bins1);
+
           if (petsird_helpers::get_detection_efficiency(header.scanner, type_of_module_pair, e) > 0)
             {
               // in coincidence, we can get out of the loop
               break;
             }
         }
-      e.tof_idx = get_random_tof_value();
+      e.tof_idx = get_random_uint(num_tof_bins);
       events.push_back(e);
     }
   return events;
