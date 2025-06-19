@@ -6,7 +6,7 @@
 */
 
 // (un)comment if you want HDF5 or binary output
-// #define USE_HDF5
+#define USE_HDF5
 
 #ifdef USE_HDF5
 #  include "generated/hdf5/protocols.h"
