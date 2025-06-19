@@ -157,24 +157,29 @@ main(int argc, char const* argv[])
           // Note: just doing one module-type ATM
           for (auto& event : event_time_block.prompt_events[type_of_module_pair[0]][type_of_module_pair[1]])
             {
-              const auto expanded_det_bin0
+              const auto expanded_detection_bin0
                   = petsird_helpers::expand_detection_bin(header.scanner, type_of_module_pair[0], event.detection_bins[0]);
-              const auto expanded_det_bin1
+              const auto expanded_detection_bin1
                   = petsird_helpers::expand_detection_bin(header.scanner, type_of_module_pair[1], event.detection_bins[1]);
-              energy_1 += energy_mid_points[expanded_det_bin0.energy_index];
-              energy_2 += energy_mid_points[expanded_det_bin1.energy_index];
+
+              // TODO move this test to separate unit-tests
+              assert(event.detection_bins[0]
+                     == petsird_helpers::make_detection_bin(header.scanner, type_of_module_pair[0], expanded_detection_bin0));
+
+              energy_1 += energy_mid_points[expanded_detection_bin0.energy_index];
+              energy_2 += energy_mid_points[expanded_detection_bin1.energy_index];
 
               if (print_events)
                 {
                   std::cout << "CoincidenceEvent(detectionBins=[" << event.detection_bins[0] << ", " << event.detection_bins[1]
                             << "], tofIdx=" << event.tof_idx << "])\n";
                   std::cout << "    "
-                            << "[ExpandedDetectionBin(module=" << expanded_det_bin0.module_index << ", "
-                            << "el=" << expanded_det_bin0.element_index << ", "
-                            << "energy_index=" << expanded_det_bin0.energy_index
-                            << "), ExpandedDetectionBin(module=" << expanded_det_bin1.module_index << ", "
-                            << "el=" << expanded_det_bin1.element_index << ", "
-                            << "energy_index=" << expanded_det_bin0.energy_index << ")]\n";
+                            << "[ExpandedDetectionBin(module=" << expanded_detection_bin0.module_index << ", "
+                            << "el=" << expanded_detection_bin0.element_index << ", "
+                            << "energy_index=" << expanded_detection_bin0.energy_index
+                            << "), ExpandedDetectionBin(module=" << expanded_detection_bin1.module_index << ", "
+                            << "el=" << expanded_detection_bin1.element_index << ", "
+                            << "energy_index=" << expanded_detection_bin0.energy_index << ")]\n";
                   std::cout << "    efficiency:"
                             << petsird_helpers::get_detection_efficiency(header.scanner, type_of_module_pair, event) << "\n";
                 }

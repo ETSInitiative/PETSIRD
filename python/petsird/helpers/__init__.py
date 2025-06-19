@@ -56,6 +56,33 @@ def expand_detection_bin(
     return expand_detection_bins(scanner, type_of_module, [detection_bin])[0]
 
 
+def make_detection_bins(
+    scanner: petsird.ScannerInformation, type_of_module: petsird.TypeOfModule,
+    expanded_detection_bins: typing.Iterable[petsird.ExpandedDetectionBin]
+) -> list[petsird.ExpandedDetectionBin]:
+    """Find DetectionBin for a list of expanded_detection_bins"""
+    rep_module = scanner.scanner_geometry.replicated_modules[type_of_module]
+    num_el_per_module = len(rep_module.object.detecting_elements.transforms)
+    energy_bin_edges = scanner.event_energy_bin_edges[type_of_module]
+    num_en = energy_bin_edges.number_of_bins()
+
+    return [
+        (bin.energy_index +
+         (bin.element_index + bin.module_index * num_el_per_module) * num_en)
+        for bin in expanded_detection_bins
+    ]
+
+
+def make_detection_bin(
+    scanner: petsird.ScannerInformation, type_of_module: petsird.TypeOfModule,
+    expanded_detection_bin: petsird.DetectionBin
+) -> petsird.ExpandedDetectionBin:
+    """Find DetectionBin for an expanded_detection_bin"""
+    # TODO probably slow implementation, but avoids re-implementation for now
+    return make_detection_bins(scanner, type_of_module,
+                               [expanded_detection_bin])[0]
+
+
 def get_detection_efficiency(scanner: petsird.ScannerInformation,
                              type_of_module_pair: petsird.TypeOfModulePair,
                              event: petsird.CoincidenceEvent) -> float:

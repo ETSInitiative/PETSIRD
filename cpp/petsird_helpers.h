@@ -54,6 +54,7 @@ get_num_detection_bins(const ScannerInformation& scanner, const TypeOfModule& ty
   return det_els.transforms.size() * rep_module.transforms.size() * energy_bin_edges.NumberOfBins();
 }
 
+//! Create a vector of ExpandedDetectionBins from a list/vector of DetectionBins
 template <class T>
 inline std::vector<ExpandedDetectionBin>
 expand_detection_bins(const ScannerInformation& scanner, const TypeOfModule& type_of_module, const T& list_of_detection_bins)
@@ -74,6 +75,7 @@ expand_detection_bins(const ScannerInformation& scanner, const TypeOfModule& typ
   return result;
 }
 
+//! Expand a DetectionBin into a ExpandedDetectionBin
 inline ExpandedDetectionBin
 expand_detection_bin(const ScannerInformation& scanner, const TypeOfModule& type_of_module, const DetectionBin& detection_bin)
 {
@@ -81,6 +83,41 @@ expand_detection_bin(const ScannerInformation& scanner, const TypeOfModule& type
   std::vector<DetectionBin> bins{ detection_bin };
   const auto expanded_bins = expand_detection_bins(scanner, type_of_module, bins);
   return expanded_bins[0];
+}
+
+//! Create a vector of DetectionBins from a list/vector of ExpandedDetectionBins
+template <class T>
+inline std::vector<DetectionBin>
+make_detection_bins(const ScannerInformation& scanner, const TypeOfModule& type_of_module,
+                    const T& list_of_expanded_detection_bins)
+{
+  assert(type_of_module < scanner.scanner_geometry.replicated_modules.size());
+  const auto& rep_module = scanner.scanner_geometry.replicated_modules[type_of_module];
+  const auto& energy_bin_edges = scanner.event_energy_bin_edges[type_of_module];
+  const auto num_en = energy_bin_edges.NumberOfBins();
+  const auto num_el_per_module = rep_module.object.detecting_elements.transforms.size();
+
+  std::vector<DetectionBin> result;
+  // TODO call reserve()
+  for (auto bin : list_of_expanded_detection_bins)
+    {
+      // need to do static_cast to avoid compiler warning on narrowing from std::size_t to uint32_t
+      const auto detection_bin
+          = static_cast<DetectionBin>(bin.energy_index + (bin.element_index + bin.module_index * num_el_per_module) * num_en);
+      result.push_back({ detection_bin });
+    }
+  return result;
+}
+
+//! Create a DetectionBin from a ExpandedDetectionBin
+inline DetectionBin
+make_detection_bin(const ScannerInformation& scanner, const TypeOfModule& type_of_module,
+                   const ExpandedDetectionBin& expanded_detection_bin)
+{
+  // TODO very inefficient, but avoid re-implementation of code above.
+  std::vector<ExpandedDetectionBin> expanded_detection_bins{ expanded_detection_bin };
+  const auto detection_bins = make_detection_bins(scanner, type_of_module, expanded_detection_bins);
+  return detection_bins[0];
 }
 
 inline float
