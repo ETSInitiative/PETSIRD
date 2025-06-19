@@ -61,16 +61,16 @@ while reader.has_time_blocks()
         fprintf("=====================  Events in time block from %f  ==============\n", last_time);
         for event_idx = 1:length(time_block.value.prompt_events(type_of_module_1)(type_of_module_2))
             event = time_block.value.prompt_events(type_of_module_1)(type_of_module_2)(event_idx);
-            energy_1 = energy_1 + energy_mid_points(event.detection_bins(1).energy_idx + 1);
-            energy_2 = energy_2 + energy_mid_points(event.detection_bins(2).energy_idx + 1);
+            expanded_det_bin_1 = petsird.helpers.expand_detection_bins(header.scanner, type_of_module_1, event.detection_bins(1));
+            expanded_det_bin_2 = petsird.helpers.expand_detection_bins(header.scanner, type_of_module_2, event.detection_bins(2));
+            energy_1 = energy_1 + energy_mid_points(expanded_det_bin_1.energy_index + 1);
+            energy_2 = energy_2 + energy_mid_points(expanded_det_bin_2.energy_index + 1);
 
-            fprintf("CoincidenceEvent(detElIndices=[%d, %d], tofIdx=%d, energyIndices=[%d, %d])\n", ...
-                event.detection_bins(1).det_el_idx, event.detection_bins(2).det_el_idx, event.tof_idx, ...
-                event.detection_bins(1).energy_idx,  event.detection_bins(2).energy_idx);
-            expanded_det_bin_1 = petsird.helpers.expand_detection_bins(header.scanner.scanner_geometry, type_of_module_1, event.detection_bins(1))
-            expanded_det_bin_2 = petsird.helpers.expand_detection_bins(header.scanner.scanner_geometry, type_of_module_2, event.detection_bins(2))
-            fprintf("    [ExpandedDetectionBin(module=%d, el=%d), ExpandedDetectionBin(module=%d, el=%d)]\n", ...
-                expanded_det_bin_1.module, expanded_det_bin_1.el, expanded_det_bin_2.module, expanded_det_bin_2.el);
+            fprintf("CoincidenceEvent(detectionBins=[%d, %d], tofIdx=%d)\n", ...
+                event.detection_bins(1), event.detection_bins(2), event.tof_idx);
+            fprintf("    [ExpandedDetectionBin(module=%d, el=%d, en=%d), ExpandedDetectionBin(module=%d, el=%d, en=%d)]\n", ...
+                    expanded_det_bin_1.module_index, expanded_det_bin_1.element_index, expanded_det_bin_1.energy_index, ...
+                    expanded_det_bin_2.module_index, expanded_det_bin_2.element_index, expanded_det_bin_2.energy_index);
             fprintf("    efficiency: %f\n", petsird.helpers.get_detection_efficiency(header.scanner, type_of_module_pair, event));
         end
     end

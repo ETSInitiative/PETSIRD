@@ -113,9 +113,7 @@ DeadTimeTimeBlock: !record
 
 # Type for the histogram of singles of one type of module
 # See SinglesHistogramTimeBlock
-SinglesHistogram: !array
-      items: uint64
-      dimensions: [positionalIdx, energyIdx]
+SinglesHistogram: uint64[singlesDetectionBin]
 
 # A time block that stores a singles histogram.
 # See SinglesHistogramLevelType for information.
@@ -134,11 +132,10 @@ SinglesHistogramTimeBlock: !record
     # The histograms are stored per module-type.
     #
     # If ScannerInformation.singlesHistogramLevel == SinglesHistogramLevelType.module, the
-    # positionalIdx runs over all modules.
+    # singlesDetectionBin runs over all modules (of a particular type) and all singles energy windows.
     # If ScannerInformation.singlesHistogramLevel == SinglesHistogramLevelType.all, the
-    # positionalIdx runs over all DetElIdxs.
+    # singlesDetectionBin runs over all detectionBins (of a particular module type) and all singles energy windows.
     #
-    # Constraint: (singlesHistogramLevel == module && size(singlesHistogram[type_of_module], "positionalIdx") == total number of modules of that type) ||
-    #             (singlesHistogramLevel == all && size(singlesHistogram[type_of_module], "positionalIdx") == total number of detecting elements in all modules of that type)
-    # Constraint:  size(singlesHistogram[type_of_module], "energyIdx") == ScannerInformation.singlesHistogramEnergyBins[type_of_module].number_of_bins()
+    # Constraint: (singlesHistogramLevel == module && size(singlesHistogram[type_of_module]) == total_number_of_modules_of_this_type * number_of_singles_energy_windows_of_this_type) ||
+    #             (singlesHistogramLevel == all && size(singlesHistogram[type_of_module]) == total number of singles detection bins_in_all_modules_of_that_type)
     singlesHistograms: SinglesHistogram*

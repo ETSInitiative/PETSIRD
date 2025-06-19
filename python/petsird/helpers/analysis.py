@@ -54,7 +54,7 @@ if __name__ == "__main__":
             len(scanner.scanner_geometry.replicated_modules[type_of_module].
                 object.detecting_elements.transforms))
         print("Total number of 'crystals': ",
-              get_num_det_els(scanner.scanner_geometry, type_of_module))
+              get_num_det_els(scanner, type_of_module))
         tof_bin_edges = scanner.tof_bin_edges[type_of_module][type_of_module]
         num_tof_bins = tof_bin_edges.number_of_bins()
         event_energy_bin_edges = scanner.event_energy_bin_edges[type_of_module]
@@ -96,21 +96,24 @@ if __name__ == "__main__":
                       " ==============")
                 for event in time_block.value.prompt_events[
                         type_of_module_pair[0]][type_of_module_pair[1]]:
+                    expanded_detection_bin0 = expand_detection_bin(
+                        scanner, type_of_module_pair[0],
+                        event.detection_bins[0])
+                    expanded_detection_bin1 = expand_detection_bin(
+                        scanner, type_of_module_pair[1],
+                        event.detection_bins[1])
+
                     energy_1 += energy_mid_points[
-                        event.detection_bins[0].energy_idx]
+                        expanded_detection_bin0.energy_index]
                     energy_2 += energy_mid_points[
-                        event.detection_bins[1].energy_idx]
+                        expanded_detection_bin1.energy_index]
                     if print_events:
                         print(event)
                         print(
                             "   ",
-                            expand_detection_bin(scanner.scanner_geometry,
-                                                 type_of_module_pair[0],
-                                                 event.detection_bins[0]),
+                            expanded_detection_bin0,
                             ", ",
-                            expand_detection_bin(scanner.scanner_geometry,
-                                                 type_of_module_pair[1],
-                                                 event.detection_bins[1]),
+                            expanded_detection_bin1,
                         )
                         print(
                             "    efficiency:",

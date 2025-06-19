@@ -6,17 +6,17 @@
 # SGIDs are used to efficiently encode module-pair efficiencies etc.
 SGID: uint
 
-# Detection efficiencies for every DetectionBin
-# Constraint: size(DetectionBinEfficiencies, "energyBinIdx") == scannerInformation.numberOfEventEnergyBins or 1
-DetectionBinEfficiencies: float[detElIdx, energyBinIdx]
+# Detection efficiencies for every DetectionBin if a particular type of module
+# Constraint: size == number of all possible unique DetectionBins
+DetectionBinEfficiencies: float[detectionBin]
 
 # Efficiency for two detection bins in a pair of modules.
 # This is one component (often called "geometric") of the detection efficiency model.
 ModulePairEfficiencies: !record
   fields:
     # Detection efficiency for a pair of detection bins
-    # detElIdx1 and detElIdx2 run from 0 to the number of det_els in each module
-    values: float[detElIdx1, energyBinIdx1, detElIdx2, energyBinIdx2]
+    # detectionBin1 and detectionBin2 run from 0 to the number of detections_bins in each module
+    values: float[detectionBin1, detectionBin2]
     # Symmetry Group Identifier (SGID)
     # This should be a number between 0 and numberOfSGIDs-1
     sgid: SGID
@@ -62,11 +62,8 @@ DetectionEfficiencies: !record
     # Constraint: size(modulePairEfficienciesVectors) == max(modulePairSGIDLUT) + 1
     modulePairEfficienciesVectors: ModulePairEfficienciesVector**?
 
-# Constraint: sizeOfDetElIdxDimension == number of all possible unique DetElIdxs
-# Constraint: (sizeOfEnergyIdxDimension == ScannerInformation.eventEnergyBinEdges[type_of_module]).number_of_bins()
-SinglesAliveTimeFractions: !array
-  items: float
-  dimensions: [detElIdx, energyIdx]
+# Constraint: size == number of all possible unique DetectionBins
+SinglesAliveTimeFractions: float[detectionBin]
 
 # Type for coincidence alive time fractions array for 2 modules in coincidence
 ModuleCoincidenceAliveTimeFractions: !array
