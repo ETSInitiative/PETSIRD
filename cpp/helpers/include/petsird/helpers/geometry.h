@@ -74,5 +74,25 @@ transform_BoxShape(const RigidTransformation& transform, const BoxShape& box_sha
     }
   return new_box;
 }
+
+//! find the BoxShape corresponding to a ExpandedDetectionBin
+inline BoxShape
+get_detecting_box(const ScannerInformation& scanner, const TypeOfModule& type_of_module,
+                  const ExpandedDetectionBin& expanded_detection_bin)
+{
+  const auto& rep_module = scanner.scanner_geometry.replicated_modules[type_of_module];
+  const auto& det_els = rep_module.object.detecting_elements;
+  const auto& mod_transform = rep_module.transforms[expanded_detection_bin.module_index];
+  const auto& transform = det_els.transforms[expanded_detection_bin.element_index];
+  return transform_BoxShape(mult_transforms({ mod_transform, transform }), det_els.object.shape);
+}
+
+//! find the BoxShape corresponding to a DetectionBin
+inline BoxShape
+get_detecting_box(const ScannerInformation& scanner, const TypeOfModule& type_of_module, const DetectionBin& detection_bin)
+{
+  return get_detecting_box(scanner, type_of_module, expand_detection_bin(scanner, type_of_module, detection_bin));
+}
+
 } // namespace geometry
 } // namespace petsird_helpers

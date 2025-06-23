@@ -100,7 +100,16 @@ main(int argc, char const* argv[])
             << std::endl;
   std::cout << "Total number of 'crystals' in modules of first type : "
             << petsird_helpers::get_num_det_els(header.scanner, type_of_module) << std::endl;
-
+  // example printing of coordinates
+  {
+    const petsird::ExpandedDetectionBin expanded_detection_bin{ 0, 0, 0 };
+    const auto box_shape = petsird_helpers::geometry::get_detecting_box(header.scanner, type_of_module, expanded_detection_bin);
+    std::cout << "Coordinates of first detecting bin:\n";
+    for (auto& corner : box_shape.corners)
+      {
+        std::cout << "  [" << corner.c[0] << ", " << corner.c[1] << ", " << corner.c[2] << "]\n";
+      }
+  }
   const auto& tof_bin_edges = header.scanner.tof_bin_edges[type_of_module][type_of_module];
   const auto num_tof_bins = tof_bin_edges.NumberOfBins();
   std::cout << "Number of TOF bins: " << num_tof_bins << std::endl;

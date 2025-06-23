@@ -62,3 +62,19 @@ def transform_BoxShape(transform: petsird.RigidTransformation,
     return petsird.BoxShape(corners=[
         mult_transforms_coord([transform], c) for c in box_shape.corners
     ])
+
+
+def get_detecting_box(
+        scanner: petsird.ScannerInformation,
+        type_of_module: petsird.TypeOfModule,
+        expanded_detection_bin: petsird.ExpandedDetectionBin
+) -> petsird.BoxShape:
+    """Find BoxShape corresponding to the expanded bin."""
+    rep_module = scanner.scanner_geometry.replicated_modules[type_of_module]
+    det_els = rep_module.object.detecting_elements
+    mod_transform = rep_module.transforms[expanded_detection_bin.module_index]
+    transform = det_els.transforms[expanded_detection_bin.element_index]
+    return transform_BoxShape(
+        mult_transforms([mod_transform, transform]),
+        det_els.object.shape,
+    )
