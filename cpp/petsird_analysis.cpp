@@ -16,6 +16,7 @@ using petsird::hdf5::PETSIRDReader;
 using petsird::binary::PETSIRDReader;
 #endif
 #include "petsird_helpers.h"
+#include "petsird/helpers/geometry.h"
 #include <xtensor/xview.hpp>
 #include <xtensor/xio.hpp>
 #include <iostream>
