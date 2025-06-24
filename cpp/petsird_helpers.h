@@ -12,29 +12,6 @@ namespace petsird_helpers
 
 using namespace petsird;
 
-//! Helper function to create a std::vector<T>
-/*! This function is added to have a 1D analogue construct_2D_nested_vector() */
-template <typename T>
-std::vector<T>
-construct_vector(std::size_t size)
-{
-  std::vector<T> v(size);
-  return v;
-}
-
-//! Helper function to create a std::vector<std::vector<T>> as a 2D array of size (size0, size1)
-template <typename T>
-std::vector<std::vector<T>>
-construct_2D_nested_vector(std::size_t size0, std::size_t size1)
-{
-  std::vector<std::vector<T>> v(size0);
-  for (auto& one_of_them : v)
-    {
-      one_of_them.resize(size1);
-    }
-  return v;
-}
-
 // TODO remove?
 inline std::size_t
 get_num_det_els(const ScannerInformation& scanner, const TypeOfModule& type_of_module)
