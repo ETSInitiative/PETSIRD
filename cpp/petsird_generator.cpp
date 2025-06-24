@@ -125,7 +125,9 @@ set_detection_efficiencies(petsird::ScannerInformation& scanner)
   // set all detection_bin_efficiencies to 1 in this example
   if (scanner.detection_efficiencies.detection_bin_efficiencies)
     {
-      (*scanner.detection_efficiencies.detection_bin_efficiencies)[type_of_module] = xt::ones<float>({ num_detection_bins });
+      auto& bin_effs = (*scanner.detection_efficiencies.detection_bin_efficiencies)[type_of_module];
+      yardl::resize(bin_effs, { num_detection_bins });
+      std::fill(begin(bin_effs), end(bin_effs), 1.F);
     }
 
   // check if the caller wants to have module-pair stuff. If not, return.
@@ -221,8 +223,8 @@ get_scanner_info()
 
     typedef yardl::NDArray<float, 1> FArray1D;
     // TOF info (in mm)
-    FArray1D::shape_type tof_bin_edges_shape = { NUMBER_OF_TOF_BINS + 1 };
-    FArray1D tof_bin_edges_arr(tof_bin_edges_shape);
+    FArray1D tof_bin_edges_arr;
+    yardl::resize(tof_bin_edges_arr, { NUMBER_OF_TOF_BINS + 1 });
     for (std::size_t i = 0; i < tof_bin_edges_arr.size(); ++i)
       tof_bin_edges_arr[i] = (i - NUMBER_OF_TOF_BINS / 2.F) / NUMBER_OF_TOF_BINS * 2 * RADIUS;
     const petsird::BinEdges tof_bin_edges{ tof_bin_edges_arr };
@@ -230,8 +232,8 @@ get_scanner_info()
 
     all_tof_resolutions[type_of_module][type_of_module] = 9.4F; // in mm
 
-    FArray1D::shape_type event_energy_bin_edges_shape = { NUMBER_OF_EVENT_ENERGY_BINS + 1 };
-    FArray1D event_energy_bin_edges_arr(event_energy_bin_edges_shape);
+    FArray1D event_energy_bin_edges_arr;
+    yardl::resize(event_energy_bin_edges_arr, { NUMBER_OF_EVENT_ENERGY_BINS + 1 });
     for (std::size_t i = 0; i < event_energy_bin_edges_arr.size(); ++i)
       event_energy_bin_edges_arr[i] = 430.F + i * (650.F - 430.F) / NUMBER_OF_EVENT_ENERGY_BINS;
     petsird::BinEdges event_energy_bin_edges{ event_energy_bin_edges_arr };
