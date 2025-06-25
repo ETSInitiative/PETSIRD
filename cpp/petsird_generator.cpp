@@ -22,7 +22,7 @@ using petsird::binary::PETSIRDWriter;
 #endif
 
 #include "petsird_helpers.h"
-#include "petsird/helpers/create.h"
+#include "petsird_helpers/create.h"
 
 // these are constants for now
 constexpr uint32_t NUMBER_OF_EVENT_ENERGY_BINS = 3;
