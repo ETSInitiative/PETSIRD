@@ -51,17 +51,6 @@ TypeOfModule: uint
 # This is a pair of 2 "module-types".
 TypeOfModulePair: TypeOfModule*2
 
-# This is the type for the index over "modules".
-# It is an unsigned integer that runs over all the "modules" starting from 0.
-#
-# The correspondence between this integer and a module is not encoded in this model,
-# but only in the "helpers".
-# It corresponds to effectively incrementing the moduleIdx in nested loops:
-# 1. ScannerGeometry.replicated_modules
-# 2. replicated_module.transforms
-# (with the moduleIdx running faster over the 2nd loop)
-ModuleIdx: uint
-
 # type for a "single" detection (of a particular type of module), expanded into
 # indices into the `ScannerGeometry`
 ExpandedDetectionBin: !record

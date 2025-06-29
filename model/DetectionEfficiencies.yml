@@ -10,12 +10,13 @@ SGID: uint
 # Constraint: size == number of all possible unique DetectionBins
 DetectionBinEfficiencies: float[detectionBin]
 
-# Efficiency for two detection bins in a pair of modules.
+# Detection efficiency for two detection bins in a pair of modules.
 # This is one component (often called "geometric") of the detection efficiency model.
+# Note that "detection bin" includes energy windows (if any) for the modules.
 ModulePairEfficiencies: !record
   fields:
     # Detection efficiency for a pair of detection bins
-    # detectionBin1 and detectionBin2 run from 0 to the number of detections_bins in each module
+    # detectionBin1 and detectionBin2 run from 0 up to the number of detections_bins in each module,
     values: float[detectionBin1, detectionBin2]
     # Symmetry Group Identifier (SGID)
     # This should be a number between 0 and numberOfSGIDs-1
@@ -23,10 +24,11 @@ ModulePairEfficiencies: !record
 
 
 # Lookup table for SGIDs
-# For every module pair, give the SGID. If -1, the module-pair is not in coincidence.
+# For every module pair (of specific types), give the SGID. If -1, the module-pair is not in coincidence.
 # Values run from -1 ... (numberOfSGIDs-1)
-ModulePairSGIDLUT: int[moduleIdx1, moduleIdx2]
+ModulePairSGIDLUT: int[moduleIndex1, moduleIndex2]
 
+# List of ModulePairEfficiencies, one for each SGID
 ModulePairEfficienciesVector: ModulePairEfficiencies*
 
 # Component-based information on detection efficiencies
@@ -41,31 +43,36 @@ ModulePairEfficienciesVector: ModulePairEfficiencies*
 #
 # Finding the total detection efficiency therefore follows these steps in pseudo-code
 # 0. obtain module-types
-# 1. find modules for each detection_bin
-# 2. find det_el indices "inside" each module
-# 3. SGID = modulePairSGIDLUT[module_type1][module_type2][mod1, mod1]
+# 1. find module_index for each detection_bin
+# 2. find detection_bin "inside" each module
+# 3. SGID = modulePairSGIDLUT[type_of_module1][type_of_module2][module_index1, module_index2]
 # 4. if (SGID < 0) return 0
-# 5. module_pair_efficiencies = modulePairEfficienciesVector[module_type1][module_type2][SGID]
-# 6. return detectionBinEfficiencies[module_type1](detection_bin1) * detectionBinEfficiencies[module_type2](detection_bin2)
-#       * module_pair_efficiencies[det_el_in_mod1, en1, det_el_in_mod2, en2]
+# 5. module_pair_efficiencies = modulePairEfficienciesVector[type_of_module1][type_of_module2][SGID]
+# 6. return detectionBinEfficiencies[type_of_module1](detection_bin1) * detectionBinEfficiencies[type_of_module2](detection_bin2)
+#       * module_pair_efficiencies[detection_bin_in_module1, detection_bin_in_module2]
 #
 # If either of the components is not present, its value is considered to be 1.
+#
+# Note that computing a detection efficiency for a triple coincidence is left to the user.
 DetectionEfficiencies: !record
   fields:
     # List of detection efficiencies for every detection bin (one for each module-type).
-    # Constraint: size(detectionBinEfficiencies) == ScannerInformation.numberOfReplicatedModules
+    # Constraint: size(detectionBinEfficiencies) == ScannerGeometry.numberOfReplicatedModules()
     detectionBinEfficiencies: DetectionBinEfficiencies*?
     # Nested list of lookup tables for SGIDs, one for each module-type pair.
     # Also indicates if coincidences between a module-pair are recorded.
     modulePairSGIDLUT: ModulePairSGIDLUT**?
     # Nested list of all modulePairEfficienciesVectors (one for each module-type pair)
-    # Constraint: size(modulePairEfficienciesVectors) == max(modulePairSGIDLUT) + 1
+    # Constraint: size(modulePairEfficienciesVectors[type_of_module1][type_of_module2]) == max(modulePairSGIDLUT[type_of_module1][type_of_module2]) + 1
     modulePairEfficienciesVectors: ModulePairEfficienciesVector**?
 
-# Constraint: size == number of all possible unique DetectionBins
+# Type for alive-time fractions for singles
+# See AliveTimeFractions
+# Constraint: size == number of all possible DetectionBins (for a specific type_of_module)
 SinglesAliveTimeFractions: float[detectionBin]
 
 # Type for coincidence alive time fractions array for 2 modules in coincidence
+# See AliveTimeFractions
 ModuleCoincidenceAliveTimeFractions: !array
       items: float
       dimensions: [moduleId0, moduleId1]
