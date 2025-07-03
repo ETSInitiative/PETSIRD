@@ -185,7 +185,7 @@ main(int argc, char const* argv[])
                             << "energy_index=" << expanded_detection_bin0.energy_index
                             << "), ExpandedDetectionBin(module=" << expanded_detection_bin1.module_index << ", "
                             << "el=" << expanded_detection_bin1.element_index << ", "
-                            << "energy_index=" << expanded_detection_bin0.energy_index << ")]\n";
+                            << "energy_index=" << expanded_detection_bin1.energy_index << ")]\n";
                   std::cout << "    efficiency:"
                             << petsird_helpers::get_detection_efficiency(header.scanner, type_of_module_pair, event) << "\n";
                 }
