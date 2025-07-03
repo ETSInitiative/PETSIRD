@@ -27,7 +27,7 @@ set shell := ['bash', '-ceuo', 'pipefail']
 
 @run-cpp: build-cpp
     #!/usr/bin/env bash
-    cd cpp/build
+    cd cpp/build/helpers
     ./petsird_generator testdata.petsird
     ./petsird_analysis testdata.petsird
     rm -f testdata.petsird

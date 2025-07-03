@@ -4,6 +4,9 @@
   SPDX-License-Identifier: Apache-2.0
 */
 
+#ifndef __petsird_helpers_create_h__
+#define __petsird_helpers_create_h__
+
 #include "generated/types.h"
 #include <array>
 
@@ -11,8 +14,6 @@ namespace petsird_helpers
 {
 namespace create
 {
-
-using namespace petsird;
 
 //! Helper function to create a std::vector<T>
 /*! This function is added to have a 1D analogue construct_2D_nested_vector() */
@@ -76,3 +77,4 @@ initialize_scanner_information_dimensions(petsird::ScannerInformation& scanner, 
 
 } // namespace create
 } // namespace petsird_helpers
+#endif

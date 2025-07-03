@@ -3,6 +3,8 @@
 
   SPDX-License-Identifier: Apache-2.0
 */
+#ifndef __petsird_helpers_h__
+#define __petsird_helpers_h__
 
 #include "generated/types.h"
 #include <array>
@@ -138,3 +140,5 @@ get_detection_efficiency(const ScannerInformation& scanner, const TypeOfModulePa
 }
 
 } // namespace petsird_helpers
+
+#endif
