@@ -39,6 +39,20 @@ print_usage_and_exit(char const* prog_name)
   std::exit(EXIT_FAILURE);
 }
 
+// helper function to compute the mean of the corners in a BoxShape
+petsird::Coordinate
+mean_position(const petsird::BoxShape& box_shape)
+{
+  petsird::Coordinate mean;
+  mean.c = { 0, 0, 0 };
+  for (auto& corner : box_shape.corners)
+    {
+      mean.c += corner.c;
+    }
+  mean.c /= box_shape.corners.size();
+  return mean;
+}
+
 int
 main(int argc, char const* argv[])
 {
@@ -86,35 +100,28 @@ main(int argc, char const* argv[])
   PETSIRDReader reader(filename);
   petsird::Header header;
   reader.ReadHeader(header);
+  const auto& scanner = header.scanner;
 
   std::cout << "Processing file: " << filename << std::endl;
   if (header.exam) // only do this if present
     std::cout << "Subject ID: " << header.exam->subject.id << std::endl;
-  std::cout << "Types of modules: " << header.scanner.scanner_geometry.replicated_modules.size() << std::endl;
+  const auto num_module_types = scanner.scanner_geometry.replicated_modules.size();
+  std::cout << "Types of modules: " << num_module_types << std::endl;
   // TODO more than 1 type of module
   const petsird::TypeOfModule type_of_module{ 0 };
   std::cout << "Number of modules of first type: "
-            << header.scanner.scanner_geometry.replicated_modules[type_of_module].transforms.size() << std::endl;
+            << scanner.scanner_geometry.replicated_modules[type_of_module].transforms.size() << std::endl;
   std::cout << "Number of elements in modules of first type: "
-            << header.scanner.scanner_geometry.replicated_modules[type_of_module].object.detecting_elements.transforms.size()
+            << scanner.scanner_geometry.replicated_modules[type_of_module].object.detecting_elements.transforms.size()
             << std::endl;
   std::cout << "Total number of 'crystals' in modules of first type : "
-            << petsird_helpers::get_num_det_els(header.scanner, type_of_module) << std::endl;
-  // example printing of coordinates
-  {
-    const petsird::ExpandedDetectionBin expanded_detection_bin{ 0, 0, 0 };
-    const auto box_shape = petsird_helpers::geometry::get_detecting_box(header.scanner, type_of_module, expanded_detection_bin);
-    std::cout << "Coordinates of first detecting bin:\n";
-    for (auto& corner : box_shape.corners)
-      {
-        std::cout << "  [" << corner.c[0] << ", " << corner.c[1] << ", " << corner.c[2] << "]\n";
-      }
-  }
-  const auto& tof_bin_edges = header.scanner.tof_bin_edges[type_of_module][type_of_module];
+            << petsird_helpers::get_num_det_els(scanner, type_of_module) << std::endl;
+
+  const auto& tof_bin_edges = scanner.tof_bin_edges[type_of_module][type_of_module];
   const auto num_tof_bins = tof_bin_edges.NumberOfBins();
   std::cout << "Number of TOF bins: " << num_tof_bins << std::endl;
   std::cout << "TOF bin edges: " << tof_bin_edges.edges << std::endl;
-  const auto& event_energy_bin_edges = header.scanner.event_energy_bin_edges[type_of_module];
+  const auto& event_energy_bin_edges = scanner.event_energy_bin_edges[type_of_module];
   const auto num_event_energy_bins = event_energy_bin_edges.NumberOfBins();
   std::cout << "Number of energy bins: " << num_event_energy_bins << std::endl;
   std::cout << "Event energy bin edges: " << event_energy_bin_edges.edges << std::endl;
@@ -124,7 +131,7 @@ main(int argc, char const* argv[])
   std::cout << "Event energy mid points: " << energy_mid_points << std::endl;
 
   std::cout << "Singles Histogram Level: ";
-  switch (header.scanner.singles_histogram_level)
+  switch (scanner.singles_histogram_level)
     {
     case petsird::SinglesHistogramLevelType::kNone:
       std::cout << "none\n";
@@ -136,9 +143,9 @@ main(int argc, char const* argv[])
       std::cout << "all\n";
       break;
     }
-  if (header.scanner.singles_histogram_level != petsird::SinglesHistogramLevelType::kNone)
+  if (scanner.singles_histogram_level != petsird::SinglesHistogramLevelType::kNone)
     {
-      const auto& singles_histogram_energy_bin_edges = header.scanner.singles_histogram_energy_bin_edges[type_of_module];
+      const auto& singles_histogram_energy_bin_edges = scanner.singles_histogram_energy_bin_edges[type_of_module];
       std::cout << "Singles Histogram Energy Bin Edges: " << singles_histogram_energy_bin_edges.edges << std::endl;
       std::cout << "Number of Singles Histogram Energy Windows: " << singles_histogram_energy_bin_edges.NumberOfBins()
                 << std::endl;
@@ -157,37 +164,69 @@ main(int argc, char const* argv[])
         {
           auto& event_time_block = std::get<petsird::EventTimeBlock>(time_block);
           last_time = event_time_block.time_interval.stop;
-          const petsird::TypeOfModulePair type_of_module_pair{ 0, 0 };
-          num_prompts += event_time_block.prompt_events[type_of_module_pair[0]][type_of_module_pair[1]].size();
-          if (event_time_block.delayed_events)
-            num_delayeds += (*event_time_block.delayed_events)[type_of_module_pair[0]][type_of_module_pair[1]].size();
+
           if (print_events)
             std::cout << "=====================  Prompt events in time block from " << last_time << " ==============\n";
 
-          // Note: just doing one module-type ATM
-          for (auto& event : event_time_block.prompt_events[type_of_module_pair[0]][type_of_module_pair[1]])
+          for (unsigned mtype0 = 0; mtype0 < num_module_types; ++mtype0)
             {
-              const auto expanded_detection_bin0
-                  = petsird_helpers::expand_detection_bin(header.scanner, type_of_module_pair[0], event.detection_bins[0]);
-              const auto expanded_detection_bin1
-                  = petsird_helpers::expand_detection_bin(header.scanner, type_of_module_pair[1], event.detection_bins[1]);
-
-              energy_1 += energy_mid_points[expanded_detection_bin0.energy_index];
-              energy_2 += energy_mid_points[expanded_detection_bin1.energy_index];
-
-              if (print_events)
+              for (unsigned mtype1 = 0; mtype1 < num_module_types; ++mtype1)
                 {
-                  std::cout << "CoincidenceEvent(detectionBins=[" << event.detection_bins[0] << ", " << event.detection_bins[1]
-                            << "], tofIdx=" << event.tof_idx << "])\n";
-                  std::cout << "    "
-                            << "[ExpandedDetectionBin(module=" << expanded_detection_bin0.module_index << ", "
-                            << "el=" << expanded_detection_bin0.element_index << ", "
-                            << "energy_index=" << expanded_detection_bin0.energy_index
-                            << "), ExpandedDetectionBin(module=" << expanded_detection_bin1.module_index << ", "
-                            << "el=" << expanded_detection_bin1.element_index << ", "
-                            << "energy_index=" << expanded_detection_bin1.energy_index << ")]\n";
-                  std::cout << "    efficiency:"
-                            << petsird_helpers::get_detection_efficiency(header.scanner, type_of_module_pair, event) << "\n";
+                  const petsird::TypeOfModulePair mtype_pair{ mtype0, mtype1 };
+                  const auto& prompt_events = event_time_block.prompt_events[mtype0][mtype1];
+
+                  // count events
+                  num_prompts += prompt_events.size();
+                  if (event_time_block.delayed_events)
+                    {
+                      num_delayeds += (*event_time_block.delayed_events)[mtype0][mtype1].size();
+                    }
+
+                  if (print_events)
+                    {
+                      std::cout << "---------------------------- prompts for modules : "
+                                << "[" << mtype_pair[0] << ", " << mtype_pair[1] << "]\n";
+                    }
+
+                  for (const auto& event : prompt_events)
+                    {
+                      const auto expanded_det_bin0
+                          = petsird_helpers::expand_detection_bin(scanner, mtype0, event.detection_bins[0]);
+                      const auto expanded_det_bin1
+                          = petsird_helpers::expand_detection_bin(scanner, mtype1, event.detection_bins[1]);
+
+                      // accumulate energies to print average below
+                      energy_1 += energy_mid_points[expanded_det_bin0.energy_index];
+                      energy_2 += energy_mid_points[expanded_det_bin1.energy_index];
+
+                      if (print_events)
+                        {
+                          std::cout << "CoincidenceEvent(detectionBins=[" << event.detection_bins[0] << ", "
+                                    << event.detection_bins[1] << "], tofIdx=" << event.tof_idx << "])\n";
+                          std::cout << "    "
+                                    << "[ExpandedDetectionBin(module=" << expanded_det_bin0.module_index << ", "
+                                    << "el=" << expanded_det_bin0.element_index << ", "
+                                    << "energy_index=" << expanded_det_bin0.energy_index
+                                    << "), ExpandedDetectionBin(module=" << expanded_det_bin1.module_index << ", "
+                                    << "el=" << expanded_det_bin1.element_index << ", "
+                                    << "energy_index=" << expanded_det_bin1.energy_index << ")]\n";
+
+                          const auto eff = petsird_helpers::get_detection_efficiency(scanner, mtype_pair, event);
+                          std::cout << "    efficiency: " << eff << std::endl;
+
+                          const auto box_shape0
+                              = petsird_helpers::geometry::get_detecting_box(scanner, mtype0, expanded_det_bin0);
+                          const auto box_shape1
+                              = petsird_helpers::geometry::get_detecting_box(scanner, mtype0, expanded_det_bin1);
+                          const auto mean0 = mean_position(box_shape0);
+                          const auto mean1 = mean_position(box_shape1);
+
+                          std::cout << "    mean of detection box 0: [" << mean0.c[0] << ", " << mean0.c[1] << ", " << mean0.c[2]
+                                    << "]\n";
+                          std::cout << "    mean of detection box 1: [" << mean1.c[0] << ", " << mean1.c[1] << ", " << mean1.c[2]
+                                    << "]\n";
+                        }
+                    }
                 }
             }
         }
