@@ -19,7 +19,7 @@ set shell := ['bash', '-ceuo', 'pipefail']
     cd cpp/build && cmake --build .
 
 @build-python: generate
-    pip install --editable ./python
+    python -m pip install --editable ./python
 
 @build: build-cpp build-python
 
