@@ -111,10 +111,10 @@ if __name__ == "__main__":
                                 scanner, mtype1, event.detection_bins[1])
 
                             # accumulate energies to print average below
-                            energy_1 += energy_mid_points[
-                                expanded_det_bin0.energy_index]
-                            energy_2 += energy_mid_points[
-                                expanded_det_bin1.energy_index]
+                            energy_1 += float(energy_mid_points[
+                                expanded_det_bin0.energy_index])
+                            energy_2 += float(energy_mid_points[
+                                expanded_det_bin1.energy_index])
                             if print_events:
                                 print(event)
                                 print(
