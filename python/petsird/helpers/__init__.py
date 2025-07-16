@@ -87,16 +87,19 @@ def get_detection_efficiency(scanner: petsird.ScannerInformation,
                              type_of_module_pair: petsird.TypeOfModulePair,
                              event: petsird.CoincidenceEvent) -> float:
     """Compute the detection efficiency for a coincidence event"""
-    eff = 1
+    if scanner.detection_efficiencies is None:
+        # should never happen really, but this way, we don't crash.
+        return 1.
+
+    eff = 1.
 
     # per detection_bin efficiencies
-    if scanner.detection_efficiencies is not None:
+    detection_bin_efficiencies = scanner.detection_efficiencies.detection_bin_efficiencies
+    if detection_bin_efficiencies is not None:
         detection_bin_efficiencies0 = (
-            scanner.detection_efficiencies.detection_bin_efficiencies[
-                type_of_module_pair[0]])
+            detection_bin_efficiencies[type_of_module_pair[0]])
         detection_bin_efficiencies1 = (
-            scanner.detection_efficiencies.detection_bin_efficiencies[
-                type_of_module_pair[1]])
+            detection_bin_efficiencies[type_of_module_pair[1]])
         eff *= (detection_bin_efficiencies0[event.detection_bins[0]] *
                 detection_bin_efficiencies1[event.detection_bins[1]])
         if eff == 0:
