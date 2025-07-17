@@ -23,8 +23,11 @@ def draw_BoxShape(ax, box: petsird.BoxShape) -> None:
         [vertices[j] for j in [1, 2, 6, 5]],
         [vertices[j] for j in [4, 7, 3, 0]],
     ]
-    box = Poly3DCollection(edges, alpha=0.25, linewidths=1, edgecolors="r")
-    ax.add_collection3d(box)
+    box_poly = Poly3DCollection(edges,
+                                alpha=0.25,
+                                linewidths=1,
+                                edgecolors="r")
+    ax.add_collection3d(box_poly)
 
 
 if __name__ == "__main__":
