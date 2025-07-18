@@ -101,14 +101,14 @@ make_detection_bin(const ScannerInformation& scanner, const TypeOfModule& type_o
 
 inline float
 get_detection_efficiency(const ScannerInformation& scanner, const TypeOfModulePair& type_of_module_pair,
-                         const CoincidenceEvent& event)
+                         const DetectionBin& detection_bin_1, const DetectionBin& detection_bin_2)
 {
   float eff = 1.0F;
   const auto& detection_bin_efficiencies = scanner.detection_efficiencies.detection_bin_efficiencies;
   if (detection_bin_efficiencies)
     {
-      eff *= ((*detection_bin_efficiencies)[type_of_module_pair[0]](event.detection_bins[0])
-              * (*detection_bin_efficiencies)[type_of_module_pair[1]](event.detection_bins[1]));
+      eff *= ((*detection_bin_efficiencies)[type_of_module_pair[0]](detection_bin_1)
+              * (*detection_bin_efficiencies)[type_of_module_pair[1]](detection_bin_2));
       if (eff == 0.F)
         return 0.F;
     }
@@ -119,8 +119,8 @@ get_detection_efficiency(const ScannerInformation& scanner, const TypeOfModulePa
       const auto& module_pair_SGID_LUT
           = (*scanner.detection_efficiencies.module_pair_sgidlut)[type_of_module_pair[0]][type_of_module_pair[1]];
 
-      const auto expanded_det_bin0 = expand_detection_bin(scanner, type_of_module_pair[0], event.detection_bins[0]);
-      const auto expanded_det_bin1 = expand_detection_bin(scanner, type_of_module_pair[1], event.detection_bins[1]);
+      const auto expanded_det_bin0 = expand_detection_bin(scanner, type_of_module_pair[0], detection_bin_1);
+      const auto expanded_det_bin1 = expand_detection_bin(scanner, type_of_module_pair[1], detection_bin_2);
       const int SGID = module_pair_SGID_LUT(expanded_det_bin0.module_index, expanded_det_bin1.module_index);
       if (SGID < 0)
         {
@@ -137,6 +137,13 @@ get_detection_efficiency(const ScannerInformation& scanner, const TypeOfModulePa
                                              expanded_det_bin1.element_index * num_en1 + expanded_det_bin1.energy_index);
     }
   return eff;
+}
+
+inline float
+get_detection_efficiency(const ScannerInformation& scanner, const TypeOfModulePair& type_of_module_pair,
+                         const CoincidenceEvent& event)
+{
+  return get_detection_efficiency(scanner, type_of_module_pair, event.detection_bins[0], event.detection_bins[1]);
 }
 
 } // namespace petsird_helpers
