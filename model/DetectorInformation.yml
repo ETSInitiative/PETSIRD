@@ -40,7 +40,7 @@ ScannerGeometry: !record
     # shielding etc
     nonDetectingVolumes: GenericSolidVolume*?
   computedFields:
-    numberOfReplicatedModules: size(replicatedModules)
+    numberOfModuleTypes: size(replicatedModules)
 
 # This is the type for the index over "module-types".
 # It is an unsigned integer that runs over all the types starting from 0.
