@@ -35,12 +35,12 @@ ScannerGeometry: !record
     # list of different types of replicated modules
     # While most current clinical scanners have only one type of DetectorModule, some
     # would have different types, e.g. for scanners with phoswich detector, high resolution inserts, etc.
-    # Constraint: numberOfReplicatedModules > 0
+    # Constraint: numberOfModuleTypes > 0
     replicatedModules: ReplicatedDetectorModule*
     # shielding etc
     nonDetectingVolumes: GenericSolidVolume*?
   computedFields:
-    numberOfReplicatedModules: size(replicatedModules)
+    numberOfModuleTypes: size(replicatedModules)
 
 # This is the type for the index over "module-types".
 # It is an unsigned integer that runs over all the types starting from 0.

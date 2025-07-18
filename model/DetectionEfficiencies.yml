@@ -57,7 +57,7 @@ ModulePairEfficienciesVector: ModulePairEfficiencies*
 DetectionEfficiencies: !record
   fields:
     # List of detection efficiencies for every detection bin (one for each module-type).
-    # Constraint: size(detectionBinEfficiencies) == ScannerGeometry.numberOfReplicatedModules()
+    # Constraint: size(detectionBinEfficiencies) == ScannerGeometry.numberOfModuleTypes()
     detectionBinEfficiencies: DetectionBinEfficiencies*?
     # Nested list of lookup tables for SGIDs, one for each module-type pair.
     # Also indicates if coincidences between a module-pair are recorded.

@@ -38,23 +38,23 @@ EventTimeBlock: !record
    # but this is currently not enforced. Therefore, to check all coincidences between two
    # different types of modules, a user will have to check two lists, i.e. also
    #  promptEvents[typeOfModule2][typeOfModule1]
-   # Constraint: size(promptsEvents) == ScannerInformation.numberOfReplicatedModules
-   # Constraint: size(promptsEvents[*]) == ScannerInformation.numberOfReplicatedModules
+   # Constraint: size(promptsEvents) == ScannerInformation.numberOfModuleTypes
+   # Constraint: size(promptsEvents[*]) == ScannerInformation.numberOfModuleTypes
    promptEvents: ListOfCoincidenceEvents**
    # optional nested vector with lists of delayed coincidences in this time block
    # To get the list of delayeds for 2 types of modules, use
    #  delayedEvents[typeOfModule1][typeOfModule2]
    # See promptEvents for more information.
-   # Constraint: size(delayedEvents) == ScannerInformation.numberOfReplicatedModules
-   # Constraint: size(delayedEvents[*]) == ScannerInformation.numberOfReplicatedModules
+   # Constraint: size(delayedEvents) == ScannerInformation.numberOfModuleTypes
+   # Constraint: size(delayedEvents[*]) == ScannerInformation.numberOfModuleTypes
    delayedEvents: ListOfCoincidenceEvents**?
    # optional nested vector with lists of triple coincidences in this time block
    # To get the list of triples for 3 types of modules, use
    #  tripleEvents[typeOfModule1][typeOfModule2][typeOfModule3]
    # See promptEvents for more information.
-   # Constraint: size(tripleEvents) == ScannerInformation.numberOfReplicatedModules
-   # Constraint: size(tripleEvents[*]) == ScannerInformation.numberOfReplicatedModules
-   # Constraint: size(tripleEvents[*][*]) == ScannerInformation.numberOfReplicatedModules
+   # Constraint: size(tripleEvents) == ScannerInformation.numberOfModuleTypes
+   # Constraint: size(tripleEvents[*]) == ScannerInformation.numberOfModuleTypes
+   # Constraint: size(tripleEvents[*][*]) == ScannerInformation.numberOfModuleTypes
    tripleEvents: ListOfTripleEvents***?
 
 ExternalSignalTypeEnum: !enum
