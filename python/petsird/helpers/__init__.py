@@ -85,7 +85,7 @@ def make_detection_bin(
 
 def get_detection_efficiency(scanner: petsird.ScannerInformation,
                              type_of_module_pair: petsird.TypeOfModulePair,
-                             detection_bin_1: petsird.DetectionBin, 
+                             detection_bin_1: petsird.DetectionBin,
                              detection_bin_2: petsird.DetectionBin) -> float:
     """Compute the detection efficiency for a pair of detectors"""
     if scanner.detection_efficiencies is None:
@@ -140,9 +140,12 @@ def get_detection_efficiency(scanner: petsird.ScannerInformation,
 
     return eff
 
-def get_event_detection_efficiency(scanner: petsird.ScannerInformation,
-                                   type_of_module_pair: petsird.TypeOfModulePair,
-                                   event: petsird.CoincidenceEvent) -> float:
+
+def get_event_detection_efficiency(
+        scanner: petsird.ScannerInformation,
+        type_of_module_pair: petsird.TypeOfModulePair,
+        event: petsird.CoincidenceEvent) -> float:
     """Compute the detection efficiency for a coincidence event"""
     return get_detection_efficiency(scanner, type_of_module_pair,
-                             event.detection_bins[0], event.detection_bins[1])
+                                    event.detection_bins[0],
+                                    event.detection_bins[1])

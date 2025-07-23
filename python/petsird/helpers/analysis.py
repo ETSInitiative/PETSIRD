@@ -8,8 +8,8 @@ import sys
 
 import petsird
 import petsird.helpers.geometry
-from petsird.helpers import (expand_detection_bin, get_event_detection_efficiency,
-                             get_num_det_els)
+from petsird.helpers import (expand_detection_bin,
+                             get_event_detection_efficiency, get_num_det_els)
 
 
 def parserCreator():
