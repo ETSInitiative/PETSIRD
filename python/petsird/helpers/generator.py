@@ -9,7 +9,7 @@ from collections.abc import Iterator
 
 import numpy
 import petsird
-from petsird.helpers import get_detection_efficiency, get_num_detection_bins
+from petsird.helpers import get_event_detection_efficiency, get_num_detection_bins
 
 # these are constants for now
 NUMBER_OF_EVENT_ENERGY_BINS = 3
@@ -267,7 +267,7 @@ def get_events(header: petsird.Header,
             # short-cut to directly generate a random detection bin
             event.detection_bins[1] = get_random_uint(count1)
 
-            if get_detection_efficiency(header.scanner, type_of_module_pair,
+            if get_event_detection_efficiency(header.scanner, type_of_module_pair,
                                         event) > 0:
                 # in coincidence, we can get out of the loop
                 break

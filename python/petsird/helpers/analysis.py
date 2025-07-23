@@ -8,7 +8,7 @@ import sys
 
 import petsird
 import petsird.helpers.geometry
-from petsird.helpers import (expand_detection_bin, get_detection_efficiency,
+from petsird.helpers import (expand_detection_bin, get_event_detection_efficiency,
                              get_num_det_els)
 
 
@@ -123,7 +123,7 @@ if __name__ == "__main__":
                                     ", ",
                                     expanded_det_bin1,
                                 )
-                                eff = get_detection_efficiency(
+                                eff = get_event_detection_efficiency(
                                     scanner, mtype_pair, event)
                                 print("    efficiency:", eff)
 
