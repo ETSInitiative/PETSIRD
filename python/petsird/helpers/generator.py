@@ -173,7 +173,7 @@ def get_detection_efficiencies(
 def get_scanner_info() -> petsird.ScannerInformation:
 
     scanner_geometry = get_scanner_geometry()
-    num_types_of_modules = scanner_geometry.number_of_replicated_modules()
+    num_types_of_modules = scanner_geometry.number_of_module_types()
     # Example code below is restricted to the following case
     assert num_types_of_modules == 1
 
