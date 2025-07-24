@@ -41,6 +41,8 @@ ScannerGeometry: !record
     nonDetectingVolumes: GenericSolidVolume*?
   computedFields:
     numberOfModuleTypes: size(replicatedModules)
+    # Warning: the following function will be removed in the near future (TODO)
+    numberOfReplicatedModules: size(replicatedModules)
 
 # This is the type for the index over "module-types".
 # It is an unsigned integer that runs over all the types starting from 0.
