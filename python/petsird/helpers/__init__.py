@@ -83,10 +83,40 @@ def make_detection_bin(
                                [expanded_detection_bin])[0]
 
 
+@typing.overload
+def get_detection_efficiency(scanner: petsird.ScannerInformation,
+                             type_of_module_pair: petsird.TypeOfModulePair,
+                             detection_bin_1: petsird.DetectionBin,
+                             detection_bin_2: petsird.DetectionBin) -> float:
+    """Compute the detection efficiency for a pair of detectors"""
+    ...
+
+
+@typing.overload
 def get_detection_efficiency(scanner: petsird.ScannerInformation,
                              type_of_module_pair: petsird.TypeOfModulePair,
                              event: petsird.CoincidenceEvent) -> float:
     """Compute the detection efficiency for a coincidence event"""
+    ...
+
+
+_DetectionBinUnannotated = typing.get_args(petsird.DetectionBin)[0]
+
+
+def get_detection_efficiency(
+        scanner: petsird.ScannerInformation,
+        type_of_module_pair: petsird.TypeOfModulePair,
+        event_or_detection_bin_1: typing.Union[petsird.CoincidenceEvent,
+                                               petsird.DetectionBin],
+        detection_bin_2: petsird.DetectionBin = None) -> float:
+    """Compute the detection efficiency"""
+    if isinstance(event_or_detection_bin_1, _DetectionBinUnannotated):
+        detection_bin_1 = event_or_detection_bin_1
+        assert detection_bin_2 is not None, "Second detection bin must be provided"
+    else:
+        detection_bin_1, detection_bin_2 = event_or_detection_bin_1.detection_bins[:
+                                                                                   2]
+
     if scanner.detection_efficiencies is None:
         # should never happen really, but this way, we don't crash.
         return 1.
@@ -100,8 +130,8 @@ def get_detection_efficiency(scanner: petsird.ScannerInformation,
             detection_bin_efficiencies[type_of_module_pair[0]])
         detection_bin_efficiencies1 = (
             detection_bin_efficiencies[type_of_module_pair[1]])
-        eff *= (detection_bin_efficiencies0[event.detection_bins[0]] *
-                detection_bin_efficiencies1[event.detection_bins[1]])
+        eff *= (detection_bin_efficiencies0[detection_bin_1] *
+                detection_bin_efficiencies1[detection_bin_2])
         if eff == 0:
             return 0.
 
@@ -113,10 +143,10 @@ def get_detection_efficiency(scanner: petsird.ScannerInformation,
         assert module_pair_SGID_LUT is not None
         expanded_det_bin0 = expand_detection_bin(scanner,
                                                  type_of_module_pair[0],
-                                                 event.detection_bins[0])
+                                                 detection_bin_1)
         expanded_det_bin1 = expand_detection_bin(scanner,
                                                  type_of_module_pair[1],
-                                                 event.detection_bins[1])
+                                                 detection_bin_2)
 
         SGID = module_pair_SGID_LUT[type_of_module_pair[0]][
             type_of_module_pair[1]][expanded_det_bin0.module_index,
