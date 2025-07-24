@@ -91,9 +91,8 @@ AliveTimeFractions: !record
     # List of singles alive-time fractions (one for each type of module)
     singlesAliveTimeFractions: SinglesAliveTimeFractions*
     # Nested list of all-time fractions for 2 modules in coincidence.
-    # If the size of an element of this nested list is (1,1), it is assumed that the corresponding alive-fraction is the same for all modules.
-    # Constraint: size(moduleCoincidenceAliveTimeFractions, 0) == 1 or total number of modules of type 1
-    # Constraint: size(moduleCoincidenceAliveTimeFractions, 1) == 1 or total number of modules of types 2
+    # Constraint: size(moduleCoincidenceAliveTimeFractions[type_of_module1][type_of_module2], 0) == total number of modules of type 1
+    # Constraint: size(moduleCoincidenceAliveTimeFractions[type_of_module1][type_of_module2], 1) == total number of modules of types 2
     # Constraint: moduleCoincidenceAliveTimeFractions[type_of_module1][type_of_module2][mod1, mod2] ==
     #   moduleCoincidenceAliveTimeFractions[type_of_module2][type_of_module1][mod2, mod1]
-    moduleCoincidenceAliveTimeFractions: ModuleCoincidenceAliveTimeFractions**
+    moduleCoincidenceAliveTimeFractions: ModuleCoincidenceAliveTimeFractions**?
