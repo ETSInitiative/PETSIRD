@@ -113,7 +113,7 @@ get_scanner_geometry()
 void
 set_detection_efficiencies(petsird::ScannerInformation& scanner)
 {
-  const auto num_module_types = scanner.scanner_geometry.replicated_modules.size();
+  const auto num_module_types = scanner.scanner_geometry.NumberOfModuleTypes();
   // only 1 type of module in the current scanner
   assert(num_module_types == 1);
   const petsird::TypeOfModule type_of_module{ 0 };
@@ -201,7 +201,7 @@ get_scanner_info()
   scanner_info.model_name = "PETSIRD_TEST";
 
   scanner_info.scanner_geometry = get_scanner_geometry();
-  const auto num_types_of_modules = scanner_info.scanner_geometry.replicated_modules.size();
+  const auto num_types_of_modules = scanner_info.scanner_geometry.NumberOfModuleTypes();
   // Pre-allocate various structures to have the correct size for num_types_of_modules
   // (We will still have to set descent values into each of these.)
   petsird_helpers::create::initialize_scanner_information_dimensions(scanner_info, num_types_of_modules,

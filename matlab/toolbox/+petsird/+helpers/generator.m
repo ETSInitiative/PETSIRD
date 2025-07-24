@@ -55,7 +55,7 @@ end
 function scanner = get_scanner_info(cfg)
     scanner_geometry = get_scanner_geometry(cfg);
 
-    num_types_of_modules = scanner_geometry.number_of_replicated_modules()
+    num_types_of_modules = scanner_geometry.number_of_module_types()
     % TODO This code does not yet take multiple module-types into account
     assert(num_types_of_modules == 1);
 
