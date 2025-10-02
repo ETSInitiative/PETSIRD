@@ -1,3 +1,11 @@
+# Type definition for how to encode how the scanner records single events (if it does).
+SinglesPolicy: !enum
+  values:
+    # store all single events
+    - all
+
+    # only store those that are in coincidence with another single
+    - rejectIfNotInCoincidence
 
 # Type definition for how to encode how the scanner handles multiple coincidences when recording the prompts.
 # Due to various effects (such as high count rate, prompt gammas), it is possible that multiple single
@@ -133,6 +141,9 @@ ScannerInformation: !record
     #              && size(singlesHistogramEnergyBinEdges) >=  size(ScannerGeometry.replicatedModules)) ||
     #             (singlesHistogramLevel == SinglesHistogramLevelType.none && size(singlesHistogramEnergyBinEdges) == 0)
     singlesHistogramEnergyBinEdges: BinEdges*
+
+    # Encode how the scanner handles single events in the EventTimeBlock.singleEvents field
+    singlesPolicy: SinglesPolicy
 
     # Encode how the scanner handles multiple coincidences in the EventTimeBlock.promptEvents field
     coincidencePolicy: CoincidencePolicy
