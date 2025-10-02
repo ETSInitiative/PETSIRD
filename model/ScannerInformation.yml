@@ -18,7 +18,7 @@ CoincidencePolicy: !enum
     # other options, to be listed in the future
     - other
 
-    
+
 # Type definition for how to encode how the scanner handles higher order coincidences when recording the triples.
 TripleEventPolicy: !enum
   values:
@@ -148,7 +148,7 @@ ScannerInformation: !record
     # a flag to indicate of single events are recorded in the stream (see EventTimeBlock)
     # Note that this is separate from the singlesHistogramLevel, where singles are histogrammed in a time-block.
     singleEventsAreStored: bool
-    
+
     # a flag to indicate of prompt coincidences are recorded in the stream (see EventTimeBlock)
     promptCoincidencesAreStored: bool
 
