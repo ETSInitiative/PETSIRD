@@ -1,0 +1,20 @@
+# All information about a coincidence event specified as indices (i.e. discretized).
+CoincidenceEvent: !record
+  fields:
+    # identifiers of the two detecting bins (see doc for DetectionBin)
+    detectionBins: DetectionBin*2
+    # an index into the tofBinEdges field in the ScannerInformation
+    tofIdx: uint
+
+# All information about a triple event specified as identifiers (i.e. discretized).
+TripleEvent: !record
+  fields:
+    # identifiers of the three detecting bins (see doc for DetectionBin)
+    # Note that it is possible that 2 "detecting elements" (i.e. module/element in the ExpandedDetectionBin)
+    # are equal (e.g. for inter-crystal Compton events)
+    detectionBins: DetectionBin*3
+    # timing differences (converted to mm) w.r.t. first event, stored as
+    # indices into the tofBinEdges field in the ScannerInformation
+    # Note: only 2, corresponding to the arrival time differences of the second and third detectionBins
+    # listed w.r.t. the first detectionBin
+    tofIndices: uint*2
