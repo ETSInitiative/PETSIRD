@@ -173,7 +173,9 @@ main(int argc, char const* argv[])
               for (unsigned mtype1 = 0; mtype1 < num_module_types; ++mtype1)
                 {
                   const petsird::TypeOfModulePair mtype_pair{ mtype0, mtype1 };
-                  const auto& prompt_events = event_time_block.prompt_events[mtype0][mtype1];
+
+                  assert(event_time_block.prompt_events.has_value()); // This code would need work to be able to handle a list-mode file without prompts
+                  const auto& prompt_events = (*event_time_block.prompt_events)[mtype0][mtype1];
 
                   // count events
                   num_prompts += prompt_events.size();

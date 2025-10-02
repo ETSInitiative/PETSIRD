@@ -15,20 +15,54 @@ Header: !record
 # types of timeBlocks
 TimeBlock: [EventTimeBlock, ExternalSignalTimeBlock, BedMovementTimeBlock, GantryMovementTimeBlock, DeadTimeTimeBlock, SinglesHistogramTimeBlock]
 
+# Type definition for a list of single events (for a module of a specific type)
+ListOfSingleEvents: SingleEvent*
+
 # Type definition for a list of coincidences, where all coincidences are between 2 modules of specific types
 ListOfCoincidenceEvents: CoincidenceEvent*
 
 # Type definition for a list of triples, where all triples are between 3 modules of specific types
 ListOfTripleEvents: TripleEvent*
 
+# Type definition for a list of triples, where all triples are between 3 modules of specific types
+ListOfQuadrupleEvents: TripleEvent*
+
+# time-block that stores the detected (gamma photon) events as lists.
+# An event time block optionally stores
+# - singles
+# - "prompt" coincidences (i.e. 2 photons detected within the coincidence window),
+# - "delayed"coincidences (i.e. 2 photons with arrival time within the coincidence window after subtracting a
+# (scanner dependent) offset for the second event)
+# - triples
+# - quadruples
+# Note: PETSIRD currently does not allow storing higher order coincidences. These are very unlikely to occur in practice.
+# It is expected that most scanners will only store prompt and delayed coincidences. If singles are stored, it is expected
+# that coincidences are not stored, but this is not guaranteed.
+#
+# See also  the "policy" fields in ScannerInformation.
+# For instance, if coincidences, triples and quadruples are stored, it is likely that ScannerInformation.coincidencePolicy = rejectMultiples,
+# ScannerInformation.triplePolicy = rejectHigherMultiples, and ScannerInformation.quadruplePolicy = rejectHigherMultiples as well,
+# but this is not guaranteed.
 EventTimeBlock: !record
   fields:
    # time interval for this time block
    # We suggest that for each coincidence/multiple event, the earliest time of arrival
    # of a photon is used for deciding which time block the event is entered in.
    # However, the impact of this choice is negligible and therefore can be vendor dependent.
+   # WARNING: if singleEvents are recorded, the time interval currently has to be smaller
+   # than 2^32 picoseconds due to how time is stored, see SingleEvent.
    timeInterval: TimeInterval
-   # Nested vector with lists of prompts in this time block
+
+   # optional nested vector with lists of singles
+   # There is one separate list for every module type.
+   # To get the list of singles for a type of module where the `detectionBin`
+   # is in a module of the first type, use
+   #  singleEvents[typeOfModule]
+   # Constraint: size(singleEvents) == ScannerInformation.numberOfModuleTypes
+   # Constraint: (singleEvents_is_present?) == ScannerInformation.singleEventsAreStored
+   singleEvents: ListOfSingleEvents*?
+
+   # optional nested vector with lists of prompts in this time block
    # There is one separate list for every pair of module types.
    # To get the list of prompts for 2 types of modules where the first `detectionBin`
    # given in the `CoincidenceEvent` is in a module of the first type, use
@@ -40,14 +74,18 @@ EventTimeBlock: !record
    #  promptEvents[typeOfModule2][typeOfModule1]
    # Constraint: size(promptsEvents) == ScannerInformation.numberOfModuleTypes
    # Constraint: size(promptsEvents[*]) == ScannerInformation.numberOfModuleTypes
-   promptEvents: ListOfCoincidenceEvents**
+   # Constraint: (promptEvents_is_present?) == ScannerInformation.promptCoincidencesAreStored
+   promptEvents: ListOfCoincidenceEvents**?
+
    # optional nested vector with lists of delayed coincidences in this time block
    # To get the list of delayeds for 2 types of modules, use
    #  delayedEvents[typeOfModule1][typeOfModule2]
    # See promptEvents for more information.
    # Constraint: size(delayedEvents) == ScannerInformation.numberOfModuleTypes
    # Constraint: size(delayedEvents[*]) == ScannerInformation.numberOfModuleTypes
+   # Constraint: (delayedEvents_is_present?) == ScannerInformation.delayedCoincidencesAreStored
    delayedEvents: ListOfCoincidenceEvents**?
+
    # optional nested vector with lists of triple coincidences in this time block
    # To get the list of triples for 3 types of modules, use
    #  tripleEvents[typeOfModule1][typeOfModule2][typeOfModule3]
@@ -55,7 +93,19 @@ EventTimeBlock: !record
    # Constraint: size(tripleEvents) == ScannerInformation.numberOfModuleTypes
    # Constraint: size(tripleEvents[*]) == ScannerInformation.numberOfModuleTypes
    # Constraint: size(tripleEvents[*][*]) == ScannerInformation.numberOfModuleTypes
+   # Constraint: (tripleEvents_is_present?) == ScannerInformation.tripleEventsAreStored
    tripleEvents: ListOfTripleEvents***?
+
+   # optional nested vector with lists of quadruple coincidences in this time block
+   # To get the list of quadruples for 4 types of modules, use
+   #  quadrupleEvents[typeOfModule1][typeOfModule2][typeOfModule3][typeOfModule4]
+   # See promptEvents for more information.
+   # Constraint: size(quadrupleEvents) == ScannerInformation.numberOfModuleTypes
+   # Constraint: size(quadrupleEvents[*]) == ScannerInformation.numberOfModuleTypes
+   # Constraint: size(quadrupleEvents[*][*]) == ScannerInformation.numberOfModuleTypes
+   # Constraint: size(quadrupleEvents[*][*][*]) == ScannerInformation.numberOfModuleTypes
+   # Constraint: (quadrupleEvents_is_present?) == ScannerInformation.quadrupleEventsAreStored
+   quadrupleEvents: ListOfQuadrupleEvents****?
 
 ExternalSignalTypeEnum: !enum
   values:

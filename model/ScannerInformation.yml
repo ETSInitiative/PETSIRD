@@ -2,10 +2,10 @@
 # Type definition for how to encode how the scanner handles multiple coincidences when recording the prompts.
 # Due to various effects (such as high count rate, prompt gammas), it is possible that multiple single
 # events are detected within the coincidence window. This type encodes some different ways
-# that this multiple events are handled, and recorded in the coincidence stream.
+# that this multiple events are handled, and recorded in the EventTimeBlock.promptEvents field.
 CoincidencePolicy: !enum
   values:
-    # multiples will be rejected
+    # multiples will be rejected (i.e., not stored in the EventTimeBlock.promptEvents field)
     - rejectMultiples
 
     # multiples will be stored as a sequence of all pairs, e.g. a triple leads to 3 pairs
@@ -14,6 +14,25 @@ CoincidencePolicy: !enum
     # multiples will be stored as a sequence of pairs, e.g. a triple leads to 2 pairs
     # (single1 and single2, single2 and single3)
     - multiplesAsSequentialCoincidences
+
+    # other options, to be listed in the future
+    - other
+
+    
+# Type definition for how to encode how the scanner handles higher order coincidences when recording the triples.
+TripleEventPolicy: !enum
+  values:
+    # quadruples etc are not stored in the EventTimeBlock.tripleEvents field
+    - rejectHigherMultiples
+
+    # other options, to be listed in the future
+    - other
+
+# Type definition for how to encode how the scanner handles higher order coincidences when recording the quadruples.
+QuadrupleEventPolicy: !enum
+  values:
+    # quadruples etc are not stored in the EventTimeBlock.tripleEvents field
+    - rejectHigherMultiples
 
     # other options, to be listed in the future
     - other
@@ -115,14 +134,32 @@ ScannerInformation: !record
     #             (singlesHistogramLevel == SinglesHistogramLevelType.none && size(singlesHistogramEnergyBinEdges) == 0)
     singlesHistogramEnergyBinEdges: BinEdges*
 
-    # Encode how the scanner handles multiple coincidences
+    # Encode how the scanner handles multiple coincidences in the EventTimeBlock.promptEvents field
     coincidencePolicy: CoincidencePolicy
 
-    # a flag to indicate of delayed coincidences are recorded in the stream
+    # Encode how the scanner handles higher order coincidences in the EventTimeBlock.tripleEvents field
+    # This field is ignored if tripleEventsAreStored == false.
+    tripleEventPolicy: TripleEventPolicy
+
+    # Encode how the scanner handles higher order coincidences in the EventTimeBlock.quadrupleEvents field
+    # This field is ignored if quadrupleEventsAreStored == false.
+    quadrupleEventPolicy: QuadrupleEventPolicy
+
+    # a flag to indicate of single events are recorded in the stream (see EventTimeBlock)
+    # Note that this is separate from the singlesHistogramLevel, where singles are histogrammed in a time-block.
+    singleEventsAreStored: bool
+    
+    # a flag to indicate of prompt coincidences are recorded in the stream (see EventTimeBlock)
+    promptCoincidencesAreStored: bool
+
+    # a flag to indicate of delayed coincidences are recorded in the stream (see EventTimeBlock)
     delayedCoincidencesAreStored: bool
 
-    # a flag to indicate of triple events are recorded in the stream
+    # a flag to indicate of triple events are recorded in the stream (see EventTimeBlock)
     tripleEventsAreStored: bool
+
+    # a flag to indicate of quadruple coincidences are recorded in the stream (see EventTimeBlock)
+    quadrupleEventsAreStored: bool
 
     # coincidence detection efficiencies
     detectionEfficiencies: DetectionEfficiencies
