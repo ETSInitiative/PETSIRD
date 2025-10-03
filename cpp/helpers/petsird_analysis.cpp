@@ -174,15 +174,14 @@ main(int argc, char const* argv[])
                 {
                   const petsird::TypeOfModulePair mtype_pair{ mtype0, mtype1 };
 
-                  assert(event_time_block.prompt_events
-                             .has_value()); // This code would need work to be able to handle a list-mode file without prompts
-                  const auto& prompt_events = (*event_time_block.prompt_events)[mtype0][mtype1];
+                  // This code would need work to be able to handle a list-mode file without prompts
+                  const auto& prompt_events = event_time_block.prompt_events[mtype0][mtype1];
 
                   // count events
                   num_prompts += prompt_events.size();
-                  if (event_time_block.delayed_events)
+                  if (scanner.delayed_coincidences_are_stored)
                     {
-                      num_delayeds += (*event_time_block.delayed_events)[mtype0][mtype1].size();
+                      num_delayeds += event_time_block.delayed_events[mtype0][mtype1].size();
                     }
 
                   if (print_events)
