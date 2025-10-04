@@ -15,5 +15,14 @@ if(CCACHE_PROGRAM)
   message(STATUS "ccache found, so we will use it.")
 endif()
 
+# assume that yardl was run with the following in the _package.yml
+#   sourcesOutputDir: ../cpp/generated/petsird
+
 add_subdirectory(generated/petsird)
+# create a petsird library target
+# Currently it is just empty, but allows creating target properties which are transitive
+add_library(petsird)
+target_link_libraries(petsird PUBLIC petsird_generated)
+target_include_directories(petsird PUBLIC "${PROJECT_SOURCE_DIR}/generated")
+
 add_subdirectory(helpers)
