@@ -1,7 +1,7 @@
 namespace: PETSIRD
 
 cpp:
-  sourcesOutputDir: ../cpp/generated
+  sourcesOutputDir: ../cpp/generated/petsird
 
 python:
   outputDir: ../python

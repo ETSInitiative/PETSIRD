@@ -15,5 +15,5 @@ if(CCACHE_PROGRAM)
   message(STATUS "ccache found, so we will use it.")
 endif()
 
-add_subdirectory(generated)
+add_subdirectory(generated/petsird)
 add_subdirectory(helpers)

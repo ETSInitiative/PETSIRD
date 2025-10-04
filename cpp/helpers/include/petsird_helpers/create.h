@@ -7,7 +7,7 @@
 #ifndef __petsird_helpers_create_h__
 #define __petsird_helpers_create_h__
 
-#include "generated/types.h"
+#include "petsird/types.h"
 #include <array>
 
 namespace petsird_helpers
