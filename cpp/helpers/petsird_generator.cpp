@@ -14,10 +14,10 @@
 #define USE_HDF5
 
 #ifdef USE_HDF5
-#  include "generated/hdf5/protocols.h"
+#  include "petsird/hdf5/protocols.h"
 using petsird::hdf5::PETSIRDWriter;
 #else
-#  include "generated/binary/protocols.h"
+#  include "petsird/binary/protocols.h"
 using petsird::binary::PETSIRDWriter;
 #endif
 
