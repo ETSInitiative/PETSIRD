@@ -94,7 +94,7 @@ if __name__ == "__main__":
                         prompt_events = time_block.value.prompt_events[mtype0][
                             mtype1]
                         num_prompts += len(prompt_events)
-                        if scanner.delayed_coincidences_are_stored:
+                        if scanner.delayed_events_are_stored:
                             num_delayeds += len(
                                 time_block.value.delayed_events[mtype0]
                                 [mtype1])

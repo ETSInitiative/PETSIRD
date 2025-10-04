@@ -179,7 +179,7 @@ main(int argc, char const* argv[])
 
                   // count events
                   num_prompts += prompt_events.size();
-                  if (scanner.delayed_coincidences_are_stored)
+                  if (scanner.delayed_events_are_stored)
                     {
                       num_delayeds += event_time_block.delayed_events[mtype0][mtype1].size();
                     }

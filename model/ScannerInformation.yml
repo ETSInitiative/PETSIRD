@@ -1,5 +1,5 @@
 # Type definition for how to encode how the scanner records single events (if it does).
-SinglesPolicy: !enum
+SingleEventPolicy: !enum
   values:
     # store all single events
     - all
@@ -42,7 +42,7 @@ TripleEventPolicy: !enum
 # Type definition for how to encode how the scanner handles higher order coincidences when recording the quadruples.
 QuadrupleEventPolicy: !enum
   values:
-    # quadruples etc are not stored in the EventTimeBlock.tripleEvents field
+    # quadruples etc are not stored in the EventTimeBlock.quadrupleEvents field
     - rejectHigherMultiples
 
     # other options, to be listed in the future
@@ -146,7 +146,7 @@ ScannerInformation: !record
     singlesHistogramEnergyBinEdges: BinEdges*
 
     # Encode how the scanner handles single events in the EventTimeBlock.singleEvents field
-    singlesPolicy: SinglesPolicy
+    singleEventPolicy: SingleEventPolicy
 
     # Encode how the scanner handles multiple coincidences in the EventTimeBlock.promptEvents field
     promptEventPolicy: CoincidencePolicy
@@ -168,10 +168,10 @@ ScannerInformation: !record
     singleEventsAreStored: bool
 
     # a flag to indicate of prompt coincidences are recorded in the stream (see EventTimeBlock)
-    promptCoincidencesAreStored: bool
+    promptEventsAreStored: bool
 
     # a flag to indicate of delayed coincidences are recorded in the stream (see EventTimeBlock)
-    delayedCoincidencesAreStored: bool
+    delayedEventsAreStored: bool
 
     # a flag to indicate of triple events are recorded in the stream (see EventTimeBlock)
     tripleEventsAreStored: bool
