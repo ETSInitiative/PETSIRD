@@ -1,0 +1,38 @@
+# All information about a single event specified as indices (i.e. discretized).
+SingleEvent: !record
+  fields:
+    # identifiers of detecting bin (see doc for DetectionBin)
+    detectionBin: DetectionBin
+    # arrival time w.r.t. start of the time-block (in ps) (see EventTimeBlock).
+    timeOffsetInTimeBlock:  uint
+
+# All information about a coincidence event specified as indices (i.e. discretized).
+CoincidenceEvent: !record
+  fields:
+    # identifiers of the two detecting bins (see doc for DetectionBin)
+    detectionBins: DetectionBin*2
+    # an index into the tofBinEdges field in the ScannerInformation
+    tofIdx: uint
+
+# All information about a triple coincidence event specified as identifiers (i.e. discretized).
+TripleEvent: !record
+  fields:
+    # identifiers of the three detecting bins (see doc for DetectionBin)
+    # Note that it is possible that 2 "detecting elements" (i.e. module/element in the ExpandedDetectionBin)
+    # are equal (e.g. for inter-crystal Compton events)
+    detectionBins: DetectionBin*3
+    # timing differences w.r.t. first event, stored as
+    # indices into the tofBinEdges field in the ScannerInformation
+    # Note: only 2, corresponding to the arrival time differences of the second and third detectionBins
+    # listed w.r.t. the first detectionBin
+    tofIndices: uint*2
+
+# All information about a quadruple coincidence event specified as indices (i.e. discretized).
+QuadrupleEvent: !record
+  fields:
+    # identifiers of the four detecting bins (see doc for DetectionBin)
+    detectionBins: DetectionBin*4
+    # timing differences w.r.t. first event, stored as
+    # indices into the tofBinEdges field in the ScannerInformation.
+    # Note: only 3, see documentation for TripleEvent
+    tofIndices: uint*3

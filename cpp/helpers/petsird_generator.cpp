@@ -243,9 +243,12 @@ get_scanner_info()
 
   set_detection_efficiencies(scanner_info);
 
-  scanner_info.coincidence_policy = petsird::CoincidencePolicy::kRejectMultiples;
-  scanner_info.delayed_coincidences_are_stored = false;
+  scanner_info.prompt_event_policy = petsird::CoincidencePolicy::kRejectHigherMultiples;
+  scanner_info.single_events_are_stored = false;
+  scanner_info.prompt_events_are_stored = true;
+  scanner_info.delayed_events_are_stored = false;
   scanner_info.triple_events_are_stored = false;
+  scanner_info.quadruple_events_are_stored = false;
 
   return scanner_info;
 }
@@ -349,9 +352,10 @@ main(int argc, char* argv[])
       petsird::EventTimeBlock time_block;
       time_block.time_interval.start = t * EVENT_TIME_BLOCK_DURATION;
       time_block.time_interval.stop = (t + 1) * EVENT_TIME_BLOCK_DURATION;
-      time_block.prompt_events.resize(1);
-      time_block.prompt_events[type_of_module].resize(1);
-      time_block.prompt_events[type_of_module][type_of_module] = prompts_this_block;
+      auto& prompt_events = time_block.prompt_events;
+      prompt_events.resize(1);
+      prompt_events[type_of_module].resize(1);
+      prompt_events[type_of_module][type_of_module] = prompts_this_block;
       writer.WriteTimeBlocks(time_block);
     }
   writer.EndTimeBlocks();

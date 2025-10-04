@@ -1,7 +1,0 @@
-# All information about a coincidence event specified as indices (i.e. discretized).
-CoincidenceEvent: !record
-  fields:
-    # identifiers of the two detecting elements (see doc for DetectionBin)
-    detectionBins: DetectionBin*2
-    # an index into the tofBinEdges field in the ScannerInformation
-    tofIdx: uint

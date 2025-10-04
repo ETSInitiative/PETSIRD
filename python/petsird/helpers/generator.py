@@ -204,9 +204,12 @@ def get_scanner_info() -> petsird.ScannerInformation:
     # Now added the efficiencies
     scanner.detection_efficiencies = get_detection_efficiencies(scanner)
 
-    scanner.coincidence_policy = petsird.CoincidencePolicy.REJECT_MULTIPLES
-    scanner.delayed_coincidences_are_stored = False
+    scanner.coincidence_policy = petsird.CoincidencePolicy.REJECT_HIGHER_MULTIPLES
+    scanner.single_events_are_stored = False
+    scanner.prompt_events_are_stored = True
+    scanner.delayed_events_are_stored = False
     scanner.triple_events_are_stored = False
+    scanner.quadruple_events_are_stored = False
 
     return scanner
 
