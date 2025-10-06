@@ -11,7 +11,7 @@
 #include <xtensor/xio.hpp>
 #include <xtensor-blas/xlinalg.hpp>
 #include <vector>
-#include "generated/types.h"
+#include "petsird/types.h"
 #include "petsird_helpers.h"
 
 namespace petsird_helpers
