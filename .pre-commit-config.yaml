@@ -49,7 +49,7 @@ repos:
     args: [-i]
     additional_dependencies: [toml]
 - repo: https://github.com/PyCQA/isort
-  rev: 6.0.1
+  rev: 7.0.0
   hooks:
   - id: isort
 - repo: https://github.com/pre-commit/mirrors-clang-format
