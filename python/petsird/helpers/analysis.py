@@ -93,6 +93,9 @@ if __name__ == "__main__":
                 number_of_bins())
             print("Singles histogram energy bin edges: ",
                   scanner.singles_histogram_energy_bin_edges)
+            print("------------------------- ")
+
+        # Now read events and print some things
         energy_1, energy_2 = 0.0, 0.0
         num_prompts = 0
         num_delayeds = 0
