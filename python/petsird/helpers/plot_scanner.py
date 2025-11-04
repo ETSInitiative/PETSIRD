@@ -53,4 +53,7 @@ if __name__ == "__main__":
                         det_els.object.shape,
                     ),
                 )
+    # make axis "equal"
+    ax.set_aspect("equal", adjustable="datalim")
+    ax.set_box_aspect([1., 1., 1.])
     plt.show()
