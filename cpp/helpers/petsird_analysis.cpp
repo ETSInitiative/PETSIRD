@@ -22,6 +22,7 @@ using petsird::binary::PETSIRDReader;
 #include <iostream>
 #include <variant>
 #include <cstdlib>
+#include <vector>
 
 void
 print_usage_and_exit(char const* prog_name)
@@ -107,53 +108,59 @@ main(int argc, char const* argv[])
     std::cout << "Subject ID: " << header.exam->subject.id << std::endl;
   const auto num_module_types = scanner.scanner_geometry.replicated_modules.size();
   std::cout << "Types of modules: " << num_module_types << std::endl;
-  // TODO more than 1 type of module
-  const petsird::TypeOfModule type_of_module{ 0 };
-  std::cout << "Number of modules of first type: "
-            << scanner.scanner_geometry.replicated_modules[type_of_module].transforms.size() << std::endl;
-  std::cout << "Number of elements in modules of first type: "
-            << scanner.scanner_geometry.replicated_modules[type_of_module].object.detecting_elements.transforms.size()
-            << std::endl;
-  std::cout << "Total number of 'crystals' in modules of first type : "
-            << petsird_helpers::get_num_det_els(scanner, type_of_module) << std::endl;
-
-  const auto& tof_bin_edges = scanner.tof_bin_edges[type_of_module][type_of_module];
-  const auto num_tof_bins = tof_bin_edges.NumberOfBins();
-  std::cout << "Number of TOF bins: " << num_tof_bins << std::endl;
-  std::cout << "TOF bin edges: " << tof_bin_edges.edges << std::endl;
-  const auto& event_energy_bin_edges = scanner.event_energy_bin_edges[type_of_module];
-  const auto num_event_energy_bins = event_energy_bin_edges.NumberOfBins();
-  std::cout << "Number of energy bins: " << num_event_energy_bins << std::endl;
-  std::cout << "Event energy bin edges: " << event_energy_bin_edges.edges << std::endl;
-  const auto energy_mid_points = (xt::view(event_energy_bin_edges.edges, xt::range(0, event_energy_bin_edges.edges.size() - 1))
-                                  + xt::view(event_energy_bin_edges.edges, xt::range(1, event_energy_bin_edges.edges.size())))
-                                 / 2;
-  std::cout << "Event energy mid points: " << energy_mid_points << std::endl;
-
-  std::cout << "Singles Histogram Level: ";
-  switch (scanner.singles_histogram_level)
+  std::vector<yardl::NDArray<float, 1>> all_energy_mid_points;
+  for (petsird::TypeOfModule type_of_module = 0; type_of_module < num_module_types; ++type_of_module)
     {
-    case petsird::SinglesHistogramLevelType::kNone:
-      std::cout << "none\n";
-      break;
-    case petsird::SinglesHistogramLevelType::kModule:
-      std::cout << "module\n";
-      break;
-    case petsird::SinglesHistogramLevelType::kAll:
-      std::cout << "all\n";
-      break;
-    }
-  if (scanner.singles_histogram_level != petsird::SinglesHistogramLevelType::kNone)
-    {
-      const auto& singles_histogram_energy_bin_edges = scanner.singles_histogram_energy_bin_edges[type_of_module];
-      std::cout << "Singles Histogram Energy Bin Edges: " << singles_histogram_energy_bin_edges.edges << std::endl;
-      std::cout << "Number of Singles Histogram Energy Windows: " << singles_histogram_energy_bin_edges.NumberOfBins()
+      std::cout << "------ Module type " << type_of_module << std::endl;
+      std::cout << "Number of modules of this type: "
+                << scanner.scanner_geometry.replicated_modules[type_of_module].transforms.size() << std::endl;
+      std::cout << "Number of elements in modules of this type: "
+                << scanner.scanner_geometry.replicated_modules[type_of_module].object.detecting_elements.transforms.size()
                 << std::endl;
-    }
+      std::cout << "Total number of 'crystals' in modules of this type : "
+                << petsird_helpers::get_num_det_els(scanner, type_of_module) << std::endl;
 
+      const auto& tof_bin_edges = scanner.tof_bin_edges[type_of_module][type_of_module];
+      const auto num_tof_bins = tof_bin_edges.NumberOfBins();
+      std::cout << "Number of TOF bins: " << num_tof_bins << std::endl;
+      std::cout << "TOF bin edges: " << tof_bin_edges.edges << std::endl;
+      const auto& event_energy_bin_edges = scanner.event_energy_bin_edges[type_of_module];
+      const auto num_event_energy_bins = event_energy_bin_edges.NumberOfBins();
+      std::cout << "Number of energy bins: " << num_event_energy_bins << std::endl;
+      std::cout << "Event energy bin edges: " << event_energy_bin_edges.edges << std::endl;
+      const auto energy_mid_points
+          = (xt::view(event_energy_bin_edges.edges, xt::range(0, event_energy_bin_edges.edges.size() - 1))
+             + xt::view(event_energy_bin_edges.edges, xt::range(1, event_energy_bin_edges.edges.size())))
+            / 2;
+      std::cout << "Event energy mid points: " << energy_mid_points << std::endl;
+      all_energy_mid_points.push_back(energy_mid_points);
+
+      std::cout << "Singles Histogram Level: ";
+      switch (scanner.singles_histogram_level)
+        {
+        case petsird::SinglesHistogramLevelType::kNone:
+          std::cout << "none\n";
+          break;
+        case petsird::SinglesHistogramLevelType::kModule:
+          std::cout << "module\n";
+          break;
+        case petsird::SinglesHistogramLevelType::kAll:
+          std::cout << "all\n";
+          break;
+        }
+      if (scanner.singles_histogram_level != petsird::SinglesHistogramLevelType::kNone)
+        {
+          const auto& singles_histogram_energy_bin_edges = scanner.singles_histogram_energy_bin_edges[type_of_module];
+          std::cout << "Singles Histogram Energy Bin Edges: " << singles_histogram_energy_bin_edges.edges << std::endl;
+          std::cout << "Number of Singles Histogram Energy Windows: " << singles_histogram_energy_bin_edges.NumberOfBins()
+                    << std::endl;
+        }
+    } // loop over type_of_module
+
+  std::cout << "------------------------- " << std::endl;
+
+  // Now read events and print some things
   petsird::TimeBlock time_block;
-
-  // Process events in batches of up to 100
   float energy_1 = 0, energy_2 = 0;
   std::size_t num_prompts = 0;
   std::size_t num_delayeds = 0;
@@ -170,9 +177,11 @@ main(int argc, char const* argv[])
 
           for (unsigned mtype0 = 0; mtype0 < num_module_types; ++mtype0)
             {
+              const auto& energy_mid_points0 = all_energy_mid_points[mtype0];
               for (unsigned mtype1 = 0; mtype1 < num_module_types; ++mtype1)
                 {
                   const petsird::TypeOfModulePair mtype_pair{ mtype0, mtype1 };
+                  const auto& energy_mid_points1 = all_energy_mid_points[mtype1];
 
                   // This code would need work to be able to handle a list-mode file without prompts
                   const auto& prompt_events = event_time_block.prompt_events[mtype0][mtype1];
@@ -198,8 +207,8 @@ main(int argc, char const* argv[])
                           = petsird_helpers::expand_detection_bin(scanner, mtype1, event.detection_bins[1]);
 
                       // accumulate energies to print average below
-                      energy_1 += energy_mid_points[expanded_det_bin0.energy_index];
-                      energy_2 += energy_mid_points[expanded_det_bin1.energy_index];
+                      energy_1 += energy_mid_points0[expanded_det_bin0.energy_index];
+                      energy_2 += energy_mid_points1[expanded_det_bin1.energy_index];
 
                       if (print_events)
                         {
