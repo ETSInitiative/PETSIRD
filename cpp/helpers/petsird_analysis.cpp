@@ -135,6 +135,7 @@ main(int argc, char const* argv[])
       std::cout << "Event energy mid points: " << energy_mid_points << std::endl;
       all_energy_mid_points.push_back(energy_mid_points);
 
+      std::cout << "Calibration factor: " << scanner.detection_efficiencies.calibration_factor << std::endl;
       std::cout << "Singles Histogram Level: ";
       switch (scanner.singles_histogram_level)
         {

@@ -113,6 +113,9 @@ get_scanner_geometry()
 void
 set_detection_efficiencies(petsird::ScannerInformation& scanner)
 {
+  // use some non-physical value for the calibration factor
+  scanner.detection_efficiencies.calibration_factor = 42.F;
+
   const auto num_module_types = scanner.scanner_geometry.NumberOfModuleTypes();
   // only 1 type of module in the current scanner
   assert(num_module_types == 1);
