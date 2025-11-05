@@ -48,14 +48,31 @@ ModulePairEfficienciesVector: ModulePairEfficiencies*
 # 3. SGID = modulePairSGIDLUT[type_of_module1][type_of_module2][module_index1, module_index2]
 # 4. if (SGID < 0) return 0
 # 5. module_pair_efficiencies = modulePairEfficienciesVector[type_of_module1][type_of_module2][SGID]
-# 6. return detectionBinEfficiencies[type_of_module1](detection_bin1) * detectionBinEfficiencies[type_of_module2](detection_bin2)
+# 6. return calibrationFactor
+#       * detectionBinEfficiencies[type_of_module1](detection_bin1) * detectionBinEfficiencies[type_of_module2](detection_bin2)
 #       * module_pair_efficiencies[detection_bin_in_module1, detection_bin_in_module2]
 #
 # If either of the components is not present, its value is considered to be 1.
 #
+# The calibrationFactor is defined in terms of measured/expected "true unscattered" coincidences.
+# Moreover, it is (in principle) defined in terms of an idealised measurement of large uniform source.
+# Therefore, "expected" counts should take into account the
+# - activity (as estimated via a dose calibrator)
+# - positron emission branching fraction
+# - detectionBinEfficiencies and modulePairEfficiencies
+# - the line integral (in millimeter) through the source
+# This definition has the effect that for a given pair of detection_bins, we should have
+#   mean_precorrected_true_coincidences =
+#     detection_effiency * line_integral(number_of_positron_annihilations_in_source_as_estimated_from_dose_calibrator)
+#   (with the precorrection taking into scatter and attenuation)
+#
 # Note that computing a detection efficiency for a triple coincidence is left to the user.
 DetectionEfficiencies: !record
   fields:
+    # Text field describing how these efficiencies were determined
+    methodDescription: string
+    # Calibration factor for "absolute" efficiency
+    calibrationFactor: float
     # List of detection efficiencies for every detection bin (one for each module-type).
     # Constraint: size(detectionBinEfficiencies) == ScannerGeometry.numberOfModuleTypes()
     detectionBinEfficiencies: DetectionBinEfficiencies*?

@@ -101,9 +101,10 @@ make_detection_bin(const ScannerInformation& scanner, const TypeOfModule& type_o
 
 inline float
 get_detection_efficiency(const ScannerInformation& scanner, const TypeOfModulePair& type_of_module_pair,
-                         const DetectionBin& detection_bin_1, const DetectionBin& detection_bin_2)
+                         const DetectionBin& detection_bin_1, const DetectionBin& detection_bin_2,
+                         bool with_calibration_factor = true)
 {
-  float eff = 1.0F;
+  float eff = with_calibration_factor ? scanner.detection_efficiencies.calibration_factor : 1.0F;
   const auto& detection_bin_efficiencies = scanner.detection_efficiencies.detection_bin_efficiencies;
   if (detection_bin_efficiencies)
     {
@@ -141,9 +142,10 @@ get_detection_efficiency(const ScannerInformation& scanner, const TypeOfModulePa
 
 inline float
 get_detection_efficiency(const ScannerInformation& scanner, const TypeOfModulePair& type_of_module_pair,
-                         const CoincidenceEvent& event)
+                         const CoincidenceEvent& event, bool with_calibration_factor = true)
 {
-  return get_detection_efficiency(scanner, type_of_module_pair, event.detection_bins[0], event.detection_bins[1]);
+  return get_detection_efficiency(scanner, type_of_module_pair, event.detection_bins[0], event.detection_bins[1],
+                                  with_calibration_factor);
 }
 
 } // namespace petsird_helpers

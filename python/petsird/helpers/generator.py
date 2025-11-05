@@ -343,6 +343,8 @@ def get_detection_efficiencies(
 ) -> petsird.DetectionEfficiencies:
     """return some (non-physical) detection efficiencies"""
 
+    # use some non-physical value for the calibration factor
+    calibration_factor = 42.
     num_types_of_modules = scanner.scanner_geometry.number_of_module_types()
     # single-level list for detection_bin_efficiencies
     all_detection_bin_efficiencies = []
@@ -377,6 +379,7 @@ def get_detection_efficiencies(
             module_pair_efficiencies_vectors0)
 
     return petsird.DetectionEfficiencies(
+        calibration_factor=calibration_factor,
         detection_bin_efficiencies=all_detection_bin_efficiencies,
         module_pair_sgidlut=all_LUTs,
         module_pair_efficiencies_vectors=all_module_pair_efficiencies_vectors,

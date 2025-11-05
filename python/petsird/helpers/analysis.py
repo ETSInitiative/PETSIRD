@@ -75,6 +75,9 @@ if __name__ == "__main__":
                                  event_energy_bin_edges[1:]) / 2
             all_energy_mid_points.append(energy_mid_points)
             print("Event energy mid points: ", energy_mid_points)
+
+        print("Calibration factor: ",
+              scanner.detection_efficiencies.calibration_factor)
         if scanner.detection_efficiencies.module_pair_sgidlut is not None:
             for type_of_module0 in range(num_module_types):
                 for type_of_module1 in range(num_module_types):

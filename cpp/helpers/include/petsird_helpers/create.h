@@ -49,6 +49,9 @@ construct_2D_nested_vector(std::size_t size0, std::size_t size1)
 
   Elements will be constructed via the default constructors, so you will still have
   to fill in the actual values.
+
+  To prevent dramatic errors, the calibration_factor is set to 1, but this factor has to be set
+  correctly afterwards.
 */
 inline void
 initialize_scanner_information_dimensions(petsird::ScannerInformation& scanner, const std::size_t num_module_types,
@@ -60,6 +63,8 @@ initialize_scanner_information_dimensions(petsird::ScannerInformation& scanner, 
   scanner.energy_resolution_at_511 = construct_vector<float>(num_module_types);
 
   scanner.detection_efficiencies = petsird::DetectionEfficiencies();
+  // set this to 1 to avoid the case where the user forgets to set it, in which case it might be zero.
+  scanner.detection_efficiencies.calibration_factor = 1.F;
 
   if (allocate_detection_bin_efficiencies)
     {
