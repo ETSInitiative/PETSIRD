@@ -88,7 +88,7 @@ def get_detection_efficiency(scanner: petsird.ScannerInformation,
                              type_of_module_pair: petsird.TypeOfModulePair,
                              detection_bin_1: petsird.DetectionBin,
                              detection_bin_2: petsird.DetectionBin,
-                             with_calibration_factor: bool = True) -> float:
+                             with_calibration_factor: bool = ...) -> float:
     """Compute the detection efficiency for a pair of detectors"""
     ...
 
@@ -97,7 +97,7 @@ def get_detection_efficiency(scanner: petsird.ScannerInformation,
 def get_detection_efficiency(scanner: petsird.ScannerInformation,
                              type_of_module_pair: petsird.TypeOfModulePair,
                              event: petsird.CoincidenceEvent,
-                             with_calibration_factor: bool = True) -> float:
+                             with_calibration_factor: bool = ...) -> float:
     """Compute the detection efficiency for a coincidence event"""
     ...
 
