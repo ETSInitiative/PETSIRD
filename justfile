@@ -14,6 +14,15 @@ set shell := ['bash', '-ceuo', 'pipefail']
 
 @generate:
     cd model && yardl generate
+    # Post-gen patch: update old xtensor include paths to new layout
+    gen="cpp/generated/yardl/detail/ndarray/impl.h"; \
+    if [[ -f "$gen" ]]; then \
+      perl -0777 -pe \
+        's#<xtensor/xarray\.hpp>#<xtensor/containers/xarray.hpp>#g; \
+         s#<xtensor/xview\.hpp>#<xtensor/views/xview.hpp>#g; \
+         s#<xtensor/xio\.hpp>#<xtensor/io/xio.hpp>#g' \
+        -i "$gen"; \
+    fi
 
 @build-cpp: generate ensure-configured
     cd cpp/build && cmake --build .
