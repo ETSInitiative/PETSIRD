@@ -37,6 +37,6 @@ python -m petsird.helpers.generator | python -m petsird.helpers.analysis
 There is also a very basic utility to plot the scanner geometry. For instance
 
 ```sh
-python -m petsird.helpers.generator > test.bin
-python -m petsird.helpers.plot_scanner < test.bin
+python -m petsird.helpers.generator > test.petsird
+python -m petsird.helpers.plot_scanner < test.petsird
 ```
