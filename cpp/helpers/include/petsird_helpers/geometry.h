@@ -6,6 +6,10 @@
 #ifndef __petsird_helpers_geometry_h__
 #define __petsird_helpers_geometry_h__
 
+#ifndef XTENSOR_VERSION_MAJOR
+#  include <xtensor/xtensor.hpp>
+#endif
+
 #if XTENSOR_VERSION_MAJOR == 0 && XTENSOR_VERSION_MINOR < 26
 #  include <xtensor/xarray.hpp>
 #  include <xtensor/xview.hpp>
