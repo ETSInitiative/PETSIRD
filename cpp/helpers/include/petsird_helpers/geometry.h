@@ -6,9 +6,19 @@
 #ifndef __petsird_helpers_geometry_h__
 #define __petsird_helpers_geometry_h__
 
-#include <xtensor/xarray.hpp>
-#include <xtensor/xview.hpp>
-#include <xtensor/xio.hpp>
+#ifndef XTENSOR_VERSION_MAJOR
+#  include <xtensor/xtensor.hpp>
+#endif
+
+#if XTENSOR_VERSION_MAJOR == 0 && XTENSOR_VERSION_MINOR < 26
+#  include <xtensor/xarray.hpp>
+#  include <xtensor/xview.hpp>
+#  include <xtensor/xio.hpp>
+#else
+#  include <xtensor/containers/xarray.hpp>
+#  include <xtensor/views/xview.hpp>
+#  include <xtensor/io/xio.hpp>
+#endif
 #include <xtensor-blas/xlinalg.hpp>
 #include <vector>
 #include "petsird/types.h"

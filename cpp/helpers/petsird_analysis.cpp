@@ -17,8 +17,13 @@ using petsird::binary::PETSIRDReader;
 #endif
 #include "petsird_helpers.h"
 #include "petsird_helpers/geometry.h"
-#include <xtensor/xview.hpp>
-#include <xtensor/xio.hpp>
+#if XTENSOR_VERSION_MAJOR == 0 && XTENSOR_VERSION_MINOR < 26
+#  include <xtensor/xview.hpp>
+#  include <xtensor/xio.hpp>
+#else
+#  include <xtensor/views/xview.hpp>
+#  include <xtensor/io/xio.hpp>
+#endif
 #include <iostream>
 #include <variant>
 #include <cstdlib>
