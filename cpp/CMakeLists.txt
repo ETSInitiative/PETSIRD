@@ -23,6 +23,19 @@ add_subdirectory(generated/petsird)
 # Currently it is just empty, but allows creating target properties which are transitive
 add_library(petsird)
 target_link_libraries(petsird PUBLIC petsird_generated)
-target_include_directories(petsird PUBLIC "${PROJECT_SOURCE_DIR}/generated")
+target_include_directories(petsird
+  PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/generated>
+    $<INSTALL_INTERFACE:include>
+)
 
 add_subdirectory(helpers)
+
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/generated/
+        DESTINATION include)
+
+install(TARGETS petsird petsird_generated
+        EXPORT STIRTargets
+        ARCHIVE DESTINATION lib
+        LIBRARY DESTINATION lib
+        RUNTIME DESTINATION bin)
