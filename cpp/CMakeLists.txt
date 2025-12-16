@@ -38,5 +38,3 @@ install(TARGETS petsird petsird_generated
 
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/generated/
         DESTINATION include)
-
-
