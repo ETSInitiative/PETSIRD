@@ -19,6 +19,7 @@ endif()
 #   sourcesOutputDir: ../cpp/generated/petsird
 
 add_subdirectory(generated/petsird)
+add_subdirectory(helpers)
 # create a petsird library target
 # Currently it is just empty, but allows creating target properties which are transitive
 add_library(petsird)
@@ -26,16 +27,16 @@ target_link_libraries(petsird PUBLIC petsird_generated)
 target_include_directories(petsird
   PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/generated>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/helpers/include>
     $<INSTALL_INTERFACE:include>
 )
 
-add_subdirectory(helpers)
+install(TARGETS petsird petsird_generated
+        ARCHIVE DESTINATION lib
+        LIBRARY DESTINATION lib
+        RUNTIME DESTINATION bin)
 
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/generated/
         DESTINATION include)
 
-install(TARGETS petsird petsird_generated
-        EXPORT STIRTargets
-        ARCHIVE DESTINATION lib
-        LIBRARY DESTINATION lib
-        RUNTIME DESTINATION bin)
+
