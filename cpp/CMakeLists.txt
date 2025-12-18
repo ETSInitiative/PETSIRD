@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.12.0) # older would work, but could give warnings on policy CMP0074
 project(petsird VERSION 0.7.2)
+include(GNUInstallDirs)
 
 set(CMAKE_CXX_STANDARD 17)
 
@@ -32,9 +33,12 @@ target_include_directories(petsird
 )
 
 install(TARGETS petsird petsird_generated
-        ARCHIVE DESTINATION lib
-        LIBRARY DESTINATION lib
-        RUNTIME DESTINATION bin)
+  EXPORT petsirdTargets
+  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+)
 
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/generated/
-        DESTINATION include)
+  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+)
