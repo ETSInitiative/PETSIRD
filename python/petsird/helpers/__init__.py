@@ -124,7 +124,8 @@ def get_detection_efficiency(scanner: petsird.ScannerInformation,
         # should never happen really, but this way, we don't crash.
         return 1.
 
-    eff = 1.
+    eff = (scanner.detection_efficiencies.calibration_factor
+           if with_calibration_factor else 1.)
 
     # per detection_bin efficiencies
     detection_bin_efficiencies = scanner.detection_efficiencies.detection_bin_efficiencies
