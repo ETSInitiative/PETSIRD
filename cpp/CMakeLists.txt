@@ -1,8 +1,10 @@
 cmake_minimum_required(VERSION 3.12.0) # older would work, but could give warnings on policy CMP0074
-project(petsird VERSION 0.7.2)
+project(petsird VERSION 0.7.2 LANGUAGES CXX)
 include(GNUInstallDirs)
+include(CMakePackageConfigHelpers)
 
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 if(WIN32)
   add_compile_options(/W3 /WX)
@@ -24,21 +26,60 @@ add_subdirectory(helpers)
 # create a petsird library target
 # Currently it is just empty, but allows creating target properties which are transitive
 add_library(petsird)
-target_link_libraries(petsird PUBLIC petsird_generated)
+add_library(PETSIRD::petsird ALIAS petsird)
+
+target_link_libraries(petsird
+  PUBLIC
+    petsird_generated
+    petsird_helpers
+)
+
+target_compile_features(petsird PUBLIC cxx_std_17)
+
 target_include_directories(petsird
   PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/generated>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/helpers/include>
-    $<INSTALL_INTERFACE:include>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
 
-install(TARGETS petsird petsird_generated
+install(TARGETS petsird petsird_generated petsird_helpers
   EXPORT petsirdTargets
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/generated/
-  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+install(
+  DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/generated/petsird/
+  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/petsird
+)
+
+install(
+  DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/helpers/include/
+  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/petsird
+)
+
+install(EXPORT petsirdTargets
+  NAMESPACE PETSIRD::
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/PETSIRD
+)
+
+
+configure_package_config_file(
+  cmake/PETSIRDConfig.cmake.in
+  ${CMAKE_CURRENT_BINARY_DIR}/PETSIRDConfig.cmake
+  INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/PETSIRD
+)
+
+write_basic_package_version_file(
+  ${CMAKE_CURRENT_BINARY_DIR}/PETSIRDConfigVersion.cmake
+  VERSION ${PROJECT_VERSION}
+  COMPATIBILITY SameMajorVersion
+)
+
+install(FILES
+  ${CMAKE_CURRENT_BINARY_DIR}/PETSIRDConfig.cmake
+  ${CMAKE_CURRENT_BINARY_DIR}/PETSIRDConfigVersion.cmake
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/PETSIRD
 )
