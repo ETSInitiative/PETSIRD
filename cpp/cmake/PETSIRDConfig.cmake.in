@@ -1,5 +1,6 @@
 @PACKAGE_INIT@
 include(CMakeFindDependencyMacro)
 find_dependency(date)
+find_dependency(BLAS)
 include("${CMAKE_CURRENT_LIST_DIR}/petsirdTargets.cmake")
 check_required_components(PETSIRD)
