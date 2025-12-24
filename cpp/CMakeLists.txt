@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.12.0) # older would work, but could give warnings on policy CMP0074
 project(petsird VERSION 0.7.2 LANGUAGES CXX)
 include(GNUInstallDirs)
+set(PETSIRD_CMAKE_DIR "${CMAKE_INSTALL_LIBDIR}/cmake/PETSIRD")
+
 include(CMakePackageConfigHelpers)
 
 set(CMAKE_CXX_STANDARD 17)
@@ -18,6 +20,8 @@ if(CCACHE_PROGRAM)
   message(STATUS "ccache found, so we will use it.")
 endif()
 
+find_package(date REQUIRED)
+
 # assume that yardl was run with the following in the _package.yml
 #   sourcesOutputDir: ../cpp/generated/petsird
 
@@ -32,6 +36,7 @@ target_link_libraries(petsird
   PUBLIC
     petsird_generated
     petsird_helpers
+    date::date
 )
 
 target_compile_features(petsird PUBLIC cxx_std_17)
@@ -57,19 +62,19 @@ install(
 
 install(
   DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/helpers/include/
-  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/petsird
+  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )
 
 install(EXPORT petsirdTargets
   NAMESPACE PETSIRD::
-  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/PETSIRD
+  DESTINATION ${PETSIRD_CMAKE_DIR}
 )
 
 
 configure_package_config_file(
   cmake/PETSIRDConfig.cmake.in
   ${CMAKE_CURRENT_BINARY_DIR}/PETSIRDConfig.cmake
-  INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/PETSIRD
+  INSTALL_DESTINATION ${PETSIRD_CMAKE_DIR}
 )
 
 write_basic_package_version_file(
@@ -81,5 +86,5 @@ write_basic_package_version_file(
 install(FILES
   ${CMAKE_CURRENT_BINARY_DIR}/PETSIRDConfig.cmake
   ${CMAKE_CURRENT_BINARY_DIR}/PETSIRDConfigVersion.cmake
-  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/PETSIRD
+  DESTINATION ${PETSIRD_CMAKE_DIR}
 )
