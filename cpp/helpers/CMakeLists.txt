@@ -1,5 +1,5 @@
-# find_package(xtensor REQUIRED)
-find_package(xtensor-blas REQUIRED)
+find_package(xtensor REQUIRED)
+# find_package(xtensor-blas REQUIRED)
 find_package(BLAS REQUIRED)
 
 # create a petsird_helpers library target
@@ -9,7 +9,6 @@ add_library(petsird_helpers INTERFACE)
 target_include_directories(petsird_helpers
   INTERFACE
   ${xtensor_INCLUDE_DIRS}
-    ${xtensor-blas_INCLUDE_DIRS}
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
