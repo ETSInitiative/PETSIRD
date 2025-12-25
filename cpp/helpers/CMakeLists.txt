@@ -1,4 +1,4 @@
-find_package(xtensor REQUIRED)
+# find_package(xtensor REQUIRED)
 find_package(xtensor-blas REQUIRED)
 find_package(BLAS REQUIRED)
 
