@@ -21,7 +21,7 @@ jobs:
       name: Validate Python and C++${{ matrix.cppVersion }} and deploy to PyPI
       env:
           PETSIRD_PREFIX: ${{ github.workspace }}/petsird-install
-      
+
       steps:
       - name: Install System Dependencies (date-tz)
         run: |
@@ -35,20 +35,20 @@ jobs:
       - name: Checkout PETSIRD
         uses: actions/checkout@v4
 
-          
+
       - name: Checkout Yardl (main)
         uses: actions/checkout@v4
         with:
           repository: microsoft/yardl
           ref: main
           path: yardl
-          
+
       - name: Setup micromamba (yardl env)
         uses: mamba-org/setup-micromamba@v2
         with:
           environment-file: yardl/environment.yml
           activate-environment: yardl
-      
+
       - name: Export CMake prefix path
         run: |
           echo "CMAKE_PREFIX_PATH=$CONDA_PREFIX;$CMAKE_PREFIX_PATH" >> $GITHUB_ENV
@@ -83,12 +83,12 @@ jobs:
           micromamba install -y -n yardl -f environment.yml
           micromamba install -n yardl -c conda-forge xtensor xtensor-blas openblas
 
-      - name: Generate PETSIRD sources (yardl) 
+      - name: Generate PETSIRD sources (yardl)
         run: |
           micromamba run -n yardl bash -lc "
           export CC=/usr/bin/gcc
           export CXX=/usr/bin/g++
-          
+
           # Make conda packages visible to CMake
           export CMAKE_PREFIX_PATH=\$CONDA_PREFIX:\$CMAKE_PREFIX_PATH
           export CXXFLAGS=\"-I\$MAMBA_ROOT_PREFIX/envs/yardl/include \$CXXFLAGS\"
@@ -103,9 +103,9 @@ jobs:
         run: |
           micromamba run -n yardl bash -lc "
           cd cpp
-          mkdir -p build 
+          mkdir -p build
           cd build
-          
+
           cmake .. \
               -DCMAKE_BUILD_TYPE=Release \
               -DCMAKE_PREFIX_PATH=\"\$CONDA_PREFIX\" \
@@ -121,13 +121,13 @@ jobs:
           sed -i.bak \
           -e '/^[[:space:]]*xtensor[[:space:]]*$/d' \
           "$FILE"
-      
+
       - name: Set up Python for PyPI
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
       - name: Copy LICENSE for deployment
-        run: | 
+        run: |
           cp LICENSE.txt python/LICENSE
           cp LICENSE.txt cpp/LICENSSE
       - uses: casperdcl/deploy-pypi@v2
@@ -139,4 +139,3 @@ jobs:
         with:
           name: python-petsird
           path: dist/**
-
