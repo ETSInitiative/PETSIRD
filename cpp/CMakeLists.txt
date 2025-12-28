@@ -42,7 +42,6 @@ target_compile_features(petsird PUBLIC cxx_std_17)
 target_include_directories(petsird
   PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/generated>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/helpers/include>
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
 
