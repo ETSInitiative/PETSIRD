@@ -1,0 +1,12 @@
+@PACKAGE_INIT@
+include(CMakeFindDependencyMacro)
+find_dependency(date)
+find_dependency(xtensor-blas)
+if(@PETSIRD_GENERATED_USE_NDJSON@)
+  find_dependency(nlohmann_json)
+endif()
+if(@PETSIRD_GENERATED_USE_HDF5@)
+  find_dependency(HDF5 COMPONENTS CXX)
+endif()
+include("${CMAKE_CURRENT_LIST_DIR}/petsirdTargets.cmake")
+check_required_components(PETSIRD)
