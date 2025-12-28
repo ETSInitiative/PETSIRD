@@ -1,7 +1,7 @@
 @PACKAGE_INIT@
 include(CMakeFindDependencyMacro)
 find_dependency(date)
-find_dependency(BLAS)
+find_dependency(xtensor-blas)
 if(@PETSIRD_GENERATED_USE_NDJSON@)
   find_dependency(nlohmann_json)
 endif()

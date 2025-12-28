@@ -1,25 +1,26 @@
-find_package(xtensor REQUIRED)
-# find_package(xtensor-blas REQUIRED)
-find_package(BLAS REQUIRED)
+find_package(xtensor-blas REQUIRED)
 
 # create a petsird_helpers library target
 # Currently it is just empty, but allows creating target properties which are transitive
-add_library(petsird_helpers INTERFACE)
+add_library(petsird_helpers ${PETSIRD_HELPERS_SOURCES})
 
 target_include_directories(petsird_helpers
-  INTERFACE
-  ${xtensor_INCLUDE_DIRS}
+  PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
 
-target_link_libraries(petsird_helpers INTERFACE petsird BLAS::BLAS)
+target_link_libraries(petsird_helpers
+  PUBLIC
+    petsird_generated
+    xtensor-blas
+)
 
 add_executable(petsird_generator petsird_generator.cpp)
-target_link_libraries(petsird_generator PRIVATE petsird_helpers)
+target_link_libraries(petsird_generator PRIVATE petsird_generated petsird_helpers)
 
 add_executable(petsird_analysis petsird_analysis.cpp)
-target_link_libraries(petsird_analysis PRIVATE petsird_helpers)
+target_link_libraries(petsird_analysis PRIVATE petsird_generated petsird_helpers)
 
 foreach(t petsird petsird_generated petsird_helpers)
   if(TARGET ${t})

@@ -1,79 +1,142 @@
 name: CI
+
 on:
-  push:
-    branches: [main]
-    tags: ['**']
-    paths-ignore:
-    - '**/*.md'
-  pull_request: {branches: [main]}
-  workflow_dispatch:
-    inputs:
-      debug_enabled:
-        description: 'Run the build with tmate debugging enabled (https://github.com/marketplace/actions/debugging-with-tmate)'
-        required: false
-        default: false
-defaults: {run: {shell: 'bash -el {0}'}} # https://github.com/marketplace/actions/setup-miniconda#important
-env:
-  YARDL_VERSION: 0.6.3
+    push:
+      paths-ignore:
+      - '**/*.md'
+    pull_request: {branches: [main]}
+    workflow_dispatch:
+      inputs:
+        debug_enabled:
+          description: 'Run the build with tmate debugging enabled (https://github.com/marketplace/actions/debugging-with-tmate)'
+          required: false
+          default: 'false'
+
 jobs:
-  validate:
-    strategy:
-      matrix:
-        cppVersion: [17]
-    environment: pypi
-    permissions: {id-token: write}
-    name: Validate Python and C++${{ matrix.cppVersion }} and deploy to PyPI
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-      with: {fetch-depth: 0, submodules: recursive}
-    - name: strip environment.yml
-      run: |
-        cat environment.yml | grep -v "#.*\<\local\>" > temp-ci-environment.yml
-    - uses: conda-incubator/setup-miniconda@v3
-      with:
-        activate-environment: yardl
-        environment-file: temp-ci-environment.yml
-    - name: Install yardl
-      run: |
-        rm temp-ci-environment.yml
-        gh release download -R microsoft/yardl -p '*linux_x86_64.tar.gz' v$YARDL_VERSION
-        mkdir yardl
-        tar -xzf "yardl_${YARDL_VERSION}_linux_x86_64.tar.gz" -C yardl
-        rm "yardl_${YARDL_VERSION}_linux_x86_64.tar.gz"
-        echo "$PWD/yardl" >> "$GITHUB_PATH"
+    validate:
+      strategy:
+        matrix:
+          cppVersion: [17]
+      runs-on: ubuntu-24.04
+      name: Validate Python and C++${{ matrix.cppVersion }} and deploy to PyPI
       env:
-        GH_TOKEN: ${{ github.token }}
-    # Enable tmate debugging of manually-triggered workflows if the input option was provided
-    - name: Setup tmate session if triggered
-      #if: ${{ failure() }}
-      uses: mxschmitt/action-tmate@v3
-      timeout-minutes: 30
-      if: ${{ github.event_name == 'workflow_dispatch' && inputs.debug_enabled == 'true' }}
-    - name: Build model
-      run: |
-        just generate
-    - name: Python
-      run: |
-        just run-python
-    - name: cpp
-      run: |
-        mkdir cpp/build
-        cd cpp/build
-        cmake -G Ninja -S .. -DHDF5_ROOT="$CONDA_PREFIX"
-        ninja
-        cd ../..
-        just run-cpp
-    - name: Copy LICENSE for deployment
-      run: |
-        cp LICENSE.txt python/LICENSE
-        cp LICENSE.txt cpp/LICENSE
-    - uses: casperdcl/deploy-pypi@v2
-      with:
-        build: python -o dist
-        upload: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags') }}
-        requirements: 'build twine packaging>=24.2' # https://github.com/pypa/twine/issues/1216
-    - uses: actions/upload-artifact@v4
-      with:
-        name: python-petsird
-        path: dist/**
+          PETSIRD_PREFIX: ${{ github.workspace }}/petsird-install
+      
+      steps:
+      - name: Install System Dependencies (date-tz)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y software-properties-common
+          sudo add-apt-repository -y universe
+          sudo apt-get update
+          sudo apt install -y libomp-dev libboost-dev libhdf5-serial-dev nlohmann-json3-dev
+          sudo apt-get install -y libdate-tz-dev || sudo apt-get install -y libhowardhinnant-date-dev
+
+      - name: Checkout PETSIRD
+        uses: actions/checkout@v4
+
+          
+      - name: Checkout Yardl (main)
+        uses: actions/checkout@v4
+        with:
+          repository: microsoft/yardl
+          ref: main
+          path: yardl
+          
+      - name: Setup micromamba (yardl env)
+        uses: mamba-org/setup-micromamba@v2
+        with:
+          environment-file: yardl/environment.yml
+          activate-environment: yardl
+      
+      - name: Export CMake prefix path
+        run: |
+          echo "CMAKE_PREFIX_PATH=$CONDA_PREFIX;$CMAKE_PREFIX_PATH" >> $GITHUB_ENV
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+
+      - name: Build and install Yardl
+        run: |
+          cd yardl/tooling/cmd/yardl
+          go build
+          mkdir -p "$HOME/.local/bin"
+          install -m 755 yardl $HOME/.local/bin/yardl
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+          "$HOME/.local/bin/yardl" --version
+
+      - name: Setup tmate session if triggered
+        #if: ${{ failure() }}
+        uses: mxschmitt/action-tmate@v3
+        timeout-minutes: 30
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.debug_enabled == 'true' }}
+
+      - name: Install just
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake ninja-build just
+
+      - name: Install PETSIRD Python dependencies
+        run: |
+          micromamba install -y -n yardl -f environment.yml
+          micromamba install -n yardl -c conda-forge xtensor xtensor-blas openblas
+
+      - name: Generate PETSIRD sources (yardl) 
+        run: |
+          micromamba run -n yardl bash -lc "
+          export CC=/usr/bin/gcc
+          export CXX=/usr/bin/g++
+          
+          # Make conda packages visible to CMake
+          export CMAKE_PREFIX_PATH=\$CONDA_PREFIX:\$CMAKE_PREFIX_PATH
+          export CXXFLAGS=\"-I\$MAMBA_ROOT_PREFIX/envs/yardl/include \$CXXFLAGS\"
+
+          cd model
+          just generate
+          just run-python
+          just run-cpp
+          "
+
+      - name: Build PETSIRD C++
+        run: |
+          micromamba run -n yardl bash -lc "
+          cd cpp
+          mkdir -p build 
+          cd build
+          
+          cmake .. \
+              -DCMAKE_BUILD_TYPE=Release \
+              -DCMAKE_PREFIX_PATH=\"\$CONDA_PREFIX\" \
+              -DCMAKE_INSTALL_PREFIX=\"${{ env.PETSIRD_PREFIX }}\"
+
+          cmake --build . --target install -- -j$(nproc)
+          "
+
+      - name: Fix yardl mistake
+        run: |
+          FILE="cpp/generated/petsird/CMakeLists.txt"
+          echo "🔧 Fixing yardl-generated CMakeLists.txt (removing xtensor linkage)"
+          sed -i.bak \
+          -e '/^[[:space:]]*xtensor[[:space:]]*$/d' \
+          "$FILE"
+      
+      - name: Set up Python for PyPI
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Copy LICENSE for deployment
+        run: | 
+          cp LICENSE.txt python/LICENSE
+          cp LICENSE.txt cpp/LICENSSE
+      - uses: casperdcl/deploy-pypi@v2
+        with:
+          build: python -o dist
+          upload: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags') }}
+          requirements: 'build twine packaging>=24.2' # https://github.com/pypa/twine/issues/1216
+      - uses: actions/upload-artifact@v4
+        with:
+          name: python-petsird
+          path: dist/**
+

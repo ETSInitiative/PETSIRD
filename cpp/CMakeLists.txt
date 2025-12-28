@@ -24,46 +24,49 @@ endif()
 #   sourcesOutputDir: ../cpp/generated/petsird
 
 add_subdirectory(generated/petsird)
-add_subdirectory(helpers)
-# create a petsird library target
-# Currently it is just empty, but allows creating target properties which are transitive
-add_library(petsird)
-add_library(PETSIRD::petsird ALIAS petsird)
-
-target_link_libraries(petsird
-  PUBLIC
-    petsird_generated
-    petsird_helpers
-)
-
-target_compile_features(petsird PUBLIC cxx_std_17)
-
-target_include_directories(petsird
+target_include_directories(petsird_generated
   PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/generated>
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
 
+add_subdirectory(helpers)
+
+add_library(PETSIRD::generated ALIAS petsird_generated)
+add_library(PETSIRD::helpers   ALIAS petsird_helpers)
+
+
+add_library(petsird INTERFACE)
+add_library(PETSIRD::petsird ALIAS petsird)
+
+target_link_libraries(petsird
+  INTERFACE
+    PETSIRD::generated
+    PETSIRD::helpers
+)
+
+target_compile_features(petsird INTERFACE cxx_std_17)
+
 install(TARGETS petsird petsird_generated petsird_helpers
   EXPORT petsirdTargets
-  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-)
-
-install(
-  DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/generated/petsird/
-  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/petsird
-)
-
-install(
-  DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/helpers/include/
-  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )
 
 install(EXPORT petsirdTargets
   NAMESPACE PETSIRD::
   DESTINATION ${PETSIRD_CMAKE_DIR}
+)
+
+install(
+  DIRECTORY generated/petsird/
+  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/petsird
+)
+
+install(
+  DIRECTORY helpers/include/
+  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )
 
 
