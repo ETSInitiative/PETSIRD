@@ -34,7 +34,6 @@ target_link_libraries(petsird
   PUBLIC
     petsird_generated
     petsird_helpers
-    date::date
 )
 
 target_compile_features(petsird PUBLIC cxx_std_17)
