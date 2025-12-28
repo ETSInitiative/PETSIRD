@@ -20,8 +20,6 @@ if(CCACHE_PROGRAM)
   message(STATUS "ccache found, so we will use it.")
 endif()
 
-find_package(date REQUIRED)
-
 # assume that yardl was run with the following in the _package.yml
 #   sourcesOutputDir: ../cpp/generated/petsird
 
