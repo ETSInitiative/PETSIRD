@@ -14,7 +14,7 @@ on:
         default: false
 defaults: {run: {shell: 'bash -el {0}'}} # https://github.com/marketplace/actions/setup-miniconda#important
 env:
-  YARDL_VERSION: 0.6.3
+  YARDL_VERSION: 0.6.6
 jobs:
   validate:
     strategy:
