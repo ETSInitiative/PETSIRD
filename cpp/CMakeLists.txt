@@ -45,7 +45,7 @@ target_link_libraries(petsird
     PETSIRD::helpers
 )
 
-target_compile_features(petsird INTERFACE cxx_std_17)
+# target_compile_features(petsird INTERFACE cxx_std_17)
 
 install(TARGETS petsird petsird_generated petsird_helpers
   EXPORT petsirdTargets
