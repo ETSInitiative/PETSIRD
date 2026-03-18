@@ -22,13 +22,13 @@ target_link_libraries(petsird_generator PRIVATE petsird_generated petsird_helper
 add_executable(petsird_analysis petsird_analysis.cpp)
 target_link_libraries(petsird_analysis PRIVATE petsird_generated petsird_helpers)
 
-# foreach(t petsird petsird_generated petsird_helpers)
-#   if(TARGET ${t})
-#     get_target_property(_libs ${t} INTERFACE_LINK_LIBRARIES)
-#     if(_libs)
-#       list(FILTER _libs EXCLUDE REGEX "xtensor")
-#       set_target_properties(${t}
-#         PROPERTIES INTERFACE_LINK_LIBRARIES "${_libs}")
-#     endif()
-#   endif()
-# endforeach()
+foreach(t petsird petsird_generated petsird_helpers)
+  if(TARGET ${t})
+    get_target_property(_libs ${t} INTERFACE_LINK_LIBRARIES)
+    if(_libs)
+      list(FILTER _libs EXCLUDE REGEX "xtensor")
+      set_target_properties(${t}
+        PROPERTIES INTERFACE_LINK_LIBRARIES "${_libs}")
+    endif()
+  endif()
+endforeach()
