@@ -1,17 +1,21 @@
 name: CI
 
 on:
-    push:
-      paths-ignore:
-      - '**/*.md'
-    pull_request: {branches: [main]}
-    workflow_dispatch:
-      inputs:
-        debug_enabled:
-          description: 'Run the build with tmate debugging enabled (https://github.com/marketplace/actions/debugging-with-tmate)'
-          required: false
-          default: 'false'
-
+  push:
+    branches: [main]
+    tags: ['**']
+    paths-ignore:
+    - '**/*.md'
+  pull_request: {branches: [main]}
+  workflow_dispatch:
+    inputs:
+      debug_enabled:
+        description: 'Run the build with tmate debugging enabled (https://github.com/marketplace/actions/debugging-with-tmate)'
+        required: false
+        default: false
+defaults: {run: {shell: 'bash -el {0}'}} # https://github.com/marketplace/actions/setup-miniconda#important
+env:
+  YARDL_VERSION: 0.6.6
 jobs:
     validate:
       strategy:
