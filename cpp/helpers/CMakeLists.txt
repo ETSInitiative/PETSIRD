@@ -13,7 +13,7 @@ target_include_directories(petsird_helpers
 )
 
 target_link_libraries(petsird_helpers
-  PUBLIC
+  INTERFACE
     petsird_generated
     xtensor-blas
 )
