@@ -7,7 +7,7 @@ add_library(petsird_helpers INTERFACE)
 # add_library(petsird_helpers ${PETSIRD_HELPERS_SOURCES})
 
 target_include_directories(petsird_helpers
-  PUBLIC
+  INTERFACE
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
