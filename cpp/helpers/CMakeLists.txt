@@ -15,7 +15,6 @@ target_include_directories(petsird_helpers
 target_link_libraries(petsird_helpers
   PUBLIC
     petsird_generated
-  PRIVATE
     xtensor-blas
 )
 
