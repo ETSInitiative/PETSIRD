@@ -2,19 +2,20 @@ find_package(xtensor-blas REQUIRED)
 
 # create a petsird_helpers library target
 # Currently it is just empty, but allows creating target properties which are transitive
-add_library(petsird_helpers INTERFACE)
+# add_library(petsird_helpers INTERFACE)
 # Future change for when we have sources:
-# add_library(petsird_helpers ${PETSIRD_HELPERS_SOURCES})
+add_library(petsird_helpers ${PETSIRD_HELPERS_SOURCES})
 
 target_include_directories(petsird_helpers
-  INTERFACE
+  PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
 
 target_link_libraries(petsird_helpers
-  INTERFACE
+  PUBLIC
     petsird_generated
+  PRIVATE
     xtensor-blas
 )
 
