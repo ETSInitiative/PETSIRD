@@ -5,7 +5,7 @@ set(PETSIRD_CMAKE_DIR "${CMAKE_INSTALL_LIBDIR}/cmake/PETSIRD-0.7")
 
 include(CMakePackageConfigHelpers)
 
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 if(WIN32)
@@ -36,12 +36,13 @@ add_library(PETSIRD::generated ALIAS petsird_generated)
 add_library(PETSIRD::helpers   ALIAS petsird_helpers)
 
 
-add_library(petsird INTERFACE)
+add_library(petsird STATIC)
 add_library(PETSIRD::petsird ALIAS petsird)
 
 target_link_libraries(petsird
-  INTERFACE
+  PUBLIC
     PETSIRD::generated
+    INTERFACE
     PETSIRD::helpers
 )
 
