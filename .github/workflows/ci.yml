@@ -60,10 +60,15 @@ jobs:
       run: |
         mkdir cpp/build
         cd cpp/build
-        cmake -G Ninja -S .. -DHDF5_ROOT="$CONDA_PREFIX"
-        ninja
+        cmake -G Ninja -S .. -DHDF5_ROOT="$CONDA_PREFIX" -DCMAKE_INSTALL_PREFIX=../install
+        ninja install
         cd ../..
         just run-cpp
+    - name: Test cpp example
+      run: |
+       cd cpp/example
+       cmake -B build  -S . -DCMAKE_PREFIX_PATH=../install
+       cmake  --build build --config Release
     - name: Copy LICENSE for deployment
       run: |
         cp LICENSE.txt python/LICENSE
