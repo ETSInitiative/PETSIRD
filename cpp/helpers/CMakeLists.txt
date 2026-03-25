@@ -23,4 +23,3 @@ target_link_libraries(petsird_generator PRIVATE petsird_generated petsird_helper
 
 add_executable(petsird_analysis petsird_analysis.cpp)
 target_link_libraries(petsird_analysis PRIVATE petsird_generated petsird_helpers)
-

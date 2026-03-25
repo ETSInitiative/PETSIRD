@@ -16,4 +16,4 @@ If you have multiple versions of PETSIRD, you can be more specific:
 ```sh
  cmake -B build -S . -DPETSIRD_DIR=~/install/lib/cmake/PETSIRD-0.7
  ```
- 
+
