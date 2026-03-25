@@ -1,3 +1,18 @@
+# CMake Config file for PETSIRD
+# This file defines a few targets, but you should only use the following:
+#  PETSIRD::petsird : library with basic routines for IO (generated via yardl)
+#  PETSIRD::helpers : library with extra helper functions (depends on PETSIRD::petsird)
+#
+# Usage:
+#   find_package(PETSIRD REQUIRED CONFIG)
+#   add_executable(mine mine.cpp)
+#   target_link_libraries(mine PUBLIC PETSIRD::helpers)
+
+#  Copyright (C) 2025 UMCG
+#  Copyright (C) 2026 University College London
+#  SPDX-License-Identifier: Apache-2.0
+
+
 @PACKAGE_INIT@
 include(CMakeFindDependencyMacro)
 find_dependency(date)
@@ -13,3 +28,6 @@ if(@PETSIRD_GENERATED_USE_HDF5@)
 endif()
 include("${CMAKE_CURRENT_LIST_DIR}/PETSIRDTargets.cmake")
 check_required_components(PETSIRD)
+
+# alias that should be future-proof
+add_library(PETSIRD::helpers ALIAS PETSIRD::petsird_helpers)
