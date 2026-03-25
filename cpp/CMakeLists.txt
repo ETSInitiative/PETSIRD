@@ -1,12 +1,18 @@
+#  Copyright (C) 2025 UMCG
+#  Copyright (C) 2023-2026 University College London
+#  SPDX-License-Identifier: Apache-2.0
+
 cmake_minimum_required(VERSION 3.12.0) # older would work, but could give warnings on policy CMP0074
-project(petsird VERSION 0.7.3 LANGUAGES CXX)
 include(GNUInstallDirs)
+
+project(PETSIRD VERSION 0.7.3 LANGUAGES CXX)
 set(PETSIRD_CMAKE_DIR "${CMAKE_INSTALL_LIBDIR}/cmake/PETSIRD-0.7")
 
 include(CMakePackageConfigHelpers)
 
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
+# Not required, as this is set in the yardl-generated file
+# set(CMAKE_CXX_STANDARD 17)
+# set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 if(WIN32)
   add_compile_options(/W3 /WX)
@@ -30,38 +36,22 @@ target_include_directories(petsird_generated
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
 
+# petsird_generated is an OBJECT library. Those are a bit hard
+# to handle for external projects, so create a "real" library as well.
+# This is the one people should use.
+add_library(petsird STATIC)
+target_link_libraries(petsird PUBLIC petsird_generated)
+
 add_subdirectory(helpers)
 
-add_library(PETSIRD::generated ALIAS petsird_generated)
-add_library(PETSIRD::helpers   ALIAS petsird_helpers)
-
-
-add_library(petsird STATIC)
-add_library(PETSIRD::petsird ALIAS petsird)
-
-target_link_libraries(petsird
-  PUBLIC
-    PETSIRD::generated
-    INTERFACE
-    PETSIRD::helpers
-)
-
-if(CMAKE_CXX_STANDARD)
-  target_compile_features(petsird PUBLIC cxx_std_${CMAKE_CXX_STANDARD})
-else()
-  target_compile_features(petsird PUBLIC cxx_std_17)
-endif()
-
-# target_compile_features(petsird INTERFACE cxx_std_17)
-
 install(TARGETS petsird petsird_generated petsird_helpers
-  EXPORT petsirdTargets
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  EXPORT PETSIRDTargets
+  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 
-install(EXPORT petsirdTargets
+install(EXPORT PETSIRDTargets
   NAMESPACE PETSIRD::
   DESTINATION ${PETSIRD_CMAKE_DIR}
 )
