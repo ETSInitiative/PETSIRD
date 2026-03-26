@@ -1,7 +1,18 @@
-cmake_minimum_required(VERSION 3.12.0) # older would work, but could give warnings on policy CMP0074
-project(petsird VERSION 0.7.2)
+#  Copyright (C) 2025 UMCG
+#  Copyright (C) 2023-2026 University College London
+#  SPDX-License-Identifier: Apache-2.0
 
-set(CMAKE_CXX_STANDARD 17)
+cmake_minimum_required(VERSION 3.12.0) # older would work, but could give warnings on policy CMP0074
+include(GNUInstallDirs)
+
+project(PETSIRD VERSION 0.9.0 LANGUAGES CXX)
+set(PETSIRD_CMAKE_DIR "${CMAKE_INSTALL_LIBDIR}/cmake/PETSIRD-0.9")
+
+include(CMakePackageConfigHelpers)
+
+# Not required, as this is set in the yardl-generated file
+# set(CMAKE_CXX_STANDARD 17)
+# set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 if(WIN32)
   add_compile_options(/W3 /WX)
@@ -19,10 +30,57 @@ endif()
 #   sourcesOutputDir: ../cpp/generated/petsird
 
 add_subdirectory(generated/petsird)
-# create a petsird library target
-# Currently it is just empty, but allows creating target properties which are transitive
-add_library(petsird)
+target_include_directories(petsird_generated
+  PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/generated>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+)
+
+# petsird_generated is an OBJECT library. Those are a bit hard
+# to handle for external projects, so create a "real" library as well.
+# This is the one people should use.
+add_library(petsird STATIC)
 target_link_libraries(petsird PUBLIC petsird_generated)
-target_include_directories(petsird PUBLIC "${PROJECT_SOURCE_DIR}/generated")
 
 add_subdirectory(helpers)
+
+install(TARGETS petsird petsird_generated petsird_helpers
+  EXPORT PETSIRDTargets
+  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+)
+
+install(EXPORT PETSIRDTargets
+  NAMESPACE PETSIRD::
+  DESTINATION ${PETSIRD_CMAKE_DIR}
+)
+
+install(
+  DIRECTORY generated/petsird/
+  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/petsird
+)
+
+install(
+  DIRECTORY helpers/include/
+  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+)
+
+
+configure_package_config_file(
+  cmake/PETSIRDConfig.cmake.in
+  ${CMAKE_CURRENT_BINARY_DIR}/PETSIRDConfig.cmake
+  INSTALL_DESTINATION ${PETSIRD_CMAKE_DIR}
+)
+
+write_basic_package_version_file(
+  ${CMAKE_CURRENT_BINARY_DIR}/PETSIRDConfigVersion.cmake
+  VERSION ${PROJECT_VERSION}
+  COMPATIBILITY SameMajorVersion
+)
+
+install(FILES
+  ${CMAKE_CURRENT_BINARY_DIR}/PETSIRDConfig.cmake
+  ${CMAKE_CURRENT_BINARY_DIR}/PETSIRDConfigVersion.cmake
+  DESTINATION ${PETSIRD_CMAKE_DIR}
+)

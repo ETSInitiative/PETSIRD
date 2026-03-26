@@ -19,5 +19,5 @@ dependencies:
   - pre-commit=4.0.1
   - python>=3.11.3
   - shellcheck>=0.8.0
-  - xtensor>=0.24.2
+  - xtensor>=0.24.2, < 0.27
   - xtensor-blas
