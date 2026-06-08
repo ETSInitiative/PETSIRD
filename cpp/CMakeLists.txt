@@ -3,9 +3,9 @@
 #  SPDX-License-Identifier: Apache-2.0
 
 cmake_minimum_required(VERSION 3.12.0) # older would work, but could give warnings on policy CMP0074
-include(GNUInstallDirs)
 
 project(PETSIRD VERSION 0.9.0 LANGUAGES CXX)
+include(GNUInstallDirs)
 set(PETSIRD_CMAKE_DIR "${CMAKE_INSTALL_LIBDIR}/cmake/PETSIRD-0.9")
 
 include(CMakePackageConfigHelpers)
