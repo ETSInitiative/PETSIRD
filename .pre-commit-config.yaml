@@ -41,7 +41,6 @@ repos:
     - flake8-debugger
     - flake8-isort
     - flake8-pyproject
-    - flake8-string-format
 - repo: https://github.com/google/yapf
   rev: v0.43.0
   hooks:
