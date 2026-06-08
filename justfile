@@ -27,7 +27,7 @@ cmake_build_dir := "cpp/build"
         cmake_build_type={{cmake_build_type}} cmake_build_dir={{cmake_build_dir}} \
         configure; \
     fi
-    
+
 @generate:
     cd model && yardl generate
 
