@@ -4,7 +4,7 @@
 
 cmake_minimum_required(VERSION 3.12.0) # older would work, but could give warnings on policy CMP0074
 
-project(PETSIRD VERSION 0.9.0 LANGUAGES CXX)
+project(PETSIRD VERSION 0.9.1 LANGUAGES CXX)
 include(GNUInstallDirs)
 set(PETSIRD_CMAKE_DIR "${CMAKE_INSTALL_LIBDIR}/cmake/PETSIRD-0.9")
 
