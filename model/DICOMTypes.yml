@@ -1,0 +1,132 @@
+DICOMPatientInformation: !record
+  fields:
+    # Identifier
+    # (0010,0020)
+    # From the Patient Module
+    # https://dicom.nema.org/medical/dicom/current/output/html/part03.html#sect_C.7.1.1
+    patientID: string
+
+    # Sex
+    # Allowed values: M (male), F (female), O (other), or empty string if unknown
+    # (0010,0040)
+    # From the Patient Module
+    # https://dicom.nema.org/medical/dicom/current/output/html/part03.html#sect_C.7.1.1
+    patientsSex: string
+
+    # Length or size of the Patient, in meters.
+    # (0010,1020)
+    # From the Patient Study Module
+    #https://dicom.nema.org/medical/dicom/current/output/html/part03.html#sect_C.7.2.2
+    patientsSize: float
+
+    # Weight of the Patient, in kilograms
+    # (0010,1030)
+    # From the Patient Study Module
+    #https://dicom.nema.org/medical/dicom/current/output/html/part03.html#sect_C.7.2.2
+    patientsWeight: float
+
+    # Body Mass Index of the Patient in kg/m2.
+    # (0010,1022)
+    # From the Patient Study Module
+    # https://dicom.nema.org/medical/dicom/current/output/html/part03.html#sect_C.7.2.2
+    patientsBodyMassIndex: float
+
+# Information on how the patient is oriented w.r.t. the equipment and gravity
+# C.8.4.6.1 NM/PET Patient Orientation Module Attribute Descriptions uses the Enhanced Patient Orientation module
+# defined at https://dicom.nema.org/medical/dicom/current/output/html/part03.html#sect_C.7.6.30
+# which states
+# "Orientation Code Sequence (0054,0410) allows a more precise and comprehensive positioning than Patient Position (0018,5100).
+# If this Sequence is present Patient Position (0018,5100) is not used."
+# Therefore: likely do not include (TODO)
+# Patient Position (0018,5100) Patient position descriptor relative to the equipment.
+DICOMPatientOrientationInformation: !record
+  fields:
+    # Anatomical Orientation type
+    # Allowed values: BIPED or QUADRUPED or empty (in which case the default human standard anatomical position is used).
+    # (0010,2210)
+    # https://dicom.nema.org/medical/dicom/current/output/html/part03.html#sect_C.7.3.1
+    anatomicalOrientationType: string
+
+    # Sequence that describes the orientation of the Patient with respect to gravity.
+    # (0054,0410)
+    patientOrientationCodeSequence: DICOMBasicCodeSequence
+
+    # Patient orientation modifier.
+    # Required if needed to fully specify the orientation of the Patient with respect to gravity.
+    # (0054,0412)
+    patientOrientationModifierCodeSequence: DICOMBasicCodeSequence
+
+    # Description of the orientation of the Patient with respect to the equipment.
+    # (3010,0030)
+    patientEquipmentRelationshipCodeSequence: DICOMBasicCodeSequence
+
+# Information on a single radiopharmaceutical.
+# Using selected fields from the Enhanced PET Isotope Module.
+# https://dicom.nema.org/medical/dicom/current/output/html/part03.html#sect_C.8.22.4
+# Note: the PET DICOM module not support bolus-infusion information (in 2026).
+#
+# Currently not encoding the following two:
+# The radionuclide half life, in seconds, that was used in the correction of this image.
+# (0018,1075)
+# radionuclideHalfLife: float
+# The radionuclide positron fraction (fraction of decays that are by positron emission)
+# (0018,1076)
+# radionuclidePositronFraction: float
+DICOMRadiopharmaceuticalInformation: !record
+  fields:
+
+    # Volume of administered radiopharmaceutical in cubic cm.
+    # (0018,1071)
+    radiopharmaceuticalVolume: float
+
+    # Time of start of administration. The actual time of radiopharmaceutical administration to the patient for imaging purposes.
+    # (0018,1078)
+    radiopharmaceuticalStartDateTime: datetime
+
+    # Time of end of administration. The actual ending time of radiopharmaceutical administration to the patient for imaging purposes.
+    # (0018,1079)
+    radiopharmaceuticalStopDateTime: datetime
+
+    # The radiopharmaceutical dose administered to the patient measured in MegaBecquerels (MBq) at the Radiopharmaceutical Start DateTime (0018,1078).
+    # (0018,1074)
+    radionuclideTotalDose: float
+
+    # Unique identification of the administration of the radiopharmaceutical to the patient.
+    # (0008,3012)
+    radiopharmaceuticalAdministrationEventUID: DICOMUID
+
+    # The activity per unit mass of the radiopharmaceutical, in Bq/micromole, at the Radiopharmaceutical Start DateTime (0018,1078).
+    # (0018,1077)
+    radiopharmaceuticalSpecificActivity: float
+
+    # Sequence that identifies the radiopharmaceutical.
+    # (0054,0304)
+    radiopharmaceuticalCodeSequence: DICOMBasicCodeSequence
+
+    # Sequence that identifies the radionuclide.
+    # (0054,0300)
+    radionuclideCodeSequence: DICOMBasicCodeSequence
+
+
+# DICOM UID
+DICOMUID: string
+
+# DICOM Basic Code Sequence
+# https://dicom.nema.org/medical/dicom/current/output/html/part03.html#table_8.8-1
+DICOMBasicCodeSequence: !record
+  fields:
+    # Code Value (0008,0100) or Long Code Value (0008,0119)
+    # empty if URN Code Value is set
+    codeValue: string
+
+    # URN Code Value (0008,0120)
+    codeValueURN: string
+
+    # (0008,0102)
+    codingSchemeDesignator: string
+
+    # (0008,0103)
+    codingSchemeVersion: string
+
+    # (0008,0104)
+    codeMeaning: string
