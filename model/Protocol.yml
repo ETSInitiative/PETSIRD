@@ -141,14 +141,12 @@ ExternalSignalTimeBlock: !record
    # Note for triggers, this field is to be ignored
    signalValues: float*
 
-# A time-block indicating that the patient bed moved from the reference position.
+# A time-block indicating that the patient bed moved from the PET reference position.
 # Note that the bed is supposed to be stationary during the time-block, and until
 # a new BedMovementTimeBlock occurs. Continuous movement therefore needs to be approximated
 # by a series of steps.
 # TODO encode an initial bed position in the header, or require that the first time-block is a
 # BedMovementTimeBlock?
-# TODO specify if bed movement is encoded in PET reference or "overall" reference
-# (see ScannerInformation.gantryAlignment)
 BedMovementTimeBlock: !record
   fields:
     # time interval for this time block
@@ -168,7 +166,7 @@ GantryMovementTimeBlock: !record
   fields:
     # time interval for this time block
     timeInterval: TimeInterval
-    # Tranforms encoding movement from the coordinates specified in the ScannerGeometry to
+    # Tranforms encode movement from the coordinates specified in the ScannerGeometry to
     # the PET scanner reference position. To go to the overall reference position, follow
     # with ScannerInformation.gantryAlignment.
     # One transformation per module-type.
