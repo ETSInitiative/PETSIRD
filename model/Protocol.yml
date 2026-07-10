@@ -141,17 +141,37 @@ ExternalSignalTimeBlock: !record
    # Note for triggers, this field is to be ignored
    signalValues: float*
 
+# A time-block indicating that the patient bed moved from the PET reference position.
+# Note that the bed is supposed to be stationary during the time-block, and until
+# a new BedMovementTimeBlock occurs. Continuous movement therefore needs to be approximated
+# by a series of steps.
+# TODO encode an initial bed position in the header, or require that the first time-block is a
+# BedMovementTimeBlock?
 BedMovementTimeBlock: !record
   fields:
     # time interval for this time block
     timeInterval: TimeInterval
     transform: RigidTransformation
 
+# A time-block indicating that the gantry/gantries moved from the PET reference position.
+# We allow that each "module-type" (see ScannerGeometry) is on a different gantry, i.e.
+# could move independently. In practice, several module-types can move together (or not at all).
+# Nevertheless, a transform needs to be given for each module_type.
+#
+# Note that the gantry/gantries are supposed to be stationary during the time-block, and until
+# a new GantryMovementTimeBlock occurs. Continuous movement therefore needs to be approximated
+# by a series of steps.
+# See also ScannerInformation.gantryAlignment.
 GantryMovementTimeBlock: !record
   fields:
     # time interval for this time block
     timeInterval: TimeInterval
-    transform: RigidTransformation
+    # Tranforms encode movement from the coordinates specified in the ScannerGeometry to
+    # the PET scanner reference position. To go to the overall reference position, follow
+    # with ScannerInformation.gantryAlignment.
+    # One transformation per module-type.
+    # Constraint: size(transforms) == ScannerGeometry.numberOfModuleTypes()
+    transforms: RigidTransformation*
 
 # A time block that stores the dead-time information for the given interval
 # Dead-time is encoded as "alive_time_fraction", i.e. 1 - dead_time_fraction

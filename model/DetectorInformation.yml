@@ -28,16 +28,19 @@ DetectorModule: !record
 # A list of identical modules at different locations
 ReplicatedDetectorModule: ReplicatedObject< DetectorModule >
 
-# Full definition of the geometry of the scanner, consisting of
-# one of more types of modules replicated in space and (optional) other structures (e.g. side-shielding)
+# Full definition of the geometry of the scanner.
+# A PETSIRD scanner is built hierarchically. It consists of
+# one or more ReplicatedDetectorModules, each of which is potentially moving independently
+# (see GantryMovementTimeBlock), and (optional) other structures (e.g. side-shielding).
+# While most clinical scanners have only one type of DetectorModule, some
+# would have different types, e.g. for scanners with phoswich detectors, high resolution inserts, etc.
 ScannerGeometry: !record
   fields:
-    # list of different types of replicated modules
-    # While most current clinical scanners have only one type of DetectorModule, some
-    # would have different types, e.g. for scanners with phoswich detector, high resolution inserts, etc.
+    # list of different types of (replicated) modules
     # Constraint: numberOfModuleTypes > 0
     replicatedModules: ReplicatedDetectorModule*
     # shielding etc
+    # These nonDetectingVolumes cannot move w.r.t. the reference position.
     nonDetectingVolumes: GenericSolidVolume*?
   computedFields:
     numberOfModuleTypes: size(replicatedModules)
