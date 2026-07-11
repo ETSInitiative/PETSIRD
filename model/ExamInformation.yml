@@ -31,6 +31,11 @@ ExamInformation: !record
     # https://dicom.nema.org/medical/dicom/current/output/html/part03.html#sect_F.5.2
     seriesInstanceUID: DICOMUID
 
+    # Uniquely identifies the DICOM object in the series
+    # (0008,0018)
+    # https://dicom.nema.org/medical/dicom/current/output/chtml/part03/sect_C.12.html#sect_C.12.1
+    sopInstanceUID: DICOMUID
+   
     # Uniquely identifies the Frame of Reference for a Series.
     # https://dicom.nema.org/medical/dicom/current/output/html/part03.html#sect_F.5.3
     # (0020,0052)

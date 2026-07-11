@@ -63,7 +63,7 @@ DICOMPatientOrientationInformation: !record
 # Information on a single radiopharmaceutical.
 # Using selected fields from the Enhanced PET Isotope Module.
 # https://dicom.nema.org/medical/dicom/current/output/html/part03.html#sect_C.8.22.4
-# Note: the PET DICOM module not support bolus-infusion information (in 2026).
+# Note: the PET DICOM module does not support bolus-infusion information (in 2026).
 #
 # Currently not encoding the following two:
 # The radionuclide half life, in seconds, that was used in the correction of this image.
