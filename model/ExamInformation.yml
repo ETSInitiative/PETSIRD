@@ -8,13 +8,56 @@ Institution: !record
     name: string
     address: string
 
-# Items describing the exam (incomplete)
+# Items describing the exam
 ExamInformation: !record
   fields:
+    # TODO REMOVE
     subject: Subject
+    # TODO REMOVE
     institution: Institution
-    protocol: string?
+
+    # imaging modality
+    # Should be PT for future ETSI standards
+    # (0008,0060)
+    # C.7.3.1 General Series Module
+    modality: string
+
+    # Uniquely identifies the DICOM study
+    # (0020,000D)
+    studyInstanceUID: DICOMUID
+
+    # Uniquely identifies the DICOM series
+    # (0020,000E)
+    # https://dicom.nema.org/medical/dicom/current/output/html/part03.html#sect_F.5.2
+    seriesInstanceUID: DICOMUID
+
+    # Uniquely identifies the DICOM object in the series
+    # (0008,0018)
+    # https://dicom.nema.org/medical/dicom/current/output/chtml/part03/sect_C.12.html#sect_C.12.1
+    sopInstanceUID: DICOMUID
+
+    # Uniquely identifies the Frame of Reference for a Series.
+    # https://dicom.nema.org/medical/dicom/current/output/html/part03.html#sect_F.5.3
+    # (0020,0052)
+    frameOfReferenceUID: DICOMUID
+
+    # Start time of the study
+    # Combines information in Study Date (0008,0020) and Study Time (0008,0030)
+    # https://dicom.nema.org/medical/dicom/current/output/html/part03.html#sect_C.7.4.1
+    startOfStudy: datetime
+
+    # The real-world beginning of the accumulation of events into this PETSIRD file.
+    # (0008,002A)
+    # https://dicom.nema.org/medical/dicom/current/output/html/part03.html#sect_F.5.2
     startOfAcquisition: datetime?
+
+    patient: DICOMPatientInformation
+
+    patientOrientation: DICOMPatientOrientationInformation?
+
+    # A list with information for each radiopharmaceutical
+    radiopharmaceuticals: DICOMRadiopharmaceuticalInformation*
+
     # A list of all possible signals that are recorded in the stream.
     # Actual values will be in recorded as ExternalSignalTimeBlock
     externalSignals: ExternalSignal*
