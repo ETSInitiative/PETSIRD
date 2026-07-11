@@ -6,27 +6,45 @@
 # SGIDs are used to efficiently encode module-pair efficiencies etc.
 SGID: uint
 
-# Detection efficiencies for every DetectionBin if a particular type of module
-# Constraint: size == number of all possible unique DetectionBins
+# A "template" type to denote a lower-triangular 2D array
+# represented as a vector of vectors.
+# Sizes have to be such that for matrix[i][j], j<=i
+LowerTriangularMatrix<T>: T**
+
+# A "template" type to denote a lower-triangular or rectangular 2D array
+# represented as a vector of vectors.
+# If triangular, sizes have to be such that for matrix[i][j], j<=i
+#
+# This type is used to represent data that are lower-triangular for equal
+# module-types, but rectangular otherwise.
+LowerTriangularOrRectangularMatrix<T>: T**
+
+# Detection efficiencies for every DetectionBin if a particular type of module.
+# Constraint: size == number of all possible unique DetectionBins of that module-type
 DetectionBinEfficiencies: float[detectionBin]
 
 # Detection efficiency for two detection bins in a pair of modules.
 # This is one component (often called "geometric") of the detection efficiency model.
 # Note that "detection bin" includes energy windows (if any) for the modules.
+# Note that the modules can be of different types.
 ModulePairEfficiencies: !record
   fields:
     # Detection efficiency for a pair of detection bins
-    # detectionBin1 and detectionBin2 run from 0 up to the number of detections_bins in each module,
-    values: float[detectionBin1, detectionBin2]
+    # values[detectionBin1][detectionBin2] with detectionBin1 ranging from 0 up to the number of
+    # detectionsBins in the first module.
+    # The second index runs from 0 to either detectionBin1 (if the 2 modules are of the same type)
+    # or to the number of detectionBins in the second module.
+    values: LowerTriangularOrRectangularMatrix<float>
     # Symmetry Group Identifier (SGID)
     # This should be a number between 0 and numberOfSGIDs-1
     sgid: SGID
 
 
-# Lookup table for SGIDs
+# Lookup table for SGIDs for a pair of modules (which can be of different type)
 # For every module pair (of specific types), give the SGID. If -1, the module-pair is not in coincidence.
 # Values run from -1 ... (numberOfSGIDs-1)
-ModulePairSGIDLUT: int[moduleIndex1, moduleIndex2]
+# indexed by moduleIndex1, moduleIndex2
+ModulePairSGIDLUT: LowerTriangularOrRectangularMatrix<int>
 
 # List of ModulePairEfficiencies, one for each SGID
 ModulePairEfficienciesVector: ModulePairEfficiencies*
@@ -45,14 +63,15 @@ ModulePairEfficienciesVector: ModulePairEfficiencies*
 # 0. obtain module-types
 # 1. find module_index for each detection_bin
 # 2. find detection_bin "inside" each module
-# 3. SGID = modulePairSGIDLUT[type_of_module1][type_of_module2][module_index1, module_index2]
+# 3. SGID = modulePairSGIDLUT[type_of_module1][type_of_module2][module_index1][module_index2]
 # 4. if (SGID < 0) return 0
 # 5. module_pair_efficiencies = modulePairEfficienciesVector[type_of_module1][type_of_module2][SGID]
-# 6. return calibrationFactor
+# 6. return
+#       calibrationFactor
 #       * detectionBinEfficiencies[type_of_module1](detection_bin1) * detectionBinEfficiencies[type_of_module2](detection_bin2)
-#       * module_pair_efficiencies[detection_bin_in_module1, detection_bin_in_module2]
+#       * module_pair_efficiencies[detection_bin_in_module1][detection_bin_in_module2]
 #
-# If either of the components is not present, its value is considered to be 1.
+# If any of the components is not present (or size 0), its value is considered to be 1.
 #
 # The calibrationFactor is defined in terms of measured/expected "true unscattered" coincidences.
 # Moreover, it is (in principle) defined in terms of an idealised measurement of large uniform source.
@@ -64,7 +83,7 @@ ModulePairEfficienciesVector: ModulePairEfficiencies*
 # This definition has the effect that for a given pair of detection_bins, we should have
 #   mean_precorrected_true_coincidences =
 #     detection_effiency * line_integral(number_of_positron_annihilations_in_source_as_estimated_from_dose_calibrator)
-#   (with the precorrection taking into scatter and attenuation)
+#   (with the precorrection taking scatter and attenuation into account).
 #
 # Note that computing a detection efficiency for a triple coincidence is left to the user.
 DetectionEfficiencies: !record
@@ -75,24 +94,23 @@ DetectionEfficiencies: !record
     calibrationFactor: float
     # List of detection efficiencies for every detection bin (one for each module-type).
     # Constraint: size(detectionBinEfficiencies) == ScannerGeometry.numberOfModuleTypes()
-    detectionBinEfficiencies: DetectionBinEfficiencies*?
-    # Nested list of lookup tables for SGIDs, one for each module-type pair.
+    detectionBinEfficiencies: DetectionBinEfficiencies*
+    # Nested list of lookup tables for SGIDs, one for each module-type pair (type_of_module2<=type_of_module1).
     # Also indicates if coincidences between a module-pair are recorded.
-    modulePairSGIDLUT: ModulePairSGIDLUT**?
-    # Nested list of all modulePairEfficienciesVectors (one for each module-type pair)
+    modulePairSGIDLUT: LowerTriangularMatrix<ModulePairSGIDLUT>
+    # Nested list of all modulePairEfficienciesVectors (one for each module-type pair with type_of_module2<=type_of_module1)
     # Constraint: size(modulePairEfficienciesVectors[type_of_module1][type_of_module2]) == max(modulePairSGIDLUT[type_of_module1][type_of_module2]) + 1
-    modulePairEfficienciesVectors: ModulePairEfficienciesVector**?
+    modulePairEfficienciesVectors: LowerTriangularMatrix<ModulePairEfficienciesVector>
 
 # Type for alive-time fractions for singles
 # See AliveTimeFractions
-# Constraint: size == number of all possible DetectionBins (for a specific type_of_module)
+# Constraint: size() == number of all possible DetectionBins (for the specific type_of_module)
 SinglesAliveTimeFractions: float[detectionBin]
 
 # Type for coincidence alive time fractions array for 2 modules in coincidence
-# See AliveTimeFractions
+# See AliveTimeFractions and restrictions on size.
 ModuleCoincidenceAliveTimeFractions: !array
-      items: float
-      dimensions: [moduleId0, moduleId1]
+      items: LowerTriangularOrRectangularMatrix<float>
 
 # Type for alive-time fraction information
 # (1 means no dead-time, 0 means no detected counts)
@@ -106,10 +124,16 @@ ModuleCoincidenceAliveTimeFractions: !array
 AliveTimeFractions: !record
   fields:
     # List of singles alive-time fractions (one for each type of module)
+    # Constraint: size(singlesAliveTimeFractions) == ScannerGeometry.numberOfModuleTypes()
     singlesAliveTimeFractions: SinglesAliveTimeFractions*
     # Nested list of all-time fractions for 2 modules in coincidence.
-    # Constraint: size(moduleCoincidenceAliveTimeFractions[type_of_module1][type_of_module2], 0) == total number of modules of type 1
-    # Constraint: size(moduleCoincidenceAliveTimeFractions[type_of_module1][type_of_module2], 1) == total number of modules of types 2
-    # Constraint: moduleCoincidenceAliveTimeFractions[type_of_module1][type_of_module2][mod1, mod2] ==
+    # Note that in principle, we have
+    # moduleCoincidenceAliveTimeFractions[type_of_module1][type_of_module2][mod1, mod2] ==
     #   moduleCoincidenceAliveTimeFractions[type_of_module2][type_of_module1][mod2, mod1]
-    moduleCoincidenceAliveTimeFractions: ModuleCoincidenceAliveTimeFractions**?
+    # Therefore only the "lower half" is stored (type_of_module1>=type_of_module2,
+    # and a LowerTriangular array if type_of_module1==type_of_module2).
+    # Constraint: size(moduleCoincidenceAliveTimeFractions) == ScannerGeometry.numberOfModuleTypes()
+    # Constraint: size(moduleCoincidenceAliveTimeFractions[type_of_module1][type_of_module2]) == (number of modules of type 1)
+    # Constraint: size(moduleCoincidenceAliveTimeFractions[type_of_module1][type_of_module2][mod1]) == 
+    #      if (type_of_module1 == type_of_module2): (mod1+1) else (number of modules of type 2)
+    moduleCoincidenceAliveTimeFractions: LowerTriangularMatrix<ModuleCoincidenceAliveTimeFractions>
