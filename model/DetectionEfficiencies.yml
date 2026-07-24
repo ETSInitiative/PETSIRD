@@ -110,7 +110,7 @@ SinglesAliveTimeFractions: float[detectionBin]
 
 # Type for coincidence alive time fractions array for 2 modules in coincidence
 # See AliveTimeFractions and restrictions on size.
-ModuleCoincidenceAliveTimeFractions: !array
+ModulePairAliveTimeFractions: !array
       items: LowerTriangularOrRectangularMatrix<float>
 
 # Type for alive-time fraction information
@@ -121,7 +121,7 @@ ModuleCoincidenceAliveTimeFractions: !array
 # aliveTimeFraction((type_of_module1, detectionBin1), (type_of_module2, detectionBin2)) =
 #   singlesAliveTimeFractions[type_of_module1](detectionBin1) *
 #   singlesAliveTimeFractions[type_of_module2](detectionBin2) *
-#   moduleCoincidenceAliveTimeFractions[type_of_module1][type_of_module2][module(detectionBin1), module(detectionBin2)]
+#   modulePairAliveTimeFractions[type_of_module1][type_of_module2][module(detectionBin1), module(detectionBin2)]
 AliveTimeFractions: !record
   fields:
     # List of singles alive-time fractions (one for each type of module)
@@ -129,12 +129,12 @@ AliveTimeFractions: !record
     singlesAliveTimeFractions: SinglesAliveTimeFractions*
     # Nested list of all-time fractions for 2 modules in coincidence.
     # Note that in principle, we have
-    # moduleCoincidenceAliveTimeFractions[type_of_module1][type_of_module2][mod1, mod2] ==
-    #   moduleCoincidenceAliveTimeFractions[type_of_module2][type_of_module1][mod2, mod1]
+    # modulePairAliveTimeFractions[type_of_module1][type_of_module2][mod1, mod2] ==
+    #   modulePairAliveTimeFractions[type_of_module2][type_of_module1][mod2, mod1]
     # Therefore only the "lower half" is stored (type_of_module1>=type_of_module2,
     # and a LowerTriangular array if type_of_module1==type_of_module2).
-    # Constraint: size(moduleCoincidenceAliveTimeFractions) == ScannerGeometry.numberOfModuleTypes()
-    # Constraint: size(moduleCoincidenceAliveTimeFractions[type_of_module1][type_of_module2]) == (number of modules of type 1)
-    # Constraint: size(moduleCoincidenceAliveTimeFractions[type_of_module1][type_of_module2][mod1]) ==
+    # Constraint: size(modulePairAliveTimeFractions) == ScannerGeometry.numberOfModuleTypes()
+    # Constraint: size(modulePairAliveTimeFractions[type_of_module1][type_of_module2]) == (number of modules of type 1)
+    # Constraint: size(modulePairAliveTimeFractions[type_of_module1][type_of_module2][mod1]) ==
     #      if (type_of_module1 == type_of_module2): (mod1+1) else (number of modules of type 2)
-    moduleCoincidenceAliveTimeFractions: LowerTriangularMatrix<ModuleCoincidenceAliveTimeFractions>
+    modulePairAliveTimeFractions: LowerTriangularMatrix<ModulePairAliveTimeFractions>
