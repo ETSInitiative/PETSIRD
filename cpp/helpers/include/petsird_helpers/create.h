@@ -38,6 +38,29 @@ construct_2D_nested_vector(std::size_t size0, std::size_t size1)
   return v;
 }
 
+//! Helper function to create a std::vector<std::vector<T>> as a 2D array of size (size, row-number)
+/*! Result is a "matrix" such that for `matrix[i][j]`, `i>=j`. */
+template <typename T>
+std::vector<std::vector<T>>
+construct_lower_triangular_matrix(std::size_t size)
+{
+  std::vector<std::vector<T>> v(size);
+  for (std::size_t i = 0; i < size; ++i)
+    {
+      v[i].resize(i + 1);
+    }
+  return v;
+}
+
+//! Helper function to create a std::vector<std::vector<T>> as a lower-triangular matrix of size size0 or a matrix size (size0,
+//! size1)
+template <typename T>
+std::vector<std::vector<T>>
+construct_lower_triangular_or_rectangular_matrix(std::size_t size0, std::size_t size1, bool is_lower_triangular)
+{
+  return is_lower_triangular ? construct_lower_triangular_matrix<T>(size0) : construct_2D_nested_vector<T>(size0, size1);
+}
+
 //! Set  various structures to have the correct size for the given num_types_of_modules
 /*!
   This will set scanner.tof_bin_edges, scanner.tof_resolution,

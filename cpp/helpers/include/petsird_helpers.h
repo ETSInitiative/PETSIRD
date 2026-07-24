@@ -104,38 +104,44 @@ get_detection_efficiency(const ScannerInformation& scanner, const TypeOfModulePa
                          const DetectionBin& detection_bin_1, const DetectionBin& detection_bin_2,
                          bool with_calibration_factor = true)
 {
+  assert(type_of_module_pair[0] <= type_of_module_pair[1]);
+
   float eff = with_calibration_factor ? scanner.detection_efficiencies.calibration_factor : 1.0F;
   const auto& detection_bin_efficiencies = scanner.detection_efficiencies.detection_bin_efficiencies;
-  if (detection_bin_efficiencies)
+  if (!detection_bin_efficiencies.empty())
     {
-      eff *= ((*detection_bin_efficiencies)[type_of_module_pair[0]](detection_bin_1)
-              * (*detection_bin_efficiencies)[type_of_module_pair[1]](detection_bin_2));
+      eff *= (detection_bin_efficiencies[type_of_module_pair[0]][detection_bin_1]
+              * detection_bin_efficiencies[type_of_module_pair[1]][detection_bin_2]);
       if (eff == 0.F)
         return 0.F;
     }
   const auto& module_pair_efficiencies_vectors = scanner.detection_efficiencies.module_pair_efficiencies_vectors;
-  if (module_pair_efficiencies_vectors)
+  if (!module_pair_efficiencies_vectors.empty())
     {
-      assert(scanner.detection_efficiencies.module_pair_sgidlut);
+      // TODO
+      // assert(scanner.detection_efficiencies.module_pair_sgidlut.size() == number_of_modules_types);
       const auto& module_pair_SGID_LUT
-          = (*scanner.detection_efficiencies.module_pair_sgidlut)[type_of_module_pair[0]][type_of_module_pair[1]];
+          = scanner.detection_efficiencies.module_pair_sgidlut[type_of_module_pair[0]][type_of_module_pair[1]];
 
       const auto expanded_det_bin0 = expand_detection_bin(scanner, type_of_module_pair[0], detection_bin_1);
       const auto expanded_det_bin1 = expand_detection_bin(scanner, type_of_module_pair[1], detection_bin_2);
-      const int SGID = module_pair_SGID_LUT(expanded_det_bin0.module_index, expanded_det_bin1.module_index);
+      assert(expanded_det_bin0.module_index < module_pair_SGID_LUT.size());
+      assert(expanded_det_bin1.module_index < module_pair_SGID_LUT[expanded_det_bin0.module_index].size());
+
+      const int SGID = module_pair_SGID_LUT[expanded_det_bin0.module_index][expanded_det_bin1.module_index];
       if (SGID < 0)
         {
           return 0.;
         }
 
       const auto& module_pair_efficiencies
-          = (*module_pair_efficiencies_vectors)[type_of_module_pair[0]][type_of_module_pair[1]][SGID];
-      assert(module_pair_efficiencies.sgid == static_cast<unsigned>(SGID));
-      const auto& num_en0 = scanner.event_energy_bin_edges[type_of_module_pair[0]].NumberOfBins();
-      const auto& num_en1 = scanner.event_energy_bin_edges[type_of_module_pair[1]].NumberOfBins();
+          = module_pair_efficiencies_vectors[type_of_module_pair[0]][type_of_module_pair[1]][SGID];
+      assert(module_pair_efficiencies.sgid == SGID);
+      const auto num_en0 = scanner.event_energy_bin_edges[type_of_module_pair[0]].NumberOfBins();
+      const auto num_en1 = scanner.event_energy_bin_edges[type_of_module_pair[1]].NumberOfBins();
       // TODO create helper for next calculation
-      eff *= module_pair_efficiencies.values(expanded_det_bin0.element_index * num_en0 + expanded_det_bin0.energy_index,
-                                             expanded_det_bin1.element_index * num_en1 + expanded_det_bin1.energy_index);
+      eff *= module_pair_efficiencies.values[expanded_det_bin0.element_index * num_en0 + expanded_det_bin0.energy_index]
+                                            [expanded_det_bin1.element_index * num_en1 + expanded_det_bin1.energy_index];
     }
   return eff;
 }
