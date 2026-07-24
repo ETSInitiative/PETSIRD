@@ -4,7 +4,8 @@
 # by such a symmetry often have the same geometric detection efficiencies. PETSIRD
 # calls this a "symmetry group" (SG). Each SG had a unique identifier (SGID).
 # SGIDs are used to efficiently encode module-pair efficiencies etc.
-SGID: uint
+# Note that a negative SGID is used to denote that a module-pair is not in coincidence.
+SGID: int
 
 # A "template" type to denote a lower-triangular 2D array
 # represented as a vector of vectors.
@@ -21,7 +22,7 @@ LowerTriangularOrRectangularMatrix<T>: T**
 
 # Detection efficiencies for every DetectionBin if a particular type of module.
 # Constraint: size == number of all possible unique DetectionBins of that module-type
-DetectionBinEfficiencies: float[detectionBin]
+DetectionBinEfficiencies: float*
 
 # Detection efficiency for two detection bins in a pair of modules.
 # This is one component (often called "geometric") of the detection efficiency model.
@@ -134,6 +135,6 @@ AliveTimeFractions: !record
     # and a LowerTriangular array if type_of_module1==type_of_module2).
     # Constraint: size(moduleCoincidenceAliveTimeFractions) == ScannerGeometry.numberOfModuleTypes()
     # Constraint: size(moduleCoincidenceAliveTimeFractions[type_of_module1][type_of_module2]) == (number of modules of type 1)
-    # Constraint: size(moduleCoincidenceAliveTimeFractions[type_of_module1][type_of_module2][mod1]) == 
+    # Constraint: size(moduleCoincidenceAliveTimeFractions[type_of_module1][type_of_module2][mod1]) ==
     #      if (type_of_module1 == type_of_module2): (mod1+1) else (number of modules of type 2)
     moduleCoincidenceAliveTimeFractions: LowerTriangularMatrix<ModuleCoincidenceAliveTimeFractions>

@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2025 University College London
+  Copyright (C) 2025-2026 University College London
 
   SPDX-License-Identifier: Apache-2.0
 */
@@ -16,7 +16,7 @@ namespace create
 {
 
 //! Helper function to create a std::vector<T>
-/*! This function is added to have a 1D analogue construct_2D_nested_vector() */
+/*! This function is added to have a 1D analogue construct_rectangular_matrix() */
 template <typename T>
 std::vector<T>
 construct_vector(std::size_t size)
@@ -28,7 +28,7 @@ construct_vector(std::size_t size)
 //! Helper function to create a std::vector<std::vector<T>> as a 2D array of size (size0, size1)
 template <typename T>
 std::vector<std::vector<T>>
-construct_2D_nested_vector(std::size_t size0, std::size_t size1)
+construct_rectangular_matrix(std::size_t size0, std::size_t size1)
 {
   std::vector<std::vector<T>> v(size0);
   for (auto& one_of_them : v)
@@ -38,7 +38,30 @@ construct_2D_nested_vector(std::size_t size0, std::size_t size1)
   return v;
 }
 
-//! Set  various structures to have the correct size for the given num_types_of_modules
+//! Helper function to create a std::vector<std::vector<T>> as a 2D array of size (size, row-number)
+/*! Result is a "matrix" such that for `matrix[i][j]`, `i>=j`. */
+template <typename T>
+std::vector<std::vector<T>>
+construct_lower_triangular_matrix(std::size_t size)
+{
+  std::vector<std::vector<T>> v(size);
+  for (std::size_t i = 0; i < size; ++i)
+    {
+      v[i].resize(i + 1);
+    }
+  return v;
+}
+
+//! Helper function to create a std::vector<std::vector<T>> as a lower-triangular matrix of size size0 or a matrix size (size0,
+//! size1)
+template <typename T>
+std::vector<std::vector<T>>
+construct_lower_triangular_or_rectangular_matrix(std::size_t size0, std::size_t size1, bool is_lower_triangular)
+{
+  return is_lower_triangular ? construct_lower_triangular_matrix<T>(size0) : construct_rectangular_matrix<T>(size0, size1);
+}
+
+//! Set various structures to have the correct size for the given num_types_of_modules
 /*!
   This will set scanner.tof_bin_edges, scanner.tof_resolution,
   scanner.event_energy_bin_edges, scanner.energy_resolution_at_511, and
@@ -57,8 +80,8 @@ inline void
 initialize_scanner_information_dimensions(petsird::ScannerInformation& scanner, const std::size_t num_module_types,
                                           bool allocate_detection_bin_efficiencies, bool allocate_module_pair_efficiencies)
 {
-  scanner.tof_bin_edges = construct_2D_nested_vector<petsird::BinEdges>(num_module_types, num_module_types);
-  scanner.tof_resolution = construct_2D_nested_vector<float>(num_module_types, num_module_types);
+  scanner.tof_bin_edges = construct_rectangular_matrix<petsird::BinEdges>(num_module_types, num_module_types); // TODO lower
+  scanner.tof_resolution = construct_rectangular_matrix<float>(num_module_types, num_module_types);            // TODO lower
   scanner.event_energy_bin_edges = construct_vector<petsird::BinEdges>(num_module_types);
   scanner.energy_resolution_at_511 = construct_vector<float>(num_module_types);
 
@@ -74,9 +97,9 @@ initialize_scanner_information_dimensions(petsird::ScannerInformation& scanner, 
   if (allocate_module_pair_efficiencies)
     {
       scanner.detection_efficiencies.module_pair_sgidlut
-          = construct_2D_nested_vector<petsird::ModulePairSGIDLUT>(num_module_types, num_module_types);
+          = construct_lower_triangular_matrix<petsird::ModulePairSGIDLUT>(num_module_types);
       scanner.detection_efficiencies.module_pair_efficiencies_vectors
-          = construct_2D_nested_vector<petsird::ModulePairEfficienciesVector>(num_module_types, num_module_types);
+          = construct_lower_triangular_matrix<petsird::ModulePairEfficienciesVector>(num_module_types);
     }
 }
 

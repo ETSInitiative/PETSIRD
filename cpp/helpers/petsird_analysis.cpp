@@ -1,6 +1,6 @@
 /*
   Copyright (C) 2022-2023 Microsoft Corporation
-  Copyright (C) 2023-2025 University College London
+  Copyright (C) 2023-2026 University College London
 
   SPDX-License-Identifier: Apache-2.0
 */
@@ -184,7 +184,7 @@ main(int argc, char const* argv[])
           for (unsigned mtype0 = 0; mtype0 < num_module_types; ++mtype0)
             {
               const auto& energy_mid_points0 = all_energy_mid_points[mtype0];
-              for (unsigned mtype1 = 0; mtype1 < num_module_types; ++mtype1)
+              for (unsigned mtype1 = 0; mtype1 <= mtype0; ++mtype1)
                 {
                   const petsird::TypeOfModulePair mtype_pair{ mtype0, mtype1 };
                   const auto& energy_mid_points1 = all_energy_mid_points[mtype1];
