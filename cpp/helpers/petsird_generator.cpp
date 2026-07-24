@@ -116,9 +116,11 @@ set_detection_efficiencies(petsird::ScannerInformation& scanner)
   // use some non-physical value for the calibration factor
   scanner.detection_efficiencies.calibration_factor = 42.F;
 
+#ifndef NDEBUG
   const auto num_module_types = scanner.scanner_geometry.NumberOfModuleTypes();
   // only 1 type of module in the current scanner
   assert(num_module_types == 1);
+#endif
   const petsird::TypeOfModule type_of_module{ 0 };
   const auto num_detection_bins = petsird_helpers::get_num_detection_bins(scanner, type_of_module);
 
@@ -126,15 +128,15 @@ set_detection_efficiencies(petsird::ScannerInformation& scanner)
   const auto num_event_energy_bins = event_energy_bin_edges.NumberOfBins();
 
   // set all detection_bin_efficiencies to 1 in this example
-  if (scanner.detection_efficiencies.detection_bin_efficiencies)
+  if (!scanner.detection_efficiencies.detection_bin_efficiencies.empty())
     {
-      auto& bin_effs = (*scanner.detection_efficiencies.detection_bin_efficiencies)[type_of_module];
-      yardl::resize(bin_effs, { num_detection_bins });
+      auto& bin_effs = scanner.detection_efficiencies.detection_bin_efficiencies[type_of_module];
+      bin_effs.resize(num_detection_bins);
       std::fill(begin(bin_effs), end(bin_effs), 1.F);
     }
 
   // check if the caller wants to have module-pair stuff. If not, return.
-  if (!scanner.detection_efficiencies.module_pair_efficiencies_vectors)
+  if (scanner.detection_efficiencies.module_pair_efficiencies_vectors.empty())
     return;
 
   const auto& rep_module = scanner.scanner_geometry.replicated_modules[type_of_module];
@@ -151,11 +153,15 @@ set_detection_efficiencies(petsird::ScannerInformation& scanner)
   // SGID = z1 + NZ * (z2 + NZ * abs(a2 - a1) - 1)
   constexpr auto NZ = NUM_MODULES_ALONG_AXIS;
 
-  auto& module_pair_SGID_LUT = (*scanner.detection_efficiencies.module_pair_sgidlut)[type_of_module][type_of_module];
-  module_pair_SGID_LUT = yardl::NDArray<int, 2>({ num_modules, num_modules });
+  auto& module_pair_SGID_LUT = scanner.detection_efficiencies.module_pair_sgidlut[type_of_module][type_of_module];
+  module_pair_SGID_LUT
+      = petsird_helpers::create::construct_lower_triangular_or_rectangular_matrix<petsird::SGID>(num_modules, num_modules, true);
+  // note: if using different module types, we need construct_lower_triangular_or_rectangular_matrix<petsird::SGID>(num_modules1,
+  // num_modules2, false)
+
   for (unsigned int mod1 = 0; mod1 < num_modules; ++mod1)
     {
-      for (unsigned int mod2 = 0; mod2 < num_modules; ++mod2)
+      for (unsigned int mod2 = 0; mod2 <= mod1; ++mod2) // note: if using different module types, we need mod2 < num_modules2
         {
           const auto z1 = mod1 % NZ;
           const auto a1 = mod1 / NZ;
@@ -163,21 +169,21 @@ set_detection_efficiencies(petsird::ScannerInformation& scanner)
           const auto a2 = mod2 / NZ;
           if (a1 == a2)
             {
-              module_pair_SGID_LUT(mod1, mod2) = -1;
+              module_pair_SGID_LUT[mod1][mod2] = -1;
             }
           else
             {
-              module_pair_SGID_LUT(mod1, mod2) = z1 + NZ * (z2 + NZ * (std::abs(int(a2) - int(a1)) - 1));
+              module_pair_SGID_LUT[mod1][mod2] = z1 + NZ * (z2 + NZ * (std::abs(int(a2) - int(a1)) - 1));
             }
+          assert(module_pair_SGID_LUT[mod1][mod2] < num_SGIDs);
         }
     }
-  // assert(module_pair_SGID_LUT).max() == num_SGIDs - 1);
 
   // initialise module_pair_efficiencies
   auto& module_pair_efficiencies_vector
-      = (*scanner.detection_efficiencies.module_pair_efficiencies_vectors)[type_of_module][type_of_module];
-  // assign an empty vector first, and reserve correct size
-  module_pair_efficiencies_vector = petsird::ModulePairEfficienciesVector();
+      = scanner.detection_efficiencies.module_pair_efficiencies_vectors[type_of_module][type_of_module];
+  // make sure we have an empty vector first, and reserve correct size
+  module_pair_efficiencies_vector.resize(0);
   module_pair_efficiencies_vector.reserve(num_SGIDs);
 
   const auto& detecting_elements = rep_module.object.detecting_elements;
@@ -188,9 +194,16 @@ set_detection_efficiencies(petsird::ScannerInformation& scanner)
       // extract first module_pair for this SGID. However, as this currently unused, it is commented out
       // const auto& module_pair = *std::find(module_pair_SGID_LUT.begin(), module_pair_SGID_LUT.end(), SGID);
       petsird::ModulePairEfficiencies module_pair_efficiencies;
-      module_pair_efficiencies.values = yardl::NDArray<float, 2>({ num_detection_bins_in_module, num_detection_bins_in_module });
+      module_pair_efficiencies.values = petsird_helpers::create::construct_lower_triangular_or_rectangular_matrix<float>(
+          num_detection_bins_in_module, num_detection_bins_in_module, type_of_module == type_of_module);
+      // note: somewhat funny line above in the hope it's clear how to modify it for different module types
+
       // give some (non-physical) value
-      module_pair_efficiencies.values.fill(SGID);
+      for (auto& effs_for_mod1 : module_pair_efficiencies.values)
+        for (auto& eff : effs_for_mod1)
+          {
+            eff = SGID;
+          }
       module_pair_efficiencies.sgid = SGID;
       module_pair_efficiencies_vector.emplace_back(module_pair_efficiencies);
       assert(module_pair_efficiencies_vector.size() == unsigned(SGID + 1));
@@ -286,6 +299,8 @@ get_events(const petsird::Header& header, std::size_t num_events)
   std::vector<petsird::CoincidenceEvent> events;
   events.reserve(num_events);
   const petsird::TypeOfModulePair type_of_module_pair{ 0, 0 };
+  const auto type_of_module0 = type_of_module_pair[0];
+  const auto type_of_module1 = type_of_module_pair[1];
   const auto num_modules0 = header.scanner.scanner_geometry.replicated_modules[type_of_module_pair[0]].transforms.size();
   const auto num_detecting_elements0
       = header.scanner.scanner_geometry.replicated_modules[type_of_module_pair[0]].object.detecting_elements.transforms.size();
@@ -311,8 +326,10 @@ get_events(const petsird::Header& header, std::size_t num_events)
           assert(expanded_detection_bin0
                  == petsird_helpers::expand_detection_bin(header.scanner, type_of_module_pair[0], e.detection_bins[0]));
 
-          // short-cut to directly generate a random detection bin
-          e.detection_bins[1] = get_random_uint(num_bins1);
+          // short-cut to directly generate a random detection bin.
+          // Note: we need the events to be ordered
+          const auto max_bin1 = type_of_module0 == type_of_module1 ? e.detection_bins[0] : num_bins1;
+          e.detection_bins[1] = get_random_uint(max_bin1);
 
           if (petsird_helpers::get_detection_efficiency(header.scanner, type_of_module_pair, e) > 0)
             {
