@@ -80,7 +80,7 @@ if __name__ == "__main__":
               scanner.detection_efficiencies.calibration_factor)
         if scanner.detection_efficiencies.module_pair_sgidlut is not None:
             for type_of_module0 in range(num_module_types):
-                for type_of_module1 in range(num_module_types):
+                for type_of_module1 in range(type_of_module0 + 1):
                     print("------ Module type pair ", type_of_module0,
                           type_of_module1)
                     with np.printoptions(threshold=2000, linewidth=140):
@@ -108,7 +108,7 @@ if __name__ == "__main__":
                 last_time = time_block.value.time_interval.stop
                 for mtype0 in range(num_module_types):
                     energy_mid_points0 = all_energy_mid_points[mtype0]
-                    for mtype1 in range(num_module_types):
+                    for mtype1 in range(mtype0 + 1):
                         energy_mid_points1 = all_energy_mid_points[mtype1]
                         mtype_pair = petsird.TypeOfModulePair((mtype0, mtype1))
 

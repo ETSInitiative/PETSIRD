@@ -124,6 +124,10 @@ def get_detection_efficiency(scanner: petsird.ScannerInformation,
         # should never happen really, but this way, we don't crash.
         return 1.
 
+    assert type_of_module_pair[0] >= type_of_module_pair[1]
+    assert (type_of_module_pair[0] != type_of_module_pair[1]
+            or detection_bin_1 >= detection_bin_2)
+
     eff = (scanner.detection_efficiencies.calibration_factor
            if with_calibration_factor else 1.)
 
@@ -143,7 +147,8 @@ def get_detection_efficiency(scanner: petsird.ScannerInformation,
     module_pair_efficiencies_vectors = (
         scanner.detection_efficiencies.module_pair_efficiencies_vectors)
     if module_pair_efficiencies_vectors is not None:
-        module_pair_SGID_LUT = scanner.detection_efficiencies.module_pair_sgidlut
+        module_pair_SGID_LUT = scanner.detection_efficiencies.module_pair_sgidlut[
+            type_of_module_pair[0]][type_of_module_pair[1]]
         assert module_pair_SGID_LUT is not None
         expanded_det_bin0 = expand_detection_bin(scanner,
                                                  type_of_module_pair[0],
@@ -152,9 +157,12 @@ def get_detection_efficiency(scanner: petsird.ScannerInformation,
                                                  type_of_module_pair[1],
                                                  detection_bin_2)
 
-        SGID = module_pair_SGID_LUT[type_of_module_pair[0]][
-            type_of_module_pair[1]][expanded_det_bin0.module_index,
-                                    expanded_det_bin1.module_index]
+        assert expanded_det_bin0.module_index < len(module_pair_SGID_LUT)
+        assert expanded_det_bin1.module_index < len(
+            module_pair_SGID_LUT[expanded_det_bin0.module_index])
+
+        SGID = module_pair_SGID_LUT[expanded_det_bin0.module_index][
+            expanded_det_bin1.module_index]
         if SGID < 0:
             return 0.
         module_pair_efficiencies = module_pair_efficiencies_vectors[
@@ -167,8 +175,8 @@ def get_detection_efficiency(scanner: petsird.ScannerInformation,
         # TODO create helper for next calculation
         eff *= module_pair_efficiencies.values[
             expanded_det_bin0.element_index * num_en0 +
-            expanded_det_bin0.energy_index,
-            expanded_det_bin1.element_index * num_en1 +
-            expanded_det_bin1.energy_index]
+            expanded_det_bin0.energy_index][expanded_det_bin1.element_index *
+                                            num_en1 +
+                                            expanded_det_bin1.energy_index]
 
     return eff
