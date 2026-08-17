@@ -27,7 +27,7 @@ construct_vector(std::size_t size)
 
 //! Helper function to create a std::vector<std::vector<T>> as a 2D array of size (size0, size1)
 template <typename T>
-std::vector<std::vector<T>>
+petsird::RectangularMatrix<T>
 construct_rectangular_matrix(std::size_t size0, std::size_t size1)
 {
   std::vector<std::vector<T>> v(size0);
@@ -41,7 +41,7 @@ construct_rectangular_matrix(std::size_t size0, std::size_t size1)
 //! Helper function to create a std::vector<std::vector<T>> as a 2D array of size (size, row-number)
 /*! Result is a "matrix" such that for `matrix[i][j]`, `i>=j`. */
 template <typename T>
-std::vector<std::vector<T>>
+petsird::LowerTriangularMatrix<T>
 construct_lower_triangular_matrix(std::size_t size)
 {
   std::vector<std::vector<T>> v(size);
@@ -55,7 +55,7 @@ construct_lower_triangular_matrix(std::size_t size)
 //! Helper function to create a std::vector<std::vector<T>> as a lower-triangular matrix of size size0 or a matrix size (size0,
 //! size1)
 template <typename T>
-std::vector<std::vector<T>>
+petsird::LowerTriangularOrRectangularMatrix<T>
 construct_lower_triangular_or_rectangular_matrix(std::size_t size0, std::size_t size1, bool is_lower_triangular)
 {
   return is_lower_triangular ? construct_lower_triangular_matrix<T>(size0) : construct_rectangular_matrix<T>(size0, size1);
