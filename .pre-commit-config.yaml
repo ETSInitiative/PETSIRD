@@ -45,6 +45,11 @@ repos:
     - flake8-debugger
     - flake8-isort
     - flake8-pyproject
+- repo: https://github.com/asottile/pyupgrade
+  rev: v3.21.2
+  hooks:
+  - id: pyupgrade
+    args: [--py39-plus]
 - repo: https://github.com/google/yapf
   rev: v0.43.0
   hooks:
