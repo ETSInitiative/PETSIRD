@@ -166,7 +166,7 @@ GantryMovementTimeBlock: !record
   fields:
     # time interval for this time block
     timeInterval: TimeInterval
-    # Tranforms encode movement from the coordinates specified in the ScannerGeometry to
+    # Transforms encode movement from the coordinates specified in the ScannerGeometry to
     # the PET scanner reference position. To go to the overall reference position, follow
     # with ScannerInformation.gantryAlignment.
     # One transformation per module-type.
@@ -200,7 +200,7 @@ SinglesHistogram: uint64[singlesDetectionBin]
 SinglesHistogramTimeBlock: !record
   fields:
     timeInterval: TimeInterval
-    # A list of histograms of all singles (after energy discrimination) occuring in the timeInterval.
+    # A list of histograms of all singles (after energy discrimination) occurring in the timeInterval.
     # The dimensions correspond to positional information (i.e. moduleIdx or detElIdx, see below)
     # and energy index. The latter index refers to ScannerInformation.singlesHistogramEnergyBinEdges.
     # Note that in future, we might consider also storing singles before energy discrimination,
