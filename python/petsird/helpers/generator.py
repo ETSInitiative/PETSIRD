@@ -17,6 +17,7 @@ from collections.abc import Iterable, Iterator
 from dataclasses import dataclass
 
 import numpy
+
 import petsird
 from petsird.helpers import get_detection_efficiency, get_num_detection_bins
 from petsird.helpers.create import (

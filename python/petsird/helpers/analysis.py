@@ -7,6 +7,7 @@ import argparse
 import sys
 
 import numpy as np
+
 import petsird
 import petsird.helpers.geometry
 from petsird.helpers import (expand_detection_bin, get_detection_efficiency,

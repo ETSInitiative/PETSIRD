@@ -8,6 +8,7 @@ Preliminary helpers for geometric calculations for PETSIRD data
 
 import numpy
 import numpy.typing as npt
+
 import petsird
 
 

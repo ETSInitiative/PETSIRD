@@ -1,6 +1,6 @@
 ci:
   skip: [todo]
-
+  autoupdate_schedule: monthly
 default_language_version:
   python: python3
 repos:
@@ -8,11 +8,12 @@ repos:
   rev: v6.0.0
   hooks:
   - id: check-added-large-files
+  - id: check-builtin-literals
   - id: check-case-conflict
   - id: check-docstring-first
   - id: check-executables-have-shebangs
-  - id: check-toml
   - id: check-merge-conflict
+  - id: check-toml
   - id: check-yaml
     args: [--unsafe]
   - id: debug-statements
