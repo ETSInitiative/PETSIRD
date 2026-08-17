@@ -7,23 +7,6 @@
 # Note that a negative SGID is used to denote that a module-pair is not in coincidence.
 SGID: int
 
-# A "template" type to denote a rectangular 2D array
-# represented as a vector of vectors.
-RectangularMatrix<T>: T**
-
-# A "template" type to denote a lower-triangular 2D array
-# represented as a vector of vectors.
-# Sizes have to be such that for matrix[i][j], j<=i
-LowerTriangularMatrix<T>: T**
-
-# A "template" type to denote a lower-triangular or rectangular 2D array
-# represented as a vector of vectors.
-# If triangular, sizes have to be such that for matrix[i][j], j<=i
-#
-# This type is used to represent data that are lower-triangular for equal
-# module-types, but rectangular otherwise.
-LowerTriangularOrRectangularMatrix<T>: T**
-
 # Detection efficiencies for every DetectionBin if a particular type of module.
 # Constraint: size == number of all possible unique DetectionBins of that module-type
 DetectionBinEfficiencies: float*

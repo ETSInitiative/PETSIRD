@@ -403,7 +403,7 @@ def get_scanner_info(
         allocate_module_pair_efficiencies=True)
 
     for mtype0, m_def0 in enumerate(module_defs):
-        for mtype1 in range(num_types_of_modules):  # TODO range(mtype0 + 1):
+        for mtype1 in range(mtype0 + 1):
             m_def1 = module_defs[mtype1]
             # In this example, we determine the coincidence window from the radii.
             # Obviously, a real scanner likely will do something else.

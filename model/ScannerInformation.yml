@@ -97,6 +97,7 @@ ScannerInformation: !record
     #
     # This is a nested vector with elements of type BinEdges, i.e. it specifies the edges for every module-pair
     # (actually pair of module-types).
+    # (One element for each module-type pair with type_of_module2<=type_of_module1)
     # To get the tof bin edges for 2 types of modules, use
     #  tofBinEdges[typeOfModule1][typeOfModule2]
     #
@@ -107,8 +108,8 @@ ScannerInformation: !record
     # TODO: this currently assumes equal size for each TOF bin, but some scanners "stretch" TOF bins depending on length of LOR
     # Constraint: this 2D array has to be symmetric.
     # Constraint: size(tofBinEdges) == size(ScannerGeometry.replicatedModules)
-    # Constraint: size(tofBinEdges[*]) == size(ScannerGeometry.replicatedModules)
-    tofBinEdges: BinEdges**
+    # Constraint: size(tofBinEdges[typeOfModule1]) == typeOfModule1 + 1
+    tofBinEdges: LowerTriangularMatrix<BinEdges>
 
     # TOF resolution aka CTR (as FWHM) in mm
     # To get the Coincidence Timing Resolution (CTR) in mm for 2 types of modules, use
@@ -117,8 +118,8 @@ ScannerInformation: !record
     #
     # Constraint: this 2D array has to be symmetric.
     # Constraint: size(tofResolution) == size(ScannerGeometry.replicatedModules)
-    # Constraint: size(tofResolution[*]) == size(ScannerGeometry.replicatedModules)
-    tofResolution: float**
+    # Constraint: size(tofResolution[typeOfModule1]) == typeOfModule1 + 1
+    tofResolution: LowerTriangularMatrix<float>
 
     # Edge information (in keV) for energy windows used for coincidences, triples etc
     #
