@@ -70,14 +70,12 @@ EventTimeBlock: !record
    # given in the `CoincidenceEvent` is in a module of the first type, use
    #  promptEvents[typeOfModule1][typeOfModule2]
    # Note that the ListOfCoincidenceEvents could be empty for a particular module-pair.
-   # Note that in principle, this nested vector could be made "upper diagonal",
-   # but this is currently not enforced. Therefore, to check all coincidences between two
-   # different types of modules, a user will have to check two lists, i.e. also
-   #  promptEvents[typeOfModule2][typeOfModule1]
+   # Note that events have to be ordered, i.e.
+   #    (typeOfModule1 > typeOfModule2) || (detectionBin1 >= detectionBin2)
    # Constraint: (size(promptEvents) > 0) == ScannerInformation.promptEventsAreStored
    # Constraint: (size(promptEvents) == 0) || (size(promptsEvents) == ScannerInformation.numberOfModuleTypes)
-   # Constraint: (size(promptEvents) == 0) || (size(promptsEvents[*]) == ScannerInformation.numberOfModuleTypes)
-   promptEvents: ListOfCoincidenceEvents**
+   # Constraint: (size(promptEvents) == 0) || (size(promptsEvents[typeOfModule1]) == typeOfModule1 + 1)
+   promptEvents: LowerTriangularMatrix<ListOfCoincidenceEvents>
 
    # nested vector with lists of delayed coincidences in this time block
    # To get the list of delayeds for 2 types of modules, use
@@ -85,28 +83,30 @@ EventTimeBlock: !record
    # See promptEvents for more information.
    # Constraint: (size(delayedEvents) > 0) == ScannerInformation.delayedCoincidencesAreStored
    # Constraint: (size(delayedEvents) == 0) || (size(delayedEvents) == ScannerInformation.numberOfModuleTypes)
-   # Constraint: (size(delayedEvents) == 0) || (size(delayedEvents[*]) == ScannerInformation.numberOfModuleTypes)
-   delayedEvents: ListOfCoincidenceEvents**
+   # Constraint: (size(delayedEvents) == 0) || (size(delayedEvents[typeOfModule1]) == typeOfModule1 + 1)
+   delayedEvents: LowerTriangularMatrix<ListOfCoincidenceEvents>
 
    # nested vector with lists of triple coincidences in this time block
    # To get the list of triples for 3 types of modules, use
    #  tripleEvents[typeOfModule1][typeOfModule2][typeOfModule3]
+   # Note that events have to be ordered using lexicographical ordering in (typeOfModule_i, detectionBin_i).
    # See promptEvents for more information.
    # Constraint: (size(tripleEvents) > 0) == ScannerInformation.tripleEventsAreStored
    # Constraint: (size(tripleEvents) == 0) || (size(tripleEvents) == ScannerInformation.numberOfModuleTypes)
-   # Constraint: (size(tripleEvents) == 0) || (size(tripleEvents[*]) == ScannerInformation.numberOfModuleTypes)
-   # Constraint: (size(tripleEvents) == 0) || (size(tripleEvents[*][*]) == ScannerInformation.numberOfModuleTypes)
+   # Constraint: (size(tripleEvents) == 0) || (size(tripleEvents[typeOfModule1]) == typeOfModule1 + 1)
+   # Constraint: (size(tripleEvents) == 0) || (size(tripleEvents[type1][type2]) == type2 + 1)
    tripleEvents: ListOfTripleEvents***
 
    # nested vector with lists of quadruple coincidences in this time block
    # To get the list of quadruples for 4 types of modules, use
    #  quadrupleEvents[typeOfModule1][typeOfModule2][typeOfModule3][typeOfModule4]
+   # Note that events have to be ordered using lexicographical ordering in (typeOfModule_i, detectionBin_i).
    # See promptEvents for more information.
    # Constraint: (size(quadrupleEvents) > 0) == ScannerInformation.quadrupleEventsAreStored
    # Constraint: (size(quadrupleEvents) == 0) || (size(quadrupleEvents) == ScannerInformation.numberOfModuleTypes)
-   # Constraint: (size(quadrupleEvents) == 0) || (size(quadrupleEvents[*]) == ScannerInformation.numberOfModuleTypes)
-   # Constraint: (size(quadrupleEvents) == 0) || (size(quadrupleEvents[*][*]) == ScannerInformation.numberOfModuleTypes)
-   # Constraint: (size(quadrupleEvents) == 0) || (size(quadrupleEvents[*][*][*]) == ScannerInformation.numberOfModuleTypes)
+   # Constraint: (size(quadrupleEvents) == 0) || (size(quadrupleEvents[typeOfModule1]) == typeOfModule1 + 1)
+   # Constraint: (size(quadrupleEvents) == 0) || (size(quadrupleEvents[type1][type2]) == type2 + 1)
+   # Constraint: (size(quadrupleEvents) == 0) || (size(quadrupleEvents[type1][type2][type3]) == type3 + 1)
    quadrupleEvents: ListOfQuadrupleEvents****
 
 ExternalSignalTypeEnum: !enum

@@ -1,11 +1,11 @@
 #  Copyright (C) 2022-2023 Microsoft Corporation
-#  Copyright (C) 2023-2025 University College London
+#  Copyright (C) 2023-2026 University College London
 #
 #  SPDX-License-Identifier: Apache-2.0
 """This is an example file how to create a PETSIRD file.
 
 It creates a demo scanner with 2 types of modules, and some random events.
-Efficiencies are also stores, although the values are meaningless.
+Efficiencies are also stored, although the values are meaningless.
 
 This code only serves as illustration on how to create a PETSIRD file, and
 will need serious adaption to be useful.
@@ -20,6 +20,10 @@ from typing import Iterable, List, Tuple
 import numpy
 import petsird
 from petsird.helpers import get_detection_efficiency, get_num_detection_bins
+from petsird.helpers.create import (
+    construct_lower_triangular_or_rectangular_matrix,
+    construct_rectangular_matrix, construct_vector,
+    initialize_scanner_information_dimensions)
 
 
 @dataclass
@@ -51,36 +55,36 @@ class CylindricalBlocksInfo:
 # 2 examples, not very physical plausible/efficient.
 # We will build a scanner from both below.
 mtype0_def = CylindricalBlocksInfo(
-    radius=400,
-    crystal_length=(20, 4, 4),
+    radius=400.,
+    crystal_length=(20., 4., 4.),
     num_crystals_per_module=(2, 4, 7),
     num_modules_along_ring=20,
     num_modules_along_axis=2,
     arc=2 * math.pi,
-    start_angle=0,
+    start_angle=0.,
     module_spacing_along_axis=(7 + 24) *
     4.,  # (num_crystals_per_module[2] + 24) * crystal_length[2],
     number_of_tof_bins=11,
-    tof_resolution=9,
-    LLD=450,
-    ULD=650,
+    tof_resolution=9.,
+    LLD=450.,
+    ULD=650.,
     number_of_event_energy_bins=3,
     energy_resolution=0.1,
     material_id=1,
 )
 mtype1_def = CylindricalBlocksInfo(
-    radius=150,
-    crystal_length=(10, 2, 2),
+    radius=150.,
+    crystal_length=(10., 2., 2.),
     num_crystals_per_module=(1, 3, 30),
     num_modules_along_ring=15,
     num_modules_along_axis=1,
     arc=math.pi,
-    start_angle=0,
+    start_angle=0.,
     module_spacing_along_axis=0.,
     number_of_tof_bins=5,
     tof_resolution=6,
-    LLD=460,
-    ULD=640,
+    LLD=460.,
+    ULD=640.,
     number_of_event_energy_bins=1,
     energy_resolution=0.8,
     material_id=1,
@@ -88,7 +92,7 @@ mtype1_def = CylindricalBlocksInfo(
 # Some constants related to how many events we will generate etc
 NUMBER_OF_TIME_BLOCKS = 6
 NUMBER_OF_EVENTS = 1000
-COUNT_RATE = 500  # 1/ms
+COUNT_RATE = 500.  # 1/ms
 EVENT_TIME_BLOCK_DURATION = 1  # ms
 
 
@@ -188,30 +192,36 @@ def get_detection_bin_efficiencies(
     scanner: petsird.ScannerInformation,
     type_of_module: int,
     module_def: CylindricalBlocksInfo,
-) -> numpy.ndarray:
+) -> list:
     """return some (non-physical) detection bin efficiencies"""
     num_detection_bins = get_num_detection_bins(scanner, type_of_module)
-    detection_bin_efficiencies = numpy.ones((num_detection_bins),
-                                            dtype=numpy.float32)
+    detection_bin_efficiencies = construct_vector(num_detection_bins,
+                                                  dtype=float,
+                                                  value=1.)
     return detection_bin_efficiencies
 
 
-def create_empty_module_pair_SGID_LUT(scanner: petsird.ScannerInformation,
-                                      type_of_module0: int,
-                                      type_of_module1: int) -> numpy.ndarray:
+def create_empty_module_pair_SGID_LUT(
+        scanner: petsird.ScannerInformation, type_of_module0: int,
+        type_of_module1: int) -> petsird.ModulePairSGIDLUT:
     """return a LUT that says no modules are in coincidence"""
     num_modules0 = len(scanner.scanner_geometry.
                        replicated_modules[type_of_module0].transforms)
     num_modules1 = len(scanner.scanner_geometry.
                        replicated_modules[type_of_module1].transforms)
-    LUT = numpy.ndarray((num_modules0, num_modules1), dtype="int32")
-    LUT[:] = -1
+    LUT = construct_lower_triangular_or_rectangular_matrix(
+        num_modules0,
+        num_modules1,
+        type_of_module0 == type_of_module1,
+        dtype=int,
+        value=-1)
     return LUT
 
 
-def create_empty_module_pair_efficiencies(
-        scanner: petsird.ScannerInformation, type_of_module0: int,
-        type_of_module1: int) -> numpy.ndarray:
+def create_empty_module_pair_efficiencies(scanner: petsird.ScannerInformation,
+                                          type_of_module0: int,
+                                          type_of_module1: int,
+                                          value: float) -> list[list]:
     """return a 2d array (filled with 1) of the appropriate size"""
     rep_module = scanner.scanner_geometry.replicated_modules[type_of_module0]
     detecting_elements0 = rep_module.object.detecting_elements
@@ -223,13 +233,12 @@ def create_empty_module_pair_efficiencies(
     num_det_els_in_module1 = len(detecting_elements1.transforms)
     event_energy_bin_edges1 = scanner.event_energy_bin_edges[type_of_module1]
     num_event_energy_bins1 = event_energy_bin_edges1.number_of_bins()
-    module_pair_efficiencies = numpy.ones(
-        (
-            num_det_els_in_module0 * num_event_energy_bins0,
-            num_det_els_in_module1 * num_event_energy_bins1,
-        ),
-        dtype=numpy.float32,
-    )
+    size0 = num_det_els_in_module0 * num_event_energy_bins0
+    size1 = num_det_els_in_module1 * num_event_energy_bins1
+    module_pair_efficiencies = construct_rectangular_matrix(size0,
+                                                            size1,
+                                                            dtype=float,
+                                                            value=value)
     return module_pair_efficiencies
 
 
@@ -237,7 +246,7 @@ def get_module_pair_efficiencies_one_module_type(
     scanner: petsird.ScannerInformation,
     type_of_module: int,
     module_def: CylindricalBlocksInfo,
-) -> Tuple[numpy.ndarray, List[petsird.ModulePairEfficiencies]]:
+) -> Tuple[petsird.ModulePairSGIDLUT, list[list]]:
     """return detection efficiencies for a module-pair of the same type
 
     The function returns a tuple with module_pair_SGID_LUT,
@@ -269,33 +278,31 @@ def get_module_pair_efficiencies_one_module_type(
     module_pair_SGID_LUT = create_empty_module_pair_SGID_LUT(
         scanner, type_of_module, type_of_module)
     for mod1 in range(num_modules):
-        for mod2 in range(num_modules):
+        for mod2 in range(mod1 + 1):
             z1 = mod1 % NZ
             a1 = mod1 // NZ
             z2 = mod2 % NZ
             a2 = mod2 // NZ
             if a1 == a2:
-                module_pair_SGID_LUT[mod1, mod2] = -1
+                module_pair_SGID_LUT[mod1][mod2] = -1
             else:
-                module_pair_SGID_LUT[mod1,
-                                     mod2] = z1 + NZ * (z2 + NZ *
-                                                        (abs(a2 - a1) - 1))
+                module_pair_SGID_LUT[mod1][mod2] = z1 + NZ * (
+                    z2 + NZ * (abs(a2 - a1) - 1))
 
     # print("SGID LUT:\n", module_pair_SGID_LUT, file=sys.stderr)
-    assert numpy.max(module_pair_SGID_LUT) == num_SGIDs - 1
+    assert max([max(r) for r in module_pair_SGID_LUT]) == num_SGIDs - 1
     module_pair_efficiencies_vector = []
 
-    module_pair_efficiencies = create_empty_module_pair_efficiencies(
-        scanner, type_of_module, type_of_module)
     for SGID in range(num_SGIDs):
         # Extract first module_pair for this SGID. However, as this is
         # currently unused, it is commented out
         # module_pair = numpy.argwhere(module_pair_SGID_LUT == SGID)[0]
         # print(module_pair, file=sys.stderr)
         # give some (non-physical) value
+        module_pair_efficiencies = create_empty_module_pair_efficiencies(
+            scanner, type_of_module, type_of_module, value=float(SGID + 1))
         module_pair_efficiencies_vector.append(
-            petsird.ModulePairEfficiencies(values=module_pair_efficiencies *
-                                           SGID,
+            petsird.ModulePairEfficiencies(values=module_pair_efficiencies,
                                            sgid=SGID))
         assert len(module_pair_efficiencies_vector) == SGID + 1
 
@@ -308,7 +315,7 @@ def get_module_pair_efficiencies_two_module_types(
     type_of_module1: int,
     module_def0: CylindricalBlocksInfo,
     module_def1: CylindricalBlocksInfo,
-) -> Tuple[numpy.ndarray, List[petsird.ModulePairEfficiencies]]:
+) -> Tuple[petsird.ModulePairSGIDLUT, List[petsird.ModulePairEfficiencies]]:
     """return detection efficiencies for a module-pair of different types
 
     The function returns a tuple with module_pair_SGID_LUT,
@@ -320,16 +327,19 @@ def get_module_pair_efficiencies_two_module_types(
     """
     LUT = create_empty_module_pair_SGID_LUT(scanner, type_of_module0,
                                             type_of_module1)
-    module_pair_efficiencies = create_empty_module_pair_efficiencies(
-        scanner, type_of_module0, type_of_module1)
     SGID = 0  # first SGID needs to be 0
     module_pair_efficiencies_vector = []
-    for m0 in range(LUT.shape[0]):
-        for m1 in range(LUT.shape[1]):
-            LUT[m0, m1] = SGID
+    for m0 in range(len(LUT)):
+        for m1 in range(len(LUT[m0])):
+            LUT[m0][m1] = SGID
             # using nonsensical values for the following
+            module_pair_efficiencies = create_empty_module_pair_efficiencies(
+                scanner,
+                type_of_module0,
+                type_of_module1,
+                value=float(SGID + 1))
             petsird_module_pair_efficiencies = petsird.ModulePairEfficiencies(
-                values=module_pair_efficiencies * SGID, sgid=SGID)
+                values=module_pair_efficiencies, sgid=SGID)
             module_pair_efficiencies_vector.append(
                 petsird_module_pair_efficiencies)
             SGID += 1
@@ -337,28 +347,21 @@ def get_module_pair_efficiencies_two_module_types(
     return LUT, module_pair_efficiencies_vector
 
 
-def get_detection_efficiencies(
+def fill_detection_efficiencies(
     scanner: petsird.ScannerInformation,
     module_defs: Iterable[CylindricalBlocksInfo],
-) -> petsird.DetectionEfficiencies:
-    """return some (non-physical) detection efficiencies"""
+):
+    """fill-in some (non-physical) detection efficiencies"""
 
     # use some non-physical value for the calibration factor
-    calibration_factor = 42.
+    scanner.detection_efficiencies.calibration_factor = 42.
     num_types_of_modules = scanner.scanner_geometry.number_of_module_types()
-    # single-level list for detection_bin_efficiencies
-    all_detection_bin_efficiencies = []
-    # double-level list for module_pair things
-    all_LUTs = []
-    all_module_pair_efficiencies_vectors = []
     for mtype0 in range(num_types_of_modules):
         detection_bin_efficiencies = get_detection_bin_efficiencies(
             scanner, mtype0, module_defs[mtype0])
-        all_detection_bin_efficiencies.append(detection_bin_efficiencies)
-        # single-level lists for the information at the current mtype0
-        LUTs0 = []
-        module_pair_efficiencies_vectors0 = []
-        for mtype1 in range(num_types_of_modules):
+        scanner.detection_efficiencies.detection_bin_efficiencies[
+            mtype0] = detection_bin_efficiencies
+        for mtype1 in range(mtype0 + 1):
             # construct information
             if (mtype0 == mtype1):
                 (LUT, module_pair_efficiencies_vector
@@ -369,21 +372,12 @@ def get_detection_efficiencies(
                  ) = get_module_pair_efficiencies_two_module_types(
                      scanner, mtype0, mtype1, module_defs[mtype0],
                      module_defs[mtype1])
-            # append to "row" lists
-            LUTs0.append(LUT)
-            module_pair_efficiencies_vectors0.append(
-                module_pair_efficiencies_vector)
-        # append "rows" to double-level lists
-        all_LUTs.append(LUTs0)
-        all_module_pair_efficiencies_vectors.append(
-            module_pair_efficiencies_vectors0)
-
-    return petsird.DetectionEfficiencies(
-        calibration_factor=calibration_factor,
-        detection_bin_efficiencies=all_detection_bin_efficiencies,
-        module_pair_sgidlut=all_LUTs,
-        module_pair_efficiencies_vectors=all_module_pair_efficiencies_vectors,
-    )
+            scanner.detection_efficiencies.module_pair_sgidlut[mtype0][
+                mtype1] = LUT
+            scanner.detection_efficiencies.module_pair_efficiencies_vectors[
+                mtype0][mtype1] = module_pair_efficiencies_vector
+    # print(scanner.detection_efficiencies.module_pair_sgidlut, file=stderr)
+    # print(scanner.detection_efficiencies.module_pair_efficiencies_vectors, file=stderr)
 
 
 def get_scanner_info(
@@ -394,13 +388,23 @@ def get_scanner_info(
 
     # TODO scanner_info.bulk_materials
 
-    # TOF info (in mm)
-    allTofBinEdges = []
-    allTofResolutions = []
+    # We need energy bin info before being able to construct the detection
+    # efficiencies, so we first construct a scanner without the efficiencies
+    scanner = petsird.ScannerInformation(model_name="PETSIRD_TEST",
+                                         scanner_geometry=scanner_geometry)
+
+    num_types_of_modules = scanner.scanner_geometry.number_of_module_types()
+    # Pre-allocate various structures to have the correct size for num_types_of_modules
+    # (We will still have to set descent values into each of these.)
+    initialize_scanner_information_dimensions(
+        scanner,
+        num_types_of_modules,
+        allocate_detection_bin_efficiencies=True,
+        allocate_module_pair_efficiencies=True)
+
     for mtype0, m_def0 in enumerate(module_defs):
-        allTofBinEdgesThisModuleType = []
-        allTofResolutionsThisModuleType = []
-        for mtype1, m_def1 in enumerate(module_defs):
+        for mtype1 in range(mtype0 + 1):
+            m_def1 = module_defs[mtype1]
             # In this example, we determine the coincidence window from the radii.
             # Obviously, a real scanner likely will do something else.
             max_distance = m_def0.radius + m_def1.radius
@@ -413,42 +417,27 @@ def get_scanner_info(
             else:
                 # In this example, no TOF information between different module-types
                 num_tof_bins = 1
-                allTofResolutionsThisModuleType.append(1000)  # in mm
+                tof_resolution_this_pair = 1000  # in mm
+            scanner.tof_resolution[mtype0][mtype1] = tof_resolution_this_pair
             tofBinEdgesThisPair = petsird.BinEdges(edges=numpy.linspace(
                 -max_distance, max_distance, num_tof_bins +
                 1, dtype="float32"))
-            allTofBinEdgesThisModuleType.append(tofBinEdgesThisPair)
-            allTofResolutionsThisModuleType.append(tof_resolution_this_pair)
-        allTofBinEdges.append(allTofBinEdgesThisModuleType)
-        allTofResolutions.append(allTofResolutionsThisModuleType)
+            scanner.tof_bin_edges[mtype0][mtype1] = tofBinEdgesThisPair
+            scanner.tof_resolution[mtype0][mtype1] = tof_resolution_this_pair
 
-    allEnergyBinEdges = []
-    allEnergyResolutionsAt511 = []
-    for m_def in module_defs:
-        allEnergyBinEdges.append(
-            petsird.BinEdges(
-                edges=numpy.linspace(m_def.LLD,
-                                     m_def.ULD,
-                                     m_def.number_of_event_energy_bins + 1,
-                                     dtype="float32")))
-        allEnergyResolutionsAt511.append(
-            m_def.energy_resolution)  # as fraction of 511
-
-    # We need energy bin info before being able to construct the detection
-    # efficiencies, so we first construct a scanner without the efficiencies
-    scanner = petsird.ScannerInformation(
-        model_name="PETSIRD_TEST",
-        scanner_geometry=scanner_geometry,
-        tof_bin_edges=allTofBinEdges,
-        tof_resolution=allTofResolutions,
-        event_energy_bin_edges=allEnergyBinEdges,
-        energy_resolution_at_511=allEnergyResolutionsAt511)
+    for mtype, m_def in enumerate(module_defs):
+        scanner.event_energy_bin_edges[mtype] = (petsird.BinEdges(
+            edges=numpy.linspace(m_def.LLD,
+                                 m_def.ULD,
+                                 m_def.number_of_event_energy_bins + 1,
+                                 dtype="float32")))
+        scanner.energy_resolution_at_511[mtype] = (m_def.energy_resolution
+                                                   )  # as fraction of 511
 
     # Now add the efficiencies
-    scanner.detection_efficiencies = get_detection_efficiencies(
-        scanner, module_defs)
+    fill_detection_efficiencies(scanner, module_defs)
 
-    scanner.coincidence_policy = petsird.CoincidencePolicy.REJECT_HIGHER_MULTIPLES
+    scanner.prompt_event_policy = petsird.CoincidencePolicy.REJECT_HIGHER_MULTIPLES
     scanner.single_events_are_stored = False
     scanner.prompt_events_are_stored = True
     scanner.delayed_events_are_stored = False
@@ -478,18 +467,20 @@ def get_events(header: petsird.Header,
                type_of_module_pair: petsird.TypeOfModulePair,
                num_events: int) -> Iterator[petsird.CoincidenceEvent]:
     """Generate some random events"""
-    num_modules0 = len(header.scanner.scanner_geometry.replicated_modules[
-        type_of_module_pair[0]].transforms)
+    type_of_module0 = type_of_module_pair[0]
+    type_of_module1 = type_of_module_pair[1]
+    num_modules0 = len(header.scanner.scanner_geometry.
+                       replicated_modules[type_of_module0].transforms)
     num_detecting_elements0 = len(
-        header.scanner.scanner_geometry.replicated_modules[
-            type_of_module_pair[0]].object.detecting_elements.transforms)
+        header.scanner.scanner_geometry.replicated_modules[type_of_module0].
+        object.detecting_elements.transforms)
     event_energy_bin_edges0 = header.scanner.event_energy_bin_edges[
-        type_of_module_pair[0]]
+        type_of_module0]
     num_event_energy_bins0 = event_energy_bin_edges0.number_of_bins()
-    tof_bin_edges = header.scanner.tof_bin_edges[type_of_module_pair[0]][
-        type_of_module_pair[1]]
+    tof_bin_edges = header.scanner.tof_bin_edges[type_of_module0][
+        type_of_module1]
     num_tof_bins = tof_bin_edges.number_of_bins()
-    count1 = get_num_detection_bins(header.scanner, type_of_module_pair[1])
+    count1 = get_num_detection_bins(header.scanner, type_of_module1)
 
     detection_bins = [petsird.DetectionBin(), petsird.DetectionBin()]
     for _ in range(num_events):
@@ -505,15 +496,16 @@ def get_events(header: petsird.Header,
                 energy_index=get_random_uint(num_event_energy_bins0),
             )
             event.detection_bins[0] = petsird.helpers.make_detection_bin(
-                header.scanner, type_of_module_pair[0],
-                expanded_detection_bin0)
+                header.scanner, type_of_module0, expanded_detection_bin0)
             # TODO move test to separate function
             assert expanded_detection_bin0 == petsird.helpers.expand_detection_bin(
-                header.scanner, type_of_module_pair[0], detection_bins[0])
+                header.scanner, type_of_module0, detection_bins[0])
 
             # short-cut to directly generate a random detection bin
-            event.detection_bins[1] = get_random_uint(count1)
-
+            # Note: we need the events to be ordered
+            max_bin1 = event.detection_bins[
+                0] if type_of_module0 == type_of_module1 else count1
+            event.detection_bins[1] = get_random_uint(max_bin1 + 1)
             if get_detection_efficiency(header.scanner, type_of_module_pair,
                                         event) > 0:
                 # in coincidence, we can get out of the loop
@@ -541,7 +533,7 @@ if __name__ == "__main__":
             prompts_this_block = []
             for mtype0 in range(num_types_of_modules):
                 prompts_mod0 = []
-                for mtype1 in range(num_types_of_modules):
+                for mtype1 in range(mtype0 + 1):
                     type_of_module_pair = petsird.TypeOfModulePair(
                         (mtype0, mtype1))
                     prompts_mod0.append(
