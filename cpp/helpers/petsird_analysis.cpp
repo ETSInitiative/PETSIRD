@@ -189,12 +189,14 @@ main(int argc, char const* argv[])
                   const petsird::TypeOfModulePair mtype_pair{ mtype0, mtype1 };
                   const auto& energy_mid_points1 = all_energy_mid_points[mtype1];
 
-                  // This code would need work to be able to handle a list-mode file without prompts
+                  // This code would need work to be able to handle a file without prompts
+                  assert(scanner.prompt_event_policy != petsird::CoincidencePolicy::kNone);
+
                   const auto& prompt_events = event_time_block.prompt_events[mtype0][mtype1];
 
                   // count events
                   num_prompts += prompt_events.size();
-                  if (scanner.delayed_events_are_stored)
+                  if (scanner.delayed_event_policy != petsird::CoincidencePolicy::kNone)
                     {
                       num_delayeds += event_time_block.delayed_events[mtype0][mtype1].size();
                     }

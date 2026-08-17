@@ -1,6 +1,9 @@
 # Type definition for how to encode how the scanner records single events (if it does).
 SingleEventPolicy: !enum
   values:
+    # not stored
+    - none
+
     # store all single events
     - all
 
@@ -16,6 +19,9 @@ SingleEventPolicy: !enum
 # that this multiple events are handled, and recorded in the EventTimeBlock.promptEvents field.
 CoincidencePolicy: !enum
   values:
+    # not stored
+    - none
+
     # multiples (more than 2 events in the coincidence window) will be rejected (i.e., not stored in the EventTimeBlock.promptEvents field)
     - rejectHigherMultiples
 
@@ -33,6 +39,9 @@ CoincidencePolicy: !enum
 # Type definition for how to encode how the scanner handles higher order coincidences when recording the triples.
 TripleEventPolicy: !enum
   values:
+    # not stored
+    - none
+
     # quadruples etc are not stored in the EventTimeBlock.tripleEvents field
     - rejectHigherMultiples
 
@@ -42,6 +51,9 @@ TripleEventPolicy: !enum
 # Type definition for how to encode how the scanner handles higher order coincidences when recording the quadruples.
 QuadrupleEventPolicy: !enum
   values:
+    # not stored
+    - none
+
     # quadruples etc are not stored in the EventTimeBlock.quadrupleEvents field
     - rejectHigherMultiples
 
@@ -109,6 +121,7 @@ ScannerInformation: !record
     # Constraint: this 2D array has to be symmetric.
     # Constraint: size(tofBinEdges) == size(ScannerGeometry.replicatedModules)
     # Constraint: size(tofBinEdges[typeOfModule1]) == typeOfModule1 + 1
+    # Constraint: size(tofBinEdges[typeOfModule1]) == typeOfModule1 + 1
     tofBinEdges: LowerTriangularMatrix<BinEdges>
 
     # TOF resolution aka CTR (as FWHM) in mm
@@ -146,39 +159,21 @@ ScannerInformation: !record
     #             (singlesHistogramLevel == SinglesHistogramLevelType.none && size(singlesHistogramEnergyBinEdges) == 0)
     singlesHistogramEnergyBinEdges: BinEdges*
 
-    # Encode how the scanner handles single events in the EventTimeBlock.singleEvents field
+    # Encode if/how the scanner handles single events in the EventTimeBlock.singleEvents field
     singleEventPolicy: SingleEventPolicy
 
-    # Encode how the scanner handles multiple coincidences in the EventTimeBlock.promptEvents field
+    # Encode if/how the scanner handles multiple coincidences in the EventTimeBlock.promptEvents field
     promptEventPolicy: CoincidencePolicy
 
-    # Encode how the scanner handles multiple coincidences in the EventTimeBlock.delayedEvents field
+    # Encode if/how the scanner handles multiple coincidences in the EventTimeBlock.delayedEvents field
     # It is expected that this will have value rejectHigherMultiples, but it is not guaranteed.
     delayedEventPolicy: CoincidencePolicy
 
-    # Encode how the scanner handles higher order coincidences in the EventTimeBlock.tripleEvents field
-    # This field is ignored if tripleEventsAreStored == false.
+    # Encode if/how the scanner handles higher order coincidences in the EventTimeBlock.tripleEvents field
     tripleEventPolicy: TripleEventPolicy
 
-    # Encode how the scanner handles higher order coincidences in the EventTimeBlock.quadrupleEvents field
-    # This field is ignored if quadrupleEventsAreStored == false.
+    # Encode if/how the scanner handles higher order coincidences in the EventTimeBlock.quadrupleEvents field
     quadrupleEventPolicy: QuadrupleEventPolicy
-
-    # a flag to indicate of single events are recorded in the stream (see EventTimeBlock)
-    # Note that this is separate from the singlesHistogramLevel, where singles are histogrammed in a time-block.
-    singleEventsAreStored: bool
-
-    # a flag to indicate of prompt coincidences are recorded in the stream (see EventTimeBlock)
-    promptEventsAreStored: bool
-
-    # a flag to indicate of delayed coincidences are recorded in the stream (see EventTimeBlock)
-    delayedEventsAreStored: bool
-
-    # a flag to indicate of triple events are recorded in the stream (see EventTimeBlock)
-    tripleEventsAreStored: bool
-
-    # a flag to indicate of quadruple coincidences are recorded in the stream (see EventTimeBlock)
-    quadrupleEventsAreStored: bool
 
     # coincidence detection efficiencies
     detectionEfficiencies: DetectionEfficiencies

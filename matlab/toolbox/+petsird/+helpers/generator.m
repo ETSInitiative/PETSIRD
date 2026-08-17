@@ -83,9 +83,11 @@ function scanner = get_scanner_info(cfg)
     % Now add the efficiencies
     scanner.detection_efficiencies = get_detection_efficiencies(scanner, cfg);
 
-    scanner_info.coincidence_policy = petsird.CoincidencePolicy.REJECT_MULTIPLES;
-    scanner_info.delayed_coincidences_are_stored = false;
-    scanner_info.triple_events_are_stored = false;
+    scanner.prompt_event_policy = petsird.CoincidencePolicy.REJECT_HIGHER_MULTIPLES;
+    scanner.single_event_policy = petsird.SingleEventPolicy.NONE;
+    scanner.delayed_event_policy = petsird.CoincidencePolicy.NONE;
+    scanner.triple_event_policy = petsird.TripleEventPolicy.NONE;
+    scanner.quadruple_event_policy = petsird.QuadrupleEventPolicy.NONE;
 
 end
 

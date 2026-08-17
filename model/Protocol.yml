@@ -54,17 +54,17 @@ EventTimeBlock: !record
    timeInterval: TimeInterval
 
    # nested vector with lists of singles
-   # If ScannerInformation.singleEventsAreStored is False, the vector should have
+   # If ScannerInformation.singleEventsPolicy is SingleEventPolicy.none, the vector should have
    # size 0. Otherwise, there is one separate list for every module type.
    # To get the list of singles for a type of module where the `detectionBin`
    # is in a module of the first type, use
    #  singleEvents[typeOfModule]
-   # Constraint: (size(singleEvents) > 0) == ScannerInformation.singleEventsAreStored
+   # Constraint: (size(singleEvents) > 0) == (ScannerInformation.singleEventsPolicy != SingleEventPolicy.none)
    # Constraint: (size(singleEvents) == 0) || (size(singleEvents) == ScannerInformation.numberOfModuleTypes)
    singleEvents: ListOfSingleEvents*
 
    # nested vector with lists of prompts in this time block
-   # If ScannerInformation.promptEventsAreStored is False, the vector should have
+   # If ScannerInformation.promptEventsPolicy is CoincidencePolicy.none, the vector should have
    # size 0. If not, there is one separate list for every pair of module types.
    # To get the list of prompts for 2 types of modules where the first `detectionBin`
    # given in the `CoincidenceEvent` is in a module of the first type, use
@@ -72,7 +72,7 @@ EventTimeBlock: !record
    # Note that the ListOfCoincidenceEvents could be empty for a particular module-pair.
    # Note that events have to be ordered, i.e.
    #    (typeOfModule1 > typeOfModule2) || (detectionBin1 >= detectionBin2)
-   # Constraint: (size(promptEvents) > 0) == ScannerInformation.promptEventsAreStored
+   # Constraint: (size(promptEvents) > 0) == (ScannerInformation.promptEventsPolicy != CoincidencePolicy.none)
    # Constraint: (size(promptEvents) == 0) || (size(promptsEvents) == ScannerInformation.numberOfModuleTypes)
    # Constraint: (size(promptEvents) == 0) || (size(promptsEvents[typeOfModule1]) == typeOfModule1 + 1)
    promptEvents: LowerTriangularMatrix<ListOfCoincidenceEvents>
@@ -81,7 +81,7 @@ EventTimeBlock: !record
    # To get the list of delayeds for 2 types of modules, use
    #  delayedEvents[typeOfModule1][typeOfModule2]
    # See promptEvents for more information.
-   # Constraint: (size(delayedEvents) > 0) == ScannerInformation.delayedCoincidencesAreStored
+   # Constraint: (size(delayedEvents) > 0) == (ScannerInformation.delayedCoincidencesPolicy != CoincidencePolicy.none)
    # Constraint: (size(delayedEvents) == 0) || (size(delayedEvents) == ScannerInformation.numberOfModuleTypes)
    # Constraint: (size(delayedEvents) == 0) || (size(delayedEvents[typeOfModule1]) == typeOfModule1 + 1)
    delayedEvents: LowerTriangularMatrix<ListOfCoincidenceEvents>
@@ -91,7 +91,7 @@ EventTimeBlock: !record
    #  tripleEvents[typeOfModule1][typeOfModule2][typeOfModule3]
    # Note that events have to be ordered using lexicographical ordering in (typeOfModule_i, detectionBin_i).
    # See promptEvents for more information.
-   # Constraint: (size(tripleEvents) > 0) == ScannerInformation.tripleEventsAreStored
+   # Constraint: (size(tripleEvents) > 0) == (ScannerInformation.tripleEventsPolicy != CoincidencePolicy.none)
    # Constraint: (size(tripleEvents) == 0) || (size(tripleEvents) == ScannerInformation.numberOfModuleTypes)
    # Constraint: (size(tripleEvents) == 0) || (size(tripleEvents[typeOfModule1]) == typeOfModule1 + 1)
    # Constraint: (size(tripleEvents) == 0) || (size(tripleEvents[type1][type2]) == type2 + 1)
