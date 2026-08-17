@@ -43,5 +43,8 @@ Homepage = "https://etsinitiative.org"
 Repository = "https://github.com/ETSInitiative/PETSIRD"
 Issues = "https://github.com/ETSInitiative/PETSIRD/issues"
 
+[tool.bandit]
+skips = ["B101"]
+
 [tool.isort]
 known_first_party = ["petsird"]

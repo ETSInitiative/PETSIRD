@@ -290,7 +290,7 @@ def get_module_pair_efficiencies_one_module_type(
                     z2 + NZ * (abs(a2 - a1) - 1))
 
     # print("SGID LUT:\n", module_pair_SGID_LUT, file=sys.stderr)
-    assert max([max(r) for r in module_pair_SGID_LUT]) == num_SGIDs - 1
+    assert max(map(max, module_pair_SGID_LUT)) == num_SGIDs - 1
     module_pair_efficiencies_vector = []
 
     for SGID in range(num_SGIDs):
@@ -460,7 +460,7 @@ def get_header() -> petsird.Header:
 
 
 def get_random_uint(max):
-    return random.randrange(0, max)
+    return random.randrange(0, max)  # nosec: B311
 
 
 def get_events(header: petsird.Header,
