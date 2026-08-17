@@ -13,7 +13,7 @@ will need serious adaption to be useful.
 import math
 import random
 import sys
-from collections.abc import Iterable, Iterator
+from collections.abc import Iterable, Iterator, Sequence
 from dataclasses import dataclass
 
 import numpy
@@ -349,7 +349,7 @@ def get_module_pair_efficiencies_two_module_types(
 
 def fill_detection_efficiencies(
     scanner: petsird.ScannerInformation,
-    module_defs: Iterable[CylindricalBlocksInfo],
+    module_defs: Sequence[CylindricalBlocksInfo],
 ):
     """fill-in some (non-physical) detection efficiencies"""
 
@@ -381,7 +381,7 @@ def fill_detection_efficiencies(
 
 
 def get_scanner_info(
-    module_defs: Iterable[CylindricalBlocksInfo]
+    module_defs: Sequence[CylindricalBlocksInfo]
 ) -> petsird.ScannerInformation:
 
     scanner_geometry = get_scanner_geometry(module_defs)
