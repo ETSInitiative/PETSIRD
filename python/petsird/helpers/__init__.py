@@ -11,6 +11,18 @@ import typing
 import petsird
 
 
+def are_detections_ordered(type_of_module_pair: petsird.TypeOfModulePair,
+                           detection_bin_1: petsird.DetectionBin,
+                           detection_bin_2: petsird.DetectionBin) -> bool:
+    """check if 2 detections are ordered
+
+    PETSIRD requires that coincidence events are ordered. This function checks that
+    (type_of_module_pair[0] > type_of_module_pair[1]) || (detectionBin1 >= detectionBin2)
+    """
+    return (type_of_module_pair[0]
+            > type_of_module_pair[1]) or (detection_bin_1 >= detection_bin_2)
+
+
 # TODO remove?
 def get_num_det_els(scanner: petsird.ScannerInformation,
                     type_of_module: petsird.TypeOfModule) -> int:
@@ -124,9 +136,8 @@ def get_detection_efficiency(scanner: petsird.ScannerInformation,
         # should never happen really, but this way, we don't crash.
         return 1.
 
-    assert type_of_module_pair[0] >= type_of_module_pair[1]
-    assert (type_of_module_pair[0] != type_of_module_pair[1]
-            or detection_bin_1 >= detection_bin_2)
+    assert are_detections_ordered(type_of_module_pair, detection_bin_1,
+                                  detection_bin_2)
 
     eff = (scanner.detection_efficiencies.calibration_factor
            if with_calibration_factor else 1.)

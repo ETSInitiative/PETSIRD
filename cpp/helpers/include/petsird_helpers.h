@@ -14,6 +14,25 @@ namespace petsird_helpers
 
 using namespace petsird;
 
+//! check if 2 detections are ordered
+/*!
+   PETSIRD requires that coincidence events are ordered. This function checks that
+   (type_of_module_pair[0] > type_of_module_pair[1]) || (detectionBin1 >= detectionBin2)
+*/
+inline bool
+are_detections_ordered(const TypeOfModulePair& type_of_module_pair, const DetectionBin& detection_bin_1,
+                       const DetectionBin& detection_bin_2)
+{
+  return (type_of_module_pair[0] > type_of_module_pair[1]) || (detection_bin_1 >= detection_bin_2);
+}
+
+//! check if a coincidence event is ordered
+inline bool
+are_detections_ordered(const TypeOfModulePair& type_of_module_pair, const CoincidenceEvent& event)
+{
+  return are_detections_ordered(type_of_module_pair, event.detection_bins[0], event.detection_bins[1]);
+}
+
 // TODO remove?
 inline std::size_t
 get_num_det_els(const ScannerInformation& scanner, const TypeOfModule& type_of_module)
@@ -104,7 +123,7 @@ get_detection_efficiency(const ScannerInformation& scanner, const TypeOfModulePa
                          const DetectionBin& detection_bin_1, const DetectionBin& detection_bin_2,
                          bool with_calibration_factor = true)
 {
-  assert(type_of_module_pair[0] <= type_of_module_pair[1]);
+  assert(are_detections_ordered(type_of_module_pair, detection_bin_1, detection_bin_2));
 
   float eff = with_calibration_factor ? scanner.detection_efficiencies.calibration_factor : 1.0F;
   const auto& detection_bin_efficiencies = scanner.detection_efficiencies.detection_bin_efficiencies;
