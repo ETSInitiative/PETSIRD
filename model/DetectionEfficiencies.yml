@@ -7,6 +7,10 @@
 # Note that a negative SGID is used to denote that a module-pair is not in coincidence.
 SGID: int
 
+# A "template" type to denote a rectangular 2D array
+# represented as a vector of vectors.
+RectangularMatrix<T>: T**
+
 # A "template" type to denote a lower-triangular 2D array
 # represented as a vector of vectors.
 # Sizes have to be such that for matrix[i][j], j<=i
@@ -31,11 +35,9 @@ DetectionBinEfficiencies: float*
 ModulePairEfficiencies: !record
   fields:
     # Detection efficiency for a pair of detection bins
-    # values[detectionBin1][detectionBin2] with detectionBin1 ranging from 0 up to the number of
-    # detectionsBins in the first module.
-    # The second index runs from 0 to either detectionBin1 (if the 2 modules are of the same type)
-    # or to the number of detectionBins in the second module.
-    values: LowerTriangularOrRectangularMatrix<float>
+    # values[detectionBin1][detectionBin2] with detectionBins ranging from 0 up to the number of
+    # detectionsBins in the each module.
+    values: RectangularMatrix<float>
     # Symmetry Group Identifier (SGID)
     # This should be a number between 0 and numberOfSGIDs-1
     sgid: SGID
@@ -44,7 +46,7 @@ ModulePairEfficiencies: !record
 # Lookup table for SGIDs for a pair of modules (which can be of different type)
 # For every module pair (of specific types), give the SGID. If -1, the module-pair is not in coincidence.
 # Values run from -1 ... (numberOfSGIDs-1)
-# indexed by moduleIndex1, moduleIndex2
+# It is indexed by moduleIndex1, moduleIndex2 and lower-triangular if the module-types are the same.
 ModulePairSGIDLUT: LowerTriangularOrRectangularMatrix<int>
 
 # List of ModulePairEfficiencies, one for each SGID

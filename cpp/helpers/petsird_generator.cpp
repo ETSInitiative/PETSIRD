@@ -194,9 +194,8 @@ set_detection_efficiencies(petsird::ScannerInformation& scanner)
       // extract first module_pair for this SGID. However, as this currently unused, it is commented out
       // const auto& module_pair = *std::find(module_pair_SGID_LUT.begin(), module_pair_SGID_LUT.end(), SGID);
       petsird::ModulePairEfficiencies module_pair_efficiencies;
-      module_pair_efficiencies.values = petsird_helpers::create::construct_lower_triangular_or_rectangular_matrix<float>(
-          num_detection_bins_in_module, num_detection_bins_in_module, type_of_module == type_of_module);
-      // note: somewhat funny line above in the hope it's clear how to modify it for different module types
+      module_pair_efficiencies.values = petsird_helpers::create::construct_rectangular_matrix<float>(
+          num_detection_bins_in_module, num_detection_bins_in_module);
 
       // give some (non-physical) value
       for (auto& effs_for_mod1 : module_pair_efficiencies.values)

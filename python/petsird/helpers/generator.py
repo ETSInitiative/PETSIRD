@@ -21,7 +21,8 @@ import numpy
 import petsird
 from petsird.helpers import get_detection_efficiency, get_num_detection_bins
 from petsird.helpers.create import (
-    construct_lower_triangular_or_rectangular_matrix, construct_vector,
+    construct_lower_triangular_or_rectangular_matrix,
+    construct_rectangular_matrix, construct_vector,
     initialize_scanner_information_dimensions)
 
 
@@ -234,12 +235,10 @@ def create_empty_module_pair_efficiencies(scanner: petsird.ScannerInformation,
     num_event_energy_bins1 = event_energy_bin_edges1.number_of_bins()
     size0 = num_det_els_in_module0 * num_event_energy_bins0
     size1 = num_det_els_in_module1 * num_event_energy_bins1
-    module_pair_efficiencies = construct_lower_triangular_or_rectangular_matrix(
-        size0,
-        size1,
-        type_of_module0 == type_of_module1,
-        dtype=float,
-        value=value)
+    module_pair_efficiencies = construct_rectangular_matrix(size0,
+                                                            size1,
+                                                            dtype=float,
+                                                            value=value)
     return module_pair_efficiencies
 
 
@@ -506,7 +505,7 @@ def get_events(header: petsird.Header,
             # Note: we need the events to be ordered
             max_bin1 = event.detection_bins[
                 0] if type_of_module0 == type_of_module1 else count1
-            event.detection_bins[1] = get_random_uint(max_bin1)
+            event.detection_bins[1] = get_random_uint(max_bin1 + 1)
             if get_detection_efficiency(header.scanner, type_of_module_pair,
                                         event) > 0:
                 # in coincidence, we can get out of the loop
