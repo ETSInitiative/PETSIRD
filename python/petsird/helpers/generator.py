@@ -460,6 +460,7 @@ def get_header() -> petsird.Header:
 
 
 def get_random_uint(max):
+    """Generate random in in the range [0,max["""
     return random.randrange(0, max)  # nosec: B311
 
 
@@ -503,9 +504,9 @@ def get_events(header: petsird.Header,
 
             # short-cut to directly generate a random detection bin
             # Note: we need the events to be ordered
-            max_bin1 = event.detection_bins[
-                0] if type_of_module0 == type_of_module1 else count1
-            event.detection_bins[1] = get_random_uint(max_bin1 + 1)
+            max_bin1 = (event.detection_bins[0] +
+                        1 if type_of_module0 == type_of_module1 else count1)
+            event.detection_bins[1] = get_random_uint(max_bin1)
             if get_detection_efficiency(header.scanner, type_of_module_pair,
                                         event) > 0:
                 # in coincidence, we can get out of the loop
@@ -514,7 +515,8 @@ def get_events(header: petsird.Header,
         yield event
 
 
-if __name__ == "__main__":
+def generate() -> None:
+    """Generate an example PETSIRD file"""
     # numpy random number generator
     rng = numpy.random.default_rng()
 
@@ -546,3 +548,7 @@ if __name__ == "__main__":
             writer.write_time_blocks((petsird.TimeBlock.EventTimeBlock(
                 petsird.EventTimeBlock(time_interval=time_interval,
                                        prompt_events=prompts_this_block)), ))
+
+
+if __name__ == "__main__":
+    generate()

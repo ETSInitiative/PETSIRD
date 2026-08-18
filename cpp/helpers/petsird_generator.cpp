@@ -327,7 +327,7 @@ get_events(const petsird::Header& header, std::size_t num_events)
 
           // short-cut to directly generate a random detection bin.
           // Note: we need the events to be ordered
-          const auto max_bin1 = type_of_module0 == type_of_module1 ? e.detection_bins[0] : num_bins1;
+          const auto max_bin1 = type_of_module0 == type_of_module1 ? e.detection_bins[0] + 1 : num_bins1;
           e.detection_bins[1] = get_random_uint(max_bin1);
 
           if (petsird_helpers::get_detection_efficiency(header.scanner, type_of_module_pair, e) > 0)
