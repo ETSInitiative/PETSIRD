@@ -44,12 +44,10 @@ cmake_build_dir := "cpp/build"
 @run: run-cpp run-python
 
 @run-cpp: build-cpp
-    #!/usr/bin/env bash
-    cd {{cmake_build_dir}}/helpers
-    ./petsird_generator testdata.petsird
-    ./petsird_analysis testdata.petsird
+    cd {{cmake_build_dir}}/helpers && \
+    ./petsird_generator testdata.petsird && \
+    ./petsird_analysis testdata.petsird && \
     rm -f testdata.petsird
 
 @run-python: build-python
-    #!/usr/bin/env bash
     python -m petsird.helpers.generator | python -m petsird.helpers.analysis
