@@ -2,7 +2,8 @@
 #  Copyright (C) 2023-2026 University College London
 #  SPDX-License-Identifier: Apache-2.0
 
-cmake_minimum_required(VERSION 3.12.0) # older would work, but could give warnings on policy CMP0074
+cmake_minimum_required(VERSION 3.12.0)
+cmake_policy(SET CMP0074 NEW) # find_package() uses <PackageName>_ROOT variables
 
 project(PETSIRD VERSION 0.9.1 LANGUAGES CXX)
 include(GNUInstallDirs)

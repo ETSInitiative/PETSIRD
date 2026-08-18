@@ -2,7 +2,7 @@ name: CI
 on:
   push:
     branches: [main]
-    tags: ['**']
+    tags: ['v**']
     paths-ignore:
     - '**/*.md'
   pull_request: {branches: [main]}
@@ -11,7 +11,7 @@ on:
       debug_enabled:
         description: 'Run the build with tmate debugging enabled (https://github.com/marketplace/actions/debugging-with-tmate)'
         required: false
-        default: false
+        default: 'false'
 defaults: {run: {shell: 'bash -el {0}'}} # https://github.com/marketplace/actions/setup-miniconda#important
 env:
   YARDL_VERSION: 0.6.7
@@ -25,12 +25,12 @@ jobs:
     name: Validate Python and C++${{ matrix.cppVersion }} and deploy to PyPI
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
       with: {fetch-depth: 0, submodules: recursive}
     - name: strip environment.yml
       run: |
         cat environment.yml | grep -v "#.*\<\local\>" > temp-ci-environment.yml
-    - uses: conda-incubator/setup-miniconda@v3
+    - uses: conda-incubator/setup-miniconda@v4
       with:
         activate-environment: yardl
         environment-file: temp-ci-environment.yml
@@ -49,7 +49,7 @@ jobs:
       #if: ${{ failure() }}
       uses: mxschmitt/action-tmate@v3
       timeout-minutes: 30
-      if: ${{ github.event_name == 'workflow_dispatch' && inputs.debug_enabled == 'true' }}
+      if: ${{ github.event_name == 'workflow_dispatch' && inputs.debug_enabled != 'false' }}
     - name: Build model
       run: |
         just generate
@@ -64,21 +64,35 @@ jobs:
         ninja install
         cd ../..
         just run-cpp
+    - id: prep
+      name: Prepare deployment
+      run: |
+        cp LICENSE.txt python/LICENSE
+        cp LICENSE.txt cpp/install/LICENSE
+        [[ "${GITHUB_REF}" == refs/tags/* ]] && tag="${GITHUB_REF#refs/tags/}" || tag=$(python -c 'import importlib.metadata as m; print(m.version("petsird"))')
+        tgz="petsird_${tag}_linux_x86_64.tar.gz"
+        tar -czf "$tgz" -C cpp/install .
+        echo tgz="$tgz" >> $GITHUB_OUTPUT
     - name: Test cpp example
       run: |
        cd cpp/example
        cmake -B build  -S . -DCMAKE_PREFIX_PATH=../install
        cmake  --build build --config Release
-    - name: Copy LICENSE for deployment
-      run: |
-        cp LICENSE.txt python/LICENSE
-        cp LICENSE.txt cpp/LICENSE
-    - uses: casperdcl/deploy-pypi@v2
+    - id: dist
+      uses: casperdcl/deploy-pypi@v3
       with:
         build: python -o dist
         upload: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags') }}
-        requirements: 'build twine packaging>=24.2' # https://github.com/pypa/twine/issues/1216
-    - uses: actions/upload-artifact@v4
+    - if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
+      name: gh release create --draft
+      run: |
+        tag="${GITHUB_REF#refs/tags/}"
+        gh release create --draft --title "$tag" --generate-notes "$tag" dist/${{ steps.dist.outputs.whl }} ${{ steps.prep.outputs.tgz }}
+    - uses: actions/upload-artifact@v7
       with:
         name: python-petsird
         path: dist/**
+    - uses: actions/upload-artifact@v7
+      with:
+        name: cpp-petsird
+        path: cpp/install/**
