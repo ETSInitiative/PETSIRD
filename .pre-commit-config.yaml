@@ -1,6 +1,6 @@
 ci:
   skip: [todo]
-
+  autoupdate_schedule: monthly
 default_language_version:
   python: python3
 repos:
@@ -8,11 +8,12 @@ repos:
   rev: v6.0.0
   hooks:
   - id: check-added-large-files
+  - id: check-builtin-literals
   - id: check-case-conflict
   - id: check-docstring-first
   - id: check-executables-have-shebangs
-  - id: check-toml
   - id: check-merge-conflict
+  - id: check-toml
   - id: check-yaml
     args: [--unsafe]
   - id: debug-statements
@@ -29,6 +30,15 @@ repos:
     entry: TODO
     types: [text]
     exclude: ^.pre-commit-config.yaml$
+- repo: https://github.com/codespell-project/codespell
+  rev: v2.4.3
+  hooks:
+  - id: codespell
+- repo: https://github.com/PyCQA/bandit
+  rev: 1.9.4
+  hooks:
+  - id: bandit
+    args: [-c, python/pyproject.toml]
 - repo: https://github.com/PyCQA/flake8
   rev: 7.3.0
   hooks:
@@ -41,6 +51,11 @@ repos:
     - flake8-debugger
     - flake8-isort
     - flake8-pyproject
+- repo: https://github.com/asottile/pyupgrade
+  rev: v3.21.2
+  hooks:
+  - id: pyupgrade
+    args: [--py39-plus]
 - repo: https://github.com/google/yapf
   rev: v0.43.0
   hooks:

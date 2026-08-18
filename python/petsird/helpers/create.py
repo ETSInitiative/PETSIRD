@@ -62,7 +62,7 @@ def construct_lower_triangular_or_rectangular_matrix(
         value: Any = None) -> list[list]:
     """Helper function to create a nested vector
 
-    The result is equivelent to either a lower-triangular matrix of size `size0`
+    The result is equivalent to either a lower-triangular matrix of size `size0`
     or a matrix size `(size0,size1)`.
 
     Elements will be constructed via the default constructors, so you will still have

@@ -27,7 +27,7 @@ This codespace/container will contain all necessary tools, including `yardl` its
 3. Use `yardl` to generate C++ and Python code for the model and compile/install:
 
    ```sh
-   cd /whereever/PETSIRD
+   cd /wherever/PETSIRD
    just build
    ```
 

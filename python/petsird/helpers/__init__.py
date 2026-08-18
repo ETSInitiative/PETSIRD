@@ -117,13 +117,13 @@ def get_detection_efficiency(scanner: petsird.ScannerInformation,
 _DetectionBinUnannotated = typing.get_args(petsird.DetectionBin)[0]
 
 
-def get_detection_efficiency(scanner: petsird.ScannerInformation,
-                             type_of_module_pair: petsird.TypeOfModulePair,
-                             event_or_detection_bin_1: typing.Union[
-                                 petsird.CoincidenceEvent,
-                                 petsird.DetectionBin],
-                             detection_bin_2: petsird.DetectionBin = None,
-                             with_calibration_factor: bool = True) -> float:
+def get_detection_efficiency(
+        scanner: petsird.ScannerInformation,
+        type_of_module_pair: petsird.TypeOfModulePair,
+        event_or_detection_bin_1: typing.Union[petsird.CoincidenceEvent,
+                                               petsird.DetectionBin],
+        detection_bin_2: petsird.DetectionBin | None = None,
+        with_calibration_factor: bool = True) -> float:
     """Compute the detection efficiency"""
     if isinstance(event_or_detection_bin_1, _DetectionBinUnannotated):
         detection_bin_1 = event_or_detection_bin_1

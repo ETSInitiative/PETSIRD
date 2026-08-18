@@ -8,9 +8,10 @@ import sys
 
 import matplotlib.pyplot as plt
 import numpy
+from mpl_toolkits.mplot3d.art3d import Poly3DCollection
+
 import petsird
 import petsird.helpers.geometry
-from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 
 
 def draw_BoxShape(ax, box: petsird.BoxShape) -> None:

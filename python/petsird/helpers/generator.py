@@ -13,11 +13,11 @@ will need serious adaption to be useful.
 import math
 import random
 import sys
-from collections.abc import Iterator
+from collections.abc import Iterable, Iterator, Sequence
 from dataclasses import dataclass
-from typing import Iterable, List, Tuple
 
 import numpy
+
 import petsird
 from petsird.helpers import get_detection_efficiency, get_num_detection_bins
 from petsird.helpers.create import (
@@ -35,8 +35,8 @@ class CylindricalBlocksInfo:
     Definitions here also include TOF, which is supposed for "this module-type"
     coincidences.
     """
-    crystal_length: Tuple[float]
-    num_crystals_per_module: Tuple[int]
+    crystal_length: tuple[float]
+    num_crystals_per_module: tuple[int]
     num_modules_along_ring: int
     num_modules_along_axis: int
     radius: float  # in mm
@@ -100,7 +100,7 @@ def make_coordinate(v: tuple) -> petsird.Coordinate:
     return petsird.Coordinate(c=numpy.array(v, dtype=numpy.float32))
 
 
-def get_crystal(crystal_length: Tuple[float],
+def get_crystal(crystal_length: tuple[float],
                 material_id: int = 1) -> petsird.SolidVolume:
     """return a cuboid volume with first corner at 0,0,0"""
     crystal_shape = petsird.BoxShape(corners=[
@@ -246,7 +246,7 @@ def get_module_pair_efficiencies_one_module_type(
     scanner: petsird.ScannerInformation,
     type_of_module: int,
     module_def: CylindricalBlocksInfo,
-) -> Tuple[petsird.ModulePairSGIDLUT, list[list]]:
+) -> tuple[petsird.ModulePairSGIDLUT, list[list]]:
     """return detection efficiencies for a module-pair of the same type
 
     The function returns a tuple with module_pair_SGID_LUT,
@@ -290,7 +290,7 @@ def get_module_pair_efficiencies_one_module_type(
                     z2 + NZ * (abs(a2 - a1) - 1))
 
     # print("SGID LUT:\n", module_pair_SGID_LUT, file=sys.stderr)
-    assert max([max(r) for r in module_pair_SGID_LUT]) == num_SGIDs - 1
+    assert max(map(max, module_pair_SGID_LUT)) == num_SGIDs - 1
     module_pair_efficiencies_vector = []
 
     for SGID in range(num_SGIDs):
@@ -315,7 +315,7 @@ def get_module_pair_efficiencies_two_module_types(
     type_of_module1: int,
     module_def0: CylindricalBlocksInfo,
     module_def1: CylindricalBlocksInfo,
-) -> Tuple[petsird.ModulePairSGIDLUT, List[petsird.ModulePairEfficiencies]]:
+) -> tuple[petsird.ModulePairSGIDLUT, list[petsird.ModulePairEfficiencies]]:
     """return detection efficiencies for a module-pair of different types
 
     The function returns a tuple with module_pair_SGID_LUT,
@@ -349,7 +349,7 @@ def get_module_pair_efficiencies_two_module_types(
 
 def fill_detection_efficiencies(
     scanner: petsird.ScannerInformation,
-    module_defs: Iterable[CylindricalBlocksInfo],
+    module_defs: Sequence[CylindricalBlocksInfo],
 ):
     """fill-in some (non-physical) detection efficiencies"""
 
@@ -381,7 +381,7 @@ def fill_detection_efficiencies(
 
 
 def get_scanner_info(
-    module_defs: Iterable[CylindricalBlocksInfo]
+    module_defs: Sequence[CylindricalBlocksInfo]
 ) -> petsird.ScannerInformation:
 
     scanner_geometry = get_scanner_geometry(module_defs)
@@ -460,7 +460,7 @@ def get_header() -> petsird.Header:
 
 
 def get_random_uint(max):
-    return random.randrange(0, max)
+    return random.randrange(0, max)  # nosec: B311
 
 
 def get_events(header: petsird.Header,

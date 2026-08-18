@@ -1,5 +1,5 @@
 function num_bins = get_num_detection_bins(scanner, type_of_module)
-% Compute total number of detecting bins in a spcific module-type in the scanner
+% Compute total number of detecting bins in a specific module-type in the scanner
 
 arguments
     scanner (1,1) petsird.ScannerInformation
