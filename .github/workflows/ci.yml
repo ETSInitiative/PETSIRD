@@ -51,19 +51,19 @@ jobs:
       timeout-minutes: 30
       if: ${{ github.event_name == 'workflow_dispatch' && inputs.debug_enabled != 'false' }}
     - name: Build model
+      run: just generate
+    - name: Run Python
+      run: just run-python
+    - name: Build cpp
       run: |
-        just generate
-    - name: Python
+        export HDF5_ROOT="$CONDA_PREFIX"
+        just cmake_install_prefix="$PWD/cpp/install" build-cpp
+        echo CMAKE_PREFIX_PATH="$PWD/cpp/install" >> $GITHUB_ENV
+    - name: Run cpp
+      run: just run-cpp
+    - name: Build cpp example
       run: |
-        just run-python
-    - name: cpp
-      run: |
-        mkdir cpp/build
-        cd cpp/build
-        cmake -G Ninja -S .. -DHDF5_ROOT="$CONDA_PREFIX" -DCMAKE_INSTALL_PREFIX=../install
-        ninja install
-        cd ../..
-        just run-cpp
+        just cmake_source_dir=ccp/example cmake_build_dir=cpp/example/build build-cpp
     - id: prep
       name: Prepare deployment
       run: |
@@ -73,11 +73,6 @@ jobs:
         tgz="petsird_${tag}_linux_x86_64.tar.gz"
         tar -czf "$tgz" -C cpp/install .
         echo tgz="$tgz" >> $GITHUB_OUTPUT
-    - name: Test cpp example
-      run: |
-       cd cpp/example
-       cmake -B build  -S . -DCMAKE_PREFIX_PATH=../install
-       cmake  --build build --config Release
     - id: dist
       uses: casperdcl/deploy-pypi@v3
       with:
