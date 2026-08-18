@@ -21,7 +21,7 @@ jobs:
       matrix:
         cppVersion: [17]
     environment: pypi
-    permissions: {id-token: write}
+    permissions: {contents: write, id-token: write}
     name: Validate Python and C++${{ matrix.cppVersion }} and deploy to PyPI
     runs-on: ubuntu-latest
     steps:
@@ -83,6 +83,8 @@ jobs:
       run: |
         tag="${GITHUB_REF#refs/tags/}"
         gh release create --draft --title "$tag" --generate-notes "$tag" dist/${{ steps.dist.outputs.whl }} ${{ steps.prep.outputs.tgz }}
+      env:
+        GH_TOKEN: ${{ github.token }}
     - uses: actions/upload-artifact@v7
       with:
         name: python-petsird
