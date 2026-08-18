@@ -259,11 +259,10 @@ get_scanner_info()
   set_detection_efficiencies(scanner_info);
 
   scanner_info.prompt_event_policy = petsird::CoincidencePolicy::kRejectHigherMultiples;
-  scanner_info.single_events_are_stored = false;
-  scanner_info.prompt_events_are_stored = true;
-  scanner_info.delayed_events_are_stored = false;
-  scanner_info.triple_events_are_stored = false;
-  scanner_info.quadruple_events_are_stored = false;
+  scanner_info.single_event_policy = petsird::SingleEventPolicy::kNone;
+  scanner_info.delayed_event_policy = petsird::CoincidencePolicy::kNone;
+  scanner_info.triple_event_policy = petsird::TripleEventPolicy::kNone;
+  scanner_info.quadruple_event_policy = petsird::QuadrupleEventPolicy::kNone;
 
   return scanner_info;
 }

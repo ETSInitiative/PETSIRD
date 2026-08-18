@@ -113,11 +113,15 @@ if __name__ == "__main__":
                         energy_mid_points1 = all_energy_mid_points[mtype1]
                         mtype_pair = petsird.TypeOfModulePair((mtype0, mtype1))
 
-                        # count events
+                        # This code would need work to be able to handle a file
+                        #  without prompts
+                        assert (scanner.prompt_event_policy
+                                != petsird.CoincidencePolicy.NONE)
+
                         prompt_events = time_block.value.prompt_events[mtype0][
                             mtype1]
                         num_prompts += len(prompt_events)
-                        if scanner.delayed_events_are_stored:
+                        if scanner.delayed_event_policy != petsird.CoincidencePolicy.NONE:
                             num_delayeds += len(
                                 time_block.value.delayed_events[mtype0]
                                 [mtype1])

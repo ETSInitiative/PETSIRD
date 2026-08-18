@@ -438,11 +438,10 @@ def get_scanner_info(
     fill_detection_efficiencies(scanner, module_defs)
 
     scanner.prompt_event_policy = petsird.CoincidencePolicy.REJECT_HIGHER_MULTIPLES
-    scanner.single_events_are_stored = False
-    scanner.prompt_events_are_stored = True
-    scanner.delayed_events_are_stored = False
-    scanner.triple_events_are_stored = False
-    scanner.quadruple_events_are_stored = False
+    scanner.single_event_policy = petsird.SingleEventPolicy.NONE
+    scanner.delayed_event_policy = petsird.CoincidencePolicy.NONE
+    scanner.triple_event_policy = petsird.TripleEventPolicy.NONE
+    scanner.quadruple_event_policy = petsird.QuadrupleEventPolicy.NONE
 
     return scanner
 
