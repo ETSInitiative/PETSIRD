@@ -2,6 +2,7 @@ set shell := ['bash', '-ceuo', 'pipefail']
 
 cmake_install_prefix := "$CONDA_PREFIX"
 cmake_build_type := "Release"
+cmake_source_dir := "cpp"
 cmake_build_dir := "cpp/build"
 
 @default: build
@@ -16,7 +17,7 @@ cmake_build_dir := "cpp/build"
     echo 'Run "just --summary" for possible recipes (default recipe is "build")'
 
 @configure: generate
-    cmake -GNinja -S cpp -B {{cmake_build_dir}} \
+    cmake -GNinja -S {{cmake_source_dir}} -B {{cmake_build_dir}} \
       -DCMAKE_BUILD_TYPE:BOOL={{cmake_build_type}} \
       -DCMAKE_INSTALL_PREFIX:PATH={{cmake_install_prefix}}
 
