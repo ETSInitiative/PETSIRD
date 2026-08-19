@@ -16,14 +16,14 @@ defaults: {run: {shell: 'bash -el {0}'}} # https://github.com/marketplace/action
 env:
   YARDL_VERSION: 0.6.7
 jobs:
-  validate:
+  build:
     strategy:
       matrix:
         cppVersion: [17]
+        os: [ubuntu, macos] # windows needs https://github.com/conda-forge/howardhinnant_date-feedstock/issues/23
     environment: pypi
-    permissions: {contents: write, id-token: write}
-    name: Validate Python and C++${{ matrix.cppVersion }} and deploy to PyPI
-    runs-on: ubuntu-latest
+    permissions: {id-token: write}
+    runs-on: ${{ matrix.os }}-latest
     steps:
     - uses: actions/checkout@v7
       with: {fetch-depth: 0, submodules: recursive}
@@ -34,13 +34,26 @@ jobs:
       with:
         activate-environment: yardl
         environment-file: temp-ci-environment.yml
-    - name: Install yardl
+    - id: yardl
+      name: Install yardl
       run: |
-        rm temp-ci-environment.yml
-        gh release download -R microsoft/yardl -p '*linux_x86_64.tar.gz' v$YARDL_VERSION
+        rm temp-ci-environment.yml # cleanup temporary file from previous step
+        if test ${{ matrix.os }} = windows; then
+          DL_SUFFIX=_windows_x86_64.zip
+        elif test ${{ matrix.os }} = macos; then
+          DL_SUFFIX=_darwin_arm64.tar.gz
+        else
+          DL_SUFFIX=_linux_x86_64.tar.gz
+        fi
+        echo "suffix=$DL_SUFFIX" >> $GITHUB_OUTPUT
+        gh release download -R microsoft/yardl -p "*$DL_SUFFIX" v$YARDL_VERSION
         mkdir yardl
-        tar -xzf "yardl_${YARDL_VERSION}_linux_x86_64.tar.gz" -C yardl
-        rm "yardl_${YARDL_VERSION}_linux_x86_64.tar.gz"
+        if test ${{ matrix.os }} = windows; then
+          unzip "yardl_${YARDL_VERSION}${DL_SUFFIX}" -d yardl
+        else
+          tar -xzf "yardl_${YARDL_VERSION}${DL_SUFFIX}" -C yardl
+        fi
+        rm "yardl_${YARDL_VERSION}${DL_SUFFIX}"
         echo "$PWD/yardl" >> "$GITHUB_PATH"
       env:
         GH_TOKEN: ${{ github.token }}
@@ -70,26 +83,40 @@ jobs:
         cp LICENSE.txt python/LICENSE
         cp LICENSE.txt cpp/install/LICENSE
         [[ "${GITHUB_REF}" == refs/tags/* ]] && tag="${GITHUB_REF#refs/tags/}" || tag=$(python -c 'import importlib.metadata as m; print(m.version("petsird"))')
-        tgz="petsird_${tag}_linux_x86_64.tar.gz"
-        tar -czf "$tgz" -C cpp/install .
+        tgz="petsird_${tag}${{ steps.yardl.outputs.suffix }}"
+        if test ${{ matrix.os }} = windows; then
+          cd cpp/install
+          zip -r "../../$tgz" .
+        else
+          tar -czf "$tgz" -C cpp/install .
+        fi
         echo tgz="$tgz" >> $GITHUB_OUTPUT
     - id: dist
       uses: casperdcl/deploy-pypi@v3
       with:
         build: python -o dist
-        upload: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags') }}
+        upload: ${{ matrix.os == 'ubuntu' && github.event_name == 'push' && startsWith(github.ref, 'refs/tags') }}
+    - if: matrix.os == 'ubuntu'
+      uses: actions/upload-artifact@v7
+      with:
+        name: python-petsird
+        path: dist/${{ steps.dist.outputs.whl }}
+    - uses: actions/upload-artifact@v7
+      with:
+        name: cpp-${{ matrix.os }}-petsird
+        path: ${{ steps.prep.outputs.tgz }}
+  gh-release-draft:
+    needs: build
+    runs-on: ubuntu-slim
+    permissions: {contents: write}
+    steps:
+    - uses: actions/checkout@v7
+    - uses: actions/download-artifact@v8
+      with: {pattern: '*-petsird', merge-multiple: true, path: dist}
     - if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
       name: gh release create --draft
       run: |
         tag="${GITHUB_REF#refs/tags/}"
-        gh release create --draft --title "$tag" --generate-notes "$tag" dist/${{ steps.dist.outputs.whl }} ${{ steps.prep.outputs.tgz }}
+        gh release create --draft --title "$tag" --generate-notes "$tag" dist/*.*
       env:
         GH_TOKEN: ${{ github.token }}
-    - uses: actions/upload-artifact@v7
-      with:
-        name: python-petsird
-        path: dist/**
-    - uses: actions/upload-artifact@v7
-      with:
-        name: cpp-petsird
-        path: cpp/install/**
