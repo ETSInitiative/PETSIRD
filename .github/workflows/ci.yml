@@ -64,6 +64,11 @@ jobs:
     - name: Build cpp example
       run: |
         just cmake_source_dir=ccp/example cmake_build_dir=cpp/example/build build-cpp
+    - name: Test cpp as external project
+      run: |
+        cd cpp/test/external_project
+        cmake -GNinja -S . -B build/
+        ninja -C build
     - id: prep
       name: Prepare deployment
       run: |
