@@ -63,6 +63,7 @@ jobs:
       run: just run-cpp
     - name: Build cpp example
       run: |
+        rm cpp/install/lib/libpetsird.a # unused static lib
         just cmake_source_dir=ccp/example cmake_build_dir=cpp/example/build build-cpp
     - id: prep
       name: Prepare deployment
