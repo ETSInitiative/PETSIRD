@@ -3,22 +3,22 @@ channels:
   - conda-forge
   - defaults
 dependencies:
-  - bash-completion>=2.11
+  - bash-completion>=2.11 # local
   - ccache>=4.5.1
   - cmake>=3.21.3
-  - compilers
-  - h5py>=3.7.0
+  - compilers             # local
+  - h5py>=3.7
   - hdf5>=1.12.1
   - howardhinnant_date>=3.0.1
-  - ipykernel>=6.19.2
-  - just>=1.36.0
-  - matplotlib
-  - ninja>=1.11.0
+  - ipykernel>=6.19.2     # local
+  - just>=1.36
+  - matplotlib            # local
+  - ninja>=1.11
   - nlohmann_json>=3.11.2
   - numpy>=1.24.3
   - pip
-  - pre-commit>=4.0.1
-  - python>=3.11.3
-  - shellcheck>=0.8.0
+  - pre-commit>=4.0.1     # local
+  - python>=3.9
+  - shellcheck>=0.8       # local
   - xtensor>=0.24.2
   - xtensor-blas
