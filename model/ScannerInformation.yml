@@ -105,6 +105,14 @@ ScannerInformation: !record
     # An empty field implies the identity transformation.
     gantryAlignment: RigidTransformation?
 
+    # Collimator Type.
+    # Defined Terms in 2026 (required):
+    # NONE (no collimator), RING (transverse septa)
+    # Please refer to the DICOM specification.
+    # (0018,1181) (Enhanced PET Acquisition Module)
+    # https://dicom.nema.org/medical/dicom/current/output/html/part03.html#table_C.8.22-2
+    collimatorType: string
+
     # Edge information for TOF bins in mm
     #
     # This is a nested vector with elements of type BinEdges, i.e. it specifies the edges for every module-pair
