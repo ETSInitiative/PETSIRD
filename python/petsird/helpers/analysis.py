@@ -43,7 +43,11 @@ if __name__ == "__main__":
         header = reader.read_header()
         scanner = header.scanner
         if header.exam is not None:
-            print(f"Subject ID: {header.exam.subject.id}")
+            print("Patient ID:", header.exam.patient.patient_id)
+            print(
+                "Patient orientation w.r.t. gantry:",
+                header.exam.patient_orientation.
+                patient_gantry_relationship_code_sequence.code_meaning)
         print(f"Scanner name: {scanner.model_name}")
         num_module_types = len(scanner.scanner_geometry.replicated_modules)
         all_energy_mid_points = []

@@ -270,16 +270,29 @@ get_scanner_info()
 petsird::Header
 get_header()
 {
-  petsird::Subject subject;
-  subject.id = "123456";
-  petsird::Institution institution;
-  institution.name = "Diamond Light Source";
-  institution.address = "Harwell Science and Innovation Campus, Didcot, Oxfordshire, OX11 0DE, UK";
-  petsird::ExamInformation exam_info;
-  exam_info.subject = subject;
-  exam_info.institution = institution;
   petsird::Header header;
-  header.exam = exam_info;
+  header.exam = petsird::ExamInformation();
+  auto& exam = *header.exam;
+  exam.modality = "PT";
+  exam.patient.patient_id = "someID";
+  exam.patient.patients_sex = "F";
+  exam.patient.patients_size = 1.6;
+  exam.patient.patients_weight = 65.;
+  // patient orientation w.r.t.gravity
+  // https: // dicom.nema.org/medical/dicom/current/output/html/part16.html#sect_CID_19
+  exam.patient_orientation.patient_orientation_code_sequence.coding_scheme_designator = "SCT";
+  exam.patient_orientation.patient_orientation_code_sequence.code_value = "102538003";
+  exam.patient_orientation.patient_orientation_code_sequence.code_meaning = "recumbent";
+  // https: // dicom.nema.org/medical/dicom/current/output/html/part16.html#sect_CID_20
+  exam.patient_orientation.patient_orientation_modifier_code_sequence.coding_scheme_designator = "SCT";
+  exam.patient_orientation.patient_orientation_modifier_code_sequence.code_value = "40199007";
+  exam.patient_orientation.patient_orientation_modifier_code_sequence.code_meaning = "supine";
+  // patient orientation w.r.t.gantry
+  // https: // dicom.nema.org/medical/dicom/current/output/html/part16.html#sect_CID_21
+  exam.patient_orientation.patient_gantry_relationship_code_sequence.coding_scheme_designator = "SCT";
+  exam.patient_orientation.patient_gantry_relationship_code_sequence.code_value = "102540008";
+  exam.patient_orientation.patient_gantry_relationship_code_sequence.code_meaning = "headfirst";
+
   header.scanner = get_scanner_info();
   return header;
 }
