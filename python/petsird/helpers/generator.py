@@ -447,13 +447,38 @@ def get_scanner_info(
 
 
 def get_header() -> petsird.Header:
-    subject = petsird.Subject(id="123456")
-    institution = petsird.Institution(
-        name="Some institution",
-        address="Didcot, Oxfordshire, OX11 0DE, UK",
-    )
+    patient = petsird.DICOMPatientInformation(patient_id="someID",
+                                              patients_sex="F",
+                                              patients_size=1.6,
+                                              patients_weight=65.)
+    exam = petsird.ExamInformation(patient=patient)
+
+    # set example patient_orientation
+    # (Note: python uses "references" to the header fields, so we temp variables
+    # to make the code shorter)
+    # patient orientation w.r.t. gravity
+    # https://dicom.nema.org/medical/dicom/current/output/html/part16.html#sect_CID_19
+    patient_orientation_CS = (
+        exam.patient_orientation.patient_orientation_code_sequence)
+    patient_orientation_CS.coding_scheme_designator = "SCT"
+    patient_orientation_CS.code_value = "102538003"
+    patient_orientation_CS.code_meaning = "recumbent"
+    # https://dicom.nema.org/medical/dicom/current/output/html/part16.html#sect_CID_20
+    patient_orientation_mod_CS = (
+        exam.patient_orientation.patient_orientation_modifier_code_sequence)
+    patient_orientation_mod_CS.coding_scheme_designator = "SCT"
+    patient_orientation_mod_CS.code_value = "40199007"
+    patient_orientation_mod_CS.code_meaning = "supine"
+    # patient orientation w.r.t. gantry
+    # https://dicom.nema.org/medical/dicom/current/output/html/part16.html#sect_CID_21
+    patient_gantry_relationship_CS = (
+        exam.patient_orientation.patient_gantry_relationship_code_sequence)
+    patient_gantry_relationship_CS.coding_scheme_designator = "SCT"
+    patient_gantry_relationship_CS.code_value = "102540008"
+    patient_gantry_relationship_CS.code_meaning = "headfirst"
+
     return petsird.Header(
-        exam=petsird.ExamInformation(subject=subject, institution=institution),
+        exam=exam,
         scanner=get_scanner_info([mtype0_def, mtype1_def]),
     )
 

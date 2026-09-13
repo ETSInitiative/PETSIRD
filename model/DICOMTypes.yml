@@ -33,32 +33,26 @@ DICOMPatientInformation: !record
 
 # Information on how the patient is oriented w.r.t. the equipment and gravity
 # C.8.4.6.1 NM/PET Patient Orientation Module Attribute Descriptions uses the Enhanced Patient Orientation module
-# defined at https://dicom.nema.org/medical/dicom/current/output/html/part03.html#sect_C.7.6.30
-# which states
-# "Orientation Code Sequence (0054,0410) allows a more precise and comprehensive positioning than Patient Position (0018,5100).
-# If this Sequence is present Patient Position (0018,5100) is not used."
-# Therefore: likely do not include (TODO)
-# Patient Position (0018,5100) Patient position descriptor relative to the equipment.
+# defined at https://dicom.nema.org/medical/dicom/current/output/html/part03.html#sect_C.8.4.6
 DICOMPatientOrientationInformation: !record
   fields:
-    # Anatomical Orientation type
-    # Allowed values: BIPED or QUADRUPED or empty (in which case the default human standard anatomical position is used).
-    # (0010,2210)
-    # https://dicom.nema.org/medical/dicom/current/output/html/part03.html#sect_C.7.3.1
-    anatomicalOrientationType: string
-
     # Sequence that describes the orientation of the Patient with respect to gravity.
-    # (0054,0410)
+    # (0054,0410).
+    # Refers to Table https://dicom.nema.org/medical/dicom/current/output/html/part16.html#sect_CID_19
     patientOrientationCodeSequence: DICOMBasicCodeSequence
 
     # Patient orientation modifier.
     # Required if needed to fully specify the orientation of the Patient with respect to gravity.
-    # (0054,0412)
+    # (0054,0412).
+    # Refers to Table https://dicom.nema.org/medical/dicom/current/output/html/part16.html#sect_CID_20
     patientOrientationModifierCodeSequence: DICOMBasicCodeSequence
 
-    # Description of the orientation of the Patient with respect to the equipment.
-    # (3010,0030)
-    patientEquipmentRelationshipCodeSequence: DICOMBasicCodeSequence
+    # Description of the orientation of the Patient with respect to the gantry,
+    # such as head-first or feet-first.
+    # When imaging the extremities, these directions are related to normal anatomic position.
+    # (0054,0414).
+    # Refers to Table https://dicom.nema.org/medical/dicom/current/output/html/part16.html#sect_CID_21
+    patientGantryRelationshipCodeSequence: DICOMBasicCodeSequence
 
 # Information on a single radiopharmaceutical.
 # Using selected fields from the Enhanced PET Isotope Module.

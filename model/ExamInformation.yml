@@ -11,10 +11,6 @@ Institution: !record
 # Items describing the exam
 ExamInformation: !record
   fields:
-    # TODO REMOVE
-    subject: Subject
-    # TODO REMOVE
-    institution: Institution
 
     # imaging modality
     # Should be PT for future ETSI standards
@@ -53,7 +49,7 @@ ExamInformation: !record
 
     patient: DICOMPatientInformation
 
-    patientOrientation: DICOMPatientOrientationInformation?
+    patientOrientation: DICOMPatientOrientationInformation
 
     # A list with information for each radiopharmaceutical
     radiopharmaceuticals: DICOMRadiopharmaceuticalInformation*

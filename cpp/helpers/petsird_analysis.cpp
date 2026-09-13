@@ -110,7 +110,11 @@ main(int argc, char const* argv[])
 
   std::cout << "Processing file: " << filename << std::endl;
   if (header.exam) // only do this if present
-    std::cout << "Subject ID: " << header.exam->subject.id << std::endl;
+    {
+      std::cout << "Patient ID: " << header.exam->patient.patient_id << std::endl;
+      std::cout << "Patient orientation w.r.t. gantry: "
+                << header.exam->patient_orientation.patient_gantry_relationship_code_sequence.code_meaning << std::endl;
+    }
   const auto num_module_types = scanner.scanner_geometry.replicated_modules.size();
   std::cout << "Types of modules: " << num_module_types << std::endl;
   std::vector<yardl::NDArray<float, 1>> all_energy_mid_points;
