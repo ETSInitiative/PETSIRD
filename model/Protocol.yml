@@ -183,10 +183,6 @@ DeadTimeTimeBlock: !record
     # structure containing the alive-times for this time block
     aliveTimeFractions: AliveTimeFractions
 
-# Type for the histogram of singles of one type of module
-# See SinglesHistogramTimeBlock
-SinglesHistogram: uint64[singlesDetectionBin]
-
 # A time block that stores a singles histogram.
 # Note that all detected singles (within the ScannerInformation.singlesHistogramEnergyBinEdges)
 # should be stored. This is in contrast to the EventTimeBlock.singleEvents, where optionally
@@ -208,11 +204,8 @@ SinglesHistogramTimeBlock: !record
     #
     # The histograms are stored per module-type.
     #
-    # If ScannerInformation.singlesHistogramLevel == SinglesHistogramLevelType.module, the
-    # singlesDetectionBin runs over all modules (of a particular type) and all singles energy windows.
-    # If ScannerInformation.singlesHistogramLevel == SinglesHistogramLevelType.all, the
-    # singlesDetectionBin runs over all detectionBins (of a particular module type) and all singles energy windows.
+    # To get the singles counts for a module, use singlesHistograms[type_of_module][ScannerInformation.moduleSinglesUnitIdxLUT[type_of_module][moduleIdx]]
     #
-    # Constraint: (singlesHistogramLevel == module && size(singlesHistogram[type_of_module]) == total_number_of_modules_of_this_type * number_of_singles_energy_windows_of_this_type) ||
-    #             (singlesHistogramLevel == all && size(singlesHistogram[type_of_module]) == total number of singles detection bins_in_all_modules_of_that_type)
+    # Constraint: (singlesHistogramLevel == module && size(singlesHistogram[type_of_module]) == (max(ScannerInformation.moduleSinglesUnitIdxLUT[type_of_module]) + 1) * number_of_singles_energy_windows_of_this_type_of_module) ||
+    #             (singlesHistogramLevel == all && size(singlesHistogram[type_of_module]) == total_number_detection_bins_of_that_type_of_module)
     singlesHistograms: SinglesHistogram*

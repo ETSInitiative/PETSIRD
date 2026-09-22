@@ -1,0 +1,25 @@
+# Type alias for indices for all singles units (for a specific module-type)
+# Many PET scanners measure singles histograms in a "collection" of modules. PETSIRD
+# calls this a "singles unit".
+#
+# If ScannerInformation.singlesHistogramLevel == SinglesHistogramLevelType.module, the
+# singlesUnitIdx runs from 0 to numberOfSinglesUnitIDs-1 (of the particular type).
+# If ScannerInformation.singlesHistogramLevel == SinglesHistogramLevelType.all, the
+# singlesUnitIdx runs over all detectionBins (of a particular module type)
+SinglesUnitIdx: int
+
+# Lookup table for SinglesUnitID
+# For every module (of a specific type), give the SinglesUnitIdx. If -1, the singles are not
+# histogrammed for that module
+# Values run from -1 ... (numberOfSinglesUnits-1)
+ModuleSinglesUnitIdxLUT: SinglesUnitIdx[moduleIdx]
+
+# Type alias for the index into singles units and their energy indices (for a specific module-type)
+# The index corresponds to positional information (i.e. SinglesUnitIdx)
+# and energy index. The latter index refers to ScannerInformation.singlesHistogramEnergyBinEdges.
+# See DetectionBin for order of the indices (i.e. energyIdx runs fastest).
+SinglesDetectionBin: int
+
+# Type for the histogram of singles of one type of module
+# See SinglesHistogramTimeBlock and SinglesDetectionBin
+SinglesHistogram: uint64[singlesDetectionBin]
