@@ -60,21 +60,6 @@ QuadrupleEventPolicy: !enum
     # other options, to be listed in the future
     - other
 
-# Type definition for how single histograms are stored.
-# Many scanners are able to store singles accumulated in time intervals, i.e.
-# histogrammed (as opposed to a list of singles with their corresponding DetectionBin).
-# However, some scanners do not store this information at the smallest detector resolution.
-# Therefore, PETSIRD currently supports a total singles count for a (collection of) module(s) as well.
-# See SinglesHistogram and SinglesHistogramTimeBlock.
-SinglesHistogramLevelType: !enum
-  values:
-    # singles histograms are not stored at all
-    - none
-    # singles counts per "collection" of modules (a "singles unit")
-    - module
-    # singles counts for each DetectionBin
-    - all
-
 # Type definition for histogram bins specified in terms of edges
 # Note that specifying edges allows having non-equal bin sizes.
 # Edges have to be given from first (smallest) to last (largest).
