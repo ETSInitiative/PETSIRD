@@ -9,17 +9,16 @@
 #include <cmath>
 #include <random>
 #include <algorithm>
+#include <memory>
+#include <string>
 
-// (un)comment if you want HDF5 or binary output
+// comment if you don't want HDF5 capability
 #define USE_HDF5
 
 #ifdef USE_HDF5
 #  include "petsird/hdf5/protocols.h"
-using petsird::hdf5::PETSIRDWriter;
-#else
-#  include "petsird/binary/protocols.h"
-using petsird::binary::PETSIRDWriter;
 #endif
+#include "petsird/binary/protocols.h"
 
 #include "petsird_helpers.h"
 #include "petsird_helpers/create.h"
@@ -357,19 +356,56 @@ get_events(const petsird::Header& header, std::size_t num_events)
 int
 main(int argc, char* argv[])
 {
+#ifdef USE_HDF5
+  constexpr auto usage = "petsird_generator [--hdf5 | --binary] filename\n"
+                         "\tdefault is to use hdf5 output\n";
+  bool hdf5 = true;
+#else
+  constexpr auto usage = "petsird_generator [--binary] filename\n"
+                         "\tdefault is to use binary output (hdf5 support is not enabled)\n";
+  bool hdf5 = true;
+#endif
+  if (argc == 3)
+    {
+#ifdef USE_HDF5
+      if (std::string(argv[1]) == "--hdf5")
+        hdf5 = true;
+      else
+#endif
+          if (std::string(argv[1]) == "--binary")
+        hdf5 = false;
+      else
+        {
+          std::cerr << "HIER" << usage;
+          return 1;
+        }
+      --argc;
+      ++argv;
+    }
   // Check if the user has provided a file
   if (argc < 2)
     {
-      std::cerr << "Please provide a filename to write to" << std::endl;
+      std::cerr << usage;
       return 1;
     }
 
   std::string outfile = argv[1];
   std::remove(outfile.c_str());
-  PETSIRDWriter writer(outfile);
+  std::shared_ptr<petsird::PETSIRDWriterBase> writer_sptr;
+  if (hdf5)
+    {
+#ifdef USE_HDF5
+      writer_sptr = std::make_shared<petsird::hdf5::PETSIRDWriter>(outfile);
+#else
+      std::cerr << "HDF5 not supported\n";
+      return 1;
+#endif
+    }
+  else
+    writer_sptr = std::make_shared<petsird::binary::PETSIRDWriter>(outfile);
 
   const auto header = get_header();
-  writer.WriteHeader(header);
+  writer_sptr->WriteHeader(header);
 
   std::random_device rd;
   std::mt19937 gen(rd());
@@ -387,11 +423,11 @@ main(int argc, char* argv[])
       prompt_events.resize(1);
       prompt_events[type_of_module].resize(1);
       prompt_events[type_of_module][type_of_module] = prompts_this_block;
-      writer.WriteTimeBlocks(time_block);
+      writer_sptr->WriteTimeBlocks(time_block);
     }
-  writer.EndTimeBlocks();
+  writer_sptr->EndTimeBlocks();
 
   // Check that we have completed protocol
-  writer.Close();
+  writer_sptr->Close();
   return 0;
 }
