@@ -152,7 +152,7 @@ set_detection_efficiencies(petsird::ScannerInformation& scanner)
   // SGID = z1 + NZ * (z2 + NZ * abs(a2 - a1) - 1)
   constexpr auto NZ = NUM_MODULES_ALONG_AXIS;
 
-  auto& module_pair_SGID_LUT = scanner.detection_efficiencies.module_pair_sgidlut[type_of_module][type_of_module];
+  auto& module_pair_SGID_LUT = scanner.detection_efficiencies.module_pair_sgidluts[type_of_module][type_of_module];
   module_pair_SGID_LUT
       = petsird_helpers::create::construct_lower_triangular_or_rectangular_matrix<petsird::SGID>(num_modules, num_modules, true);
   // note: if using different module types, we need construct_lower_triangular_or_rectangular_matrix<petsird::SGID>(num_modules1,
