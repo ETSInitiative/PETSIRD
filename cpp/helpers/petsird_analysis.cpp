@@ -5,16 +5,14 @@
   SPDX-License-Identifier: Apache-2.0
 */
 
-// (un)comment if you want HDF5 or binary output
+// comment if you don't want HDF5
 #define USE_HDF5
 
 #ifdef USE_HDF5
 #  include "petsird/hdf5/protocols.h"
-using petsird::hdf5::PETSIRDReader;
-#else
-#  include "petsird/binary/protocols.h"
-using petsird::binary::PETSIRDReader;
 #endif
+#include "petsird/binary/protocols.h"
+
 #include "petsird_helpers.h"
 #include "petsird_helpers/geometry.h"
 #if XTENSOR_VERSION_MAJOR == 0 && XTENSOR_VERSION_MINOR < 26
@@ -28,6 +26,27 @@ using petsird::binary::PETSIRDReader;
 #include <variant>
 #include <cstdlib>
 #include <vector>
+#include <memory>
+#include <exception>
+
+// TODO move to helpers, but currently a bit tricky as we don't know if HDF5 is used or not
+std::unique_ptr<petsird::PETSIRDReaderBase>
+petsird_reader(const std::string& filename)
+{
+  try
+    {
+      return std::make_unique<petsird::binary::PETSIRDReader>(filename);
+    }
+  catch (std::exception& e)
+    {
+#ifdef USE_HDF5
+      return std::make_unique<petsird::hdf5::PETSIRDReader>(filename);
+      // TODO catch exception for nicer output
+#else
+      throw std::runtime_error(std::string("Cannot read '") + filename + "':\n\t" + e.what());
+#endif
+    }
+}
 
 void
 print_usage_and_exit(char const* prog_name)
@@ -103,9 +122,9 @@ main(int argc, char const* argv[])
     }
 
   // Open the file
-  PETSIRDReader reader(filename);
+  auto reader_uptr = petsird_reader(filename);
   petsird::Header header;
-  reader.ReadHeader(header);
+  reader_uptr->ReadHeader(header);
   const auto& scanner = header.scanner;
 
   std::cout << "Processing file: " << filename << std::endl;
@@ -175,7 +194,7 @@ main(int argc, char const* argv[])
   std::size_t num_prompts = 0;
   std::size_t num_delayeds = 0;
   float last_time = 0.F;
-  while (reader.ReadTimeBlocks(time_block))
+  while (reader_uptr->ReadTimeBlocks(time_block))
     {
       if (std::holds_alternative<petsird::EventTimeBlock>(time_block))
         {
