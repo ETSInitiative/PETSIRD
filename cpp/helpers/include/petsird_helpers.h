@@ -138,9 +138,9 @@ get_detection_efficiency(const ScannerInformation& scanner, const TypeOfModulePa
   if (!module_pair_efficiencies_vectors.empty())
     {
       // TODO
-      // assert(scanner.detection_efficiencies.module_pair_sgidlut.size() == number_of_modules_types);
+      // assert(scanner.detection_efficiencies.module_pair_sgidluts.size() == number_of_modules_types);
       const auto& module_pair_SGID_LUT
-          = scanner.detection_efficiencies.module_pair_sgidlut[type_of_module_pair[0]][type_of_module_pair[1]];
+          = scanner.detection_efficiencies.module_pair_sgidluts[type_of_module_pair[0]][type_of_module_pair[1]];
 
       const auto expanded_det_bin0 = expand_detection_bin(scanner, type_of_module_pair[0], detection_bin_1);
       const auto expanded_det_bin1 = expand_detection_bin(scanner, type_of_module_pair[1], detection_bin_2);

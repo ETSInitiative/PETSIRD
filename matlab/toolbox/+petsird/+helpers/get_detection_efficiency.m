@@ -27,7 +27,7 @@ end
 % Per module-pair efficiencies
 module_pair_efficiencies_vector = scanner.detection_efficiencies.module_pair_efficiencies_vector;
 if module_pair_efficiencies_vector ~= yardl.None
-    module_pair_SGID_LUT = scanner.detection_efficiencies.module_pair_sgidlut;
+    module_pair_SGID_LUT = scanner.detection_efficiencies.module_pair_sgidluts;
     assert(module_pair_SGID_LUT ~= yardl.None);
     expanded_det_bin_1 = petsird.helpers.expand_detection_bin(scanner.scanner_geometry, type_of_module_1, event.detection_bins(1));
     expanded_det_bin_2 = petsird.helpers.expand_detection_bin(scanner.scanner_geometry, type_of_module_2, event.detection_bins(2));
