@@ -1,0 +1,43 @@
+# Type definition for how single histograms are stored.
+# Many scanners are able to store singles accumulated in time intervals, i.e.
+# histogrammed (as opposed to a list of singles with their corresponding DetectionBin).
+# However, some scanners do not store this information at the smallest detector resolution.
+# Therefore, PETSIRD currently supports a total singles count for a (collection of) module(s) as well.
+# See SinglesHistogram and SinglesHistogramTimeBlock.
+SinglesHistogramLevelType: !enum
+  values:
+    # singles histograms are not stored at all
+    - none
+    # singles counts per "collection" of modules (a "singles unit")
+    - module
+    # singles counts for each DetectionBin
+    - all
+
+# Type alias for indices for all singles units
+# Many PET scanners measure singles histograms in a "collection" of modules, others store
+# it for every detecting element. PETSIRD calls this a "singles unit".
+# Note that this index runs over modules of all types.
+#
+# If ScannerInformation.singlesHistogramLevel == SinglesHistogramLevelType.module, the
+# singlesUnitIdx runs from 0 to numberOfSinglesUnits-1.
+# If ScannerInformation.singlesHistogramLevel == SinglesHistogramLevelType.all, the
+# singlesUnitIdx runs over all detElIdxs (i.e. detecting elements, not counting energy information).
+SinglesUnitIdx: int
+
+# Lookup table for SinglesUnitIdx
+# For every module, give the SinglesUnitIdx. If -1, the singles are not
+# histogrammed for that module
+# Values run from -1 ... (numberOfSinglesUnits-1)
+ModuleSinglesUnitIdxLUT: SinglesUnitIdx[moduleIdx]
+
+# Type alias for the index into singles units and their energy indices.
+# The index corresponds to positional information (i.e. SinglesUnitIdx)
+# and energy index. The latter index refers to ScannerInformation.singlesHistogramEnergyBinEdges.
+# See DetectionBin for order of the indices (i.e. energyIdx runs fastest_ Here we're counting over
+# all module-types (with module-type running slowest, i.e. first index all singles units of the
+# first module-type, etc.
+SinglesDetectionBin: int
+
+# Type for the histogram of singles of one type of module
+# See SinglesHistogramTimeBlock and SinglesDetectionBin
+SinglesHistogram: uint64[singlesDetectionBin]
