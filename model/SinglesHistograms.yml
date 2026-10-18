@@ -33,9 +33,9 @@ ModuleSinglesUnitIdxLUT: SinglesUnitIdx[moduleIdx]
 # Type alias for the index into singles units and their energy indices.
 # The index corresponds to positional information (i.e. SinglesUnitIdx)
 # and energy index. The latter index refers to ScannerInformation.singlesHistogramEnergyBinEdges.
-# See DetectionBin for order of the indices (i.e. energyIdx runs fastest_ Here we're counting over
+# See DetectionBin for order of the indices (i.e. energyIdx runs fastest). Here we're counting over
 # all module-types (with module-type running slowest, i.e. first index all singles units of the
-# first module-type, etc.
+# first module-type, etc.)
 SinglesDetectionBin: int
 
 # Type for the histogram of singles of one type of module

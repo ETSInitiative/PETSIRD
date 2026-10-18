@@ -206,7 +206,9 @@ SinglesHistogramTimeBlock: !record
     # The histogram encompasses all module-types.
     #
     # To get the singles counts for a module, use singlesHistogram[ScannerInformation.moduleSinglesUnitIdxLUT[type_of_module][moduleIdx]]
+    # TODO ENERGY
     #
-    # Constraint: (singlesHistogramLevel == module && size(singlesHistogram) == (max(ScannerInformation.moduleSinglesUnitIdxLUT[*]) + 1) * number_of_singles_energy_windows_of_this_type_of_module) ||
-    #             (singlesHistogramLevel == all && size(singlesHistogram) == total_number_detection_bins)
+    # Constraint: (ScannerInformation.singlesHistogramLevel == SinglesHistogramLevelType.module && size(singlesHistogram) == (max(ScannerInformation.moduleSinglesUnitIdxLUT[*]) + 1) * number_of_singles_energy_windows_of_this_type_of_module) ||
+    #             (ScannerInformation.singlesHistogramLevel == SinglesHistogramLevelType.all && size(singlesHistogram) == total_number_detection_bins) ||
+    #             (ScannerInformation.singlesHistogramLevel == SinglesHistogramLevelType.none && size(singlesHistogram) == 0)
     singlesHistogram: SinglesHistogram

@@ -143,6 +143,12 @@ ScannerInformation: !record
     singlesHistogramLevel: SinglesHistogramLevelType
 
     # look-up tables (one for every module type) for the singles unit for every module of that type
+    # Constraint:
+    #    ((ScannerInformation.singlesHistogramLevel == SinglesHistogramLevelType.all ||
+    #      ScannerInformation.singlesHistogramLevel == SinglesHistogramLevelType.none)
+    #      && size(moduleSinglesUnitIdxLUTs) == 0) ||
+    #     (ScannerInformation.singlesHistogramLevel == SinglesHistogramLevelType.module)
+    #      && size(moduleSinglesUnitIdxLUTs) == scannerGeometry.numberOfModuleTypes())
     moduleSinglesUnitIdxLUTs: ModuleSinglesUnitIdxLUT*
 
     # Edge information (in keV) for energy windows used for singles histograms
