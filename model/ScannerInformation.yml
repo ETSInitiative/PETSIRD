@@ -142,7 +142,10 @@ ScannerInformation: !record
     # level at which the singles histograms are stored
     singlesHistogramLevel: SinglesHistogramLevelType
 
-    # look-up tables (one for every module type) for the singles unit for every module of that type
+    # Look-up tables (one for every module type) for the singles unit for every module of that type.
+    # Note that that modules sharing a same `singlesUnitIdx` are required to have the same
+    # `singlesEnergyBinEdges`.
+    #
     # Constraint:
     #    ((ScannerInformation.singlesHistogramLevel == SinglesHistogramLevelType.all ||
     #      ScannerInformation.singlesHistogramLevel == SinglesHistogramLevelType.none)

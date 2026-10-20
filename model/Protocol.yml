@@ -214,8 +214,8 @@ SinglesHistogramTimeBlock: !record
     #   singlesUnit = ScannerInformation.moduleSinglesUnitIdxLUT[type_of_module][moduleIdx]
     #   singlesPerUnitAndEnergy = singlesPerSinglesUnitHistogram[singlesUnit][singlesEnergyIdx]
     #
-    # Constraint: (ScannerInformation.singlesHistogramLevel == SinglesHistogramLevelType.module && size(singlesHistogram) == (max(ScannerInformation.moduleSinglesUnitIdxLUT[*]) + 1)) ||
-    #             (ScannerInformation.singlesHistogramLevel == SinglesHistogramLevelType.all && size(singlesHistogram) == 0)
+    # Constraint: (ScannerInformation.singlesHistogramLevel == SinglesHistogramLevelType.module && size(singlesPerSinglesUnitHistogram) == (max(ScannerInformation.moduleSinglesUnitIdxLUT[*]) + 1)) ||
+    #             (ScannerInformation.singlesHistogramLevel == SinglesHistogramLevelType.all && size(singlesPerSinglesUnitHistogram) == 0)
     singlesPerSinglesUnitHistogram: SinglesPerSinglesUnitHistogram
 
     # Histogram of the total number of singles for all every detecting element (after energy discrimination)
@@ -224,6 +224,6 @@ SinglesHistogramTimeBlock: !record
     # The energy index refers to ScannerInformation.singlesHistogramEnergyBinEdges.
     # See `SinglesDetectionBin`.
     #
-    # Constraint: (ScannerInformation.singlesHistogramLevel == SinglesHistogramLevelType.module && size(singlesHistogram) == 0) ||
-    #             (ScannerInformation.singlesHistogramLevel == SinglesHistogramLevelType.all && ScannerInformation.scannerGeometry.numberOfModuleTypes())
+    # Constraint: (ScannerInformation.singlesHistogramLevel == SinglesHistogramLevelType.module && size(SinglesPerDetectionBinHistogram) == 0) ||
+    #             (ScannerInformation.singlesHistogramLevel == SinglesHistogramLevelType.all && size(singlesPerDetectionBinHistogram) == ScannerInformation.scannerGeometry.numberOfModuleTypes())
     singlesPerDetectionBinHistogram: SinglesPerDetectionBinHistogram
