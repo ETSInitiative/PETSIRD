@@ -107,6 +107,13 @@ ModulePairAliveTimeFractions: !array
 #   singlesAliveTimeFractions[type_of_module1](detectionBin1) *
 #   singlesAliveTimeFractions[type_of_module2](detectionBin2) *
 #   modulePairAliveTimeFractions[type_of_module1][type_of_module2][module(detectionBin1), module(detectionBin2)]
+#
+# In iterative reconstruction, the `aliveTimeFraction` should be multiplied with the `detectionEfficiencies`.
+# 
+# Note that in practice, alive-time is computed based on various
+# measurements (e.g. singles, count-losses, etc.) and some models. However, how
+# this is done is not specified in PETSIRD: the alive-time components store the output of those
+# calculations (at several time intervals).
 AliveTimeFractions: !record
   fields:
     # List of singles alive-time fractions (one for each type of module)
