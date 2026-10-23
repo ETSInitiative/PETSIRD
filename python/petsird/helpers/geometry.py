@@ -17,9 +17,8 @@ def transform_to_mat44(
     return numpy.vstack([transform.matrix, [0, 0, 0, 1]])
 
 
-def mat44_to_transform(
-        mat: npt.NDArray[numpy.float32]) -> petsird.RigidTransformation:
-    return petsird.RigidTransformation(matrix=mat[0:3, :])
+def mat44_to_transform(mat: npt.NDArray) -> petsird.RigidTransformation:
+    return petsird.RigidTransformation(matrix=mat[0:3, :].astype("float32"))
 
 
 def coordinate_to_homogeneous(
@@ -27,9 +26,8 @@ def coordinate_to_homogeneous(
     return numpy.hstack([coord.c, 1])
 
 
-def homogeneous_to_coordinate(
-    hom_coord: npt.NDArray[numpy.float32], ) -> petsird.Coordinate:
-    return petsird.Coordinate(c=hom_coord[0:3])
+def homogeneous_to_coordinate(hom_coord: npt.NDArray) -> petsird.Coordinate:
+    return petsird.Coordinate(c=hom_coord[0:3].astype("float32"))
 
 
 def mult_transforms(
@@ -38,7 +36,7 @@ def mult_transforms(
     """multiply rigid transformations"""
     mat = numpy.array(
         ((1, 0, 0, 0), (0, 1, 0, 0), (0, 0, 1, 0), (0, 0, 0, 1)),
-        dtype="float32",
+        dtype="float64",
     )
 
     for t in reversed(transforms):
