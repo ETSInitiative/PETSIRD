@@ -96,7 +96,7 @@ initialize_scanner_information_dimensions(petsird::ScannerInformation& scanner, 
     }
   if (allocate_module_pair_efficiencies)
     {
-      scanner.detection_efficiencies.module_pair_sgidlut
+      scanner.detection_efficiencies.module_pair_sgidluts
           = construct_lower_triangular_matrix<petsird::ModulePairSGIDLUT>(num_module_types);
       scanner.detection_efficiencies.module_pair_efficiencies_vectors
           = construct_lower_triangular_matrix<petsird::ModulePairEfficienciesVector>(num_module_types);
