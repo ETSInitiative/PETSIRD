@@ -8,6 +8,8 @@
 
 #include "petsird/types.h"
 #include <array>
+#include <exception>
+#include <algorithm>
 
 namespace petsird_helpers
 {
@@ -50,6 +52,38 @@ get_num_detection_bins(const ScannerInformation& scanner, const TypeOfModule& ty
   const auto& det_els = rep_module.object.detecting_elements;
   const auto& energy_bin_edges = scanner.event_energy_bin_edges[type_of_module];
   return det_els.transforms.size() * rep_module.transforms.size() * energy_bin_edges.NumberOfBins();
+}
+
+//! Get the total number of singles units in the scanners
+/*! Will return 0 if `singlesHistogramLevel==none`, and throw an exception if
+    `singlesHistogramLevel==all`.
+*/
+inline std::size_t
+get_num_singles_units(const ScannerInformation& scanner)
+{
+  switch (scanner.singles_histogram_level)
+    {
+    case SinglesHistogramLevelType::kNone:
+      return std::size_t(0);
+      case SinglesHistogramLevelType::kAll: {
+        throw std::runtime_error("get_num_singles_units not supported for singlesHistogramLevel==all");
+#if 0
+      std::size_t num{0};
+      for (TypeOfModule type_of_module = 0; type_of_module < scanner.scanner_geometry.NumberOfModuleTypes(); ++type_of_module)
+        num += get_num_det_els(scanner, type_of_module); // TODO ENERGY
+      return num;
+#endif
+      }
+      case SinglesHistogramLevelType::kModule: {
+        SinglesUnitIdx num{ -1 };
+        for (auto& lut : scanner.module_singles_unit_idx_lu_ts)
+          {
+            if (!lut.empty())
+              num = std::max(num, *std::max_element(lut.begin(), lut.end()));
+          }
+        return static_cast<std::size_t>(num + 1);
+      }
+    }
 }
 
 //! Create a vector of ExpandedDetectionBins from a list/vector of DetectionBins

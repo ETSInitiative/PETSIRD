@@ -1,0 +1,49 @@
+# Type definition for how single histograms are stored.
+# Many scanners are able to store singles accumulated in time intervals, i.e.
+# histogrammed (as opposed to a list of singles with their corresponding DetectionBin).
+# However, some scanners do not store this information at the smallest detector resolution.
+# Therefore, PETSIRD currently supports a total singles count for a (collection of) module(s) as well.
+# See SinglesHistogramTimeBlock.
+SinglesHistogramLevelType: !enum
+  values:
+    # singles histograms are not stored at all
+    - none
+    # singles counts per "collection" of modules (a "singles unit")
+    - module
+    # singles counts for each SinglesDetectionBin
+    - all
+
+# Type alias for indices for all singles units
+# Many PET scanners measure singles histograms in a "collection" of modules, others store
+# it for every detecting element. PETSIRD calls this a "singles unit".
+# Note that this index runs over modules of all types (and not over energy bins).
+#
+# This type is only used if ScannerInformation.singlesHistogramLevel == SinglesHistogramLevelType.module.
+#
+# The singlesUnitIdx runs from 0 to numberOfSinglesUnits-1,
+# see ModuleSinglesUnitIdxLUT and ScannerInformation.moduleSinglesUnitIdxLUTs.
+SinglesUnitIdx: int
+
+# Lookup table for SinglesUnitIdx
+# For every module, give the SinglesUnitIdx. If -1, the singles are not
+# histogrammed for that module
+# Values run from -1 ... (numberOfSinglesUnits-1)
+ModuleSinglesUnitIdxLUT: SinglesUnitIdx*
+
+# Type for the histogram of singles per singles-units.
+# First dimension corresponds to singles units, second dimension to energy bins.
+#
+# See SinglesHistogramTimeBlock and SinglesUnitIdx
+SinglesPerSinglesUnitHistogram: uint64**
+
+# Type for the histogram of singles per single detection bin.
+# First dimension corresponds to type of module, second to detection bin.
+#
+# See SinglesDetectionBin and SinglesHistogramTimeBlock
+SinglesPerDetectionBinHistogram: uint64**
+
+# type for a "single" detection (of a particular type of module), used in
+# `SinglesHistogramTimeBlock.singlesPerDetectionBinHistogram`.
+# This is essentially the same as `DetectionBin`, except that here energy indices run over
+# `ScannerInformation.singlesHistogramEnergyBinEdges`.
+SinglesDetectionBin: DetectionBin
