@@ -74,6 +74,7 @@ operator/(const petsird::Coordinate& c, float arg)
   std::transform(c.c.begin(), c.c.end(), result.c.begin(), [&](float a) { return a / arg; });
   return result;
 }
+
 //! Convert RigidTransformation to 4x4 matrix
 inline xt::xarray<float>
 transform_to_mat44(const petsird::RigidTransformation& transform)
@@ -157,6 +158,7 @@ get_detecting_box(const petsird::ScannerInformation& scanner, const petsird::Typ
 inline petsird::BoxSolidVolume
 construct_cuboid_box(std::array<float, 3> sizes_in_mm, std::array<float, 3> center_in_mm, unsigned material_id)
 {
+  assert(sizes_in_mm[0] > 0 && sizes_in_mm[1] > 0 && sizes_in_mm[2] > 0);
   using petsird::Coordinate;
   // shift
   const Coordinate shift{ { center_in_mm[0] - sizes_in_mm[0] / 2.F, center_in_mm[1] - sizes_in_mm[1] / 2.F,
@@ -174,17 +176,29 @@ construct_cuboid_box(std::array<float, 3> sizes_in_mm, std::array<float, 3> cent
   return crystal;
 }
 
-//! return a module of num_repetitions cuboids
+//! return a module of num_repetitions cuboids.
 /*!
- The average DOI for photons travelling along 1,0,0 of the first layer in the module will be at 0,0,0
+ Each detecting element will be a cuboid with the given \a sizes_in_mm.
+ The cuboids will be spaced according to \a translations_in_mm.
+ This allows having gaps between the cuboids.
+
+ The average DOI for photons travelling along 1,0,0 of the first layer in the module
+ will be at 0,0,0. This means that the module will be centered around y=0, z=0.
+
+ Constraint: \a translations_in_mm >= sizes_in_mm.
 */
 inline petsird::DetectorModule
-construct_cuboid_module(std::array<float, 3> num_repetitions, std::array<float, 3> sizes_in_mm, float average_DOI,
-                        unsigned material_id = 1U)
+construct_cuboid_module(std::array<float, 3> num_repetitions, std::array<float, 3> translations_in_mm,
+                        std::array<float, 3> sizes_in_mm, float average_DOI, unsigned material_id = 1U)
 {
+  assert(num_repetitions[0] > 0 && num_repetitions[1] > 0 && num_repetitions[2] > 0);
+  assert(translations_in_mm >= sizes_in_mm);
+  assert(average_DOI > 0);
+
   petsird::ReplicatedBoxSolidVolume rep_volume;
   {
-    // We need 0,0,0 of the box to correspond to the average_DOI position for photons travelling along 1,0,0
+    // We need 0,0,0 of the box to correspond to the average_DOI position for
+    // photons travelling along 1,0,0
     // This gives the location of the "incoming" plane:
     // -sizes_in_mm[0]/2 + center_in_mm[0] == -average_DOI
     rep_volume.object = construct_cuboid_box(sizes_in_mm, { sizes_in_mm[0] / 2.F - average_DOI, 0.F, 0.F }, material_id);
@@ -195,15 +209,15 @@ construct_cuboid_module(std::array<float, 3> num_repetitions, std::array<float, 
       for (int rep1 = 0; rep1 < N1; ++rep1)
         for (int rep2 = 0; rep2 < N2; ++rep2)
           {
-            petsird::RigidTransformation transform{ { { 1.0, 0.0, 0.0, rep0 * sizes_in_mm[0] },
-                                                      { 0.0, 1.0, 0.0, (rep1 - N1 / 2) * sizes_in_mm[1] },
-                                                      { 0.0, 0.0, 1.0, (rep2 - N2 / 2) * sizes_in_mm[2] } } };
+            petsird::RigidTransformation transform{ { { 1.F, 0.F, 0.F, rep0 * translations_in_mm[0] },
+                                                      { 0.F, 1.F, 0.F, (rep1 - N1 / 2.F) * translations_in_mm[1] },
+                                                      { 0.F, 0.F, 1.F, (rep2 - N2 / 2.F) * translations_in_mm[2] } } };
             rep_volume.transforms.push_back(transform);
           }
   }
 
   petsird::DetectorModule detector_module;
-  detector_module.detecting_elements = rep_volume;
+  detector_module.detecting_elements = std::move(rep_volume);
 
   return detector_module;
 }

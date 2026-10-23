@@ -47,7 +47,8 @@ get_scanner_geometry()
   petsird::ReplicatedDetectorModule rep_module;
   {
     rep_module.object
-        = petsird_helpers::geometry::construct_cuboid_module(NUM_CRYSTALS_PER_MODULE, CRYSTAL_LENGTH, AVERAGE_DOI, MATERIAL_ID);
+        = petsird_helpers::geometry::construct_cuboid_module(NUM_CRYSTALS_PER_MODULE, /* translations=*/CRYSTAL_LENGTH,
+                                                             /*sizes=*/CRYSTAL_LENGTH, AVERAGE_DOI, MATERIAL_ID);
     std::vector<float> angles;
     for (unsigned int i = 0; i < NUM_MODULES_ALONG_RING; ++i)
       {

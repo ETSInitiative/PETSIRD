@@ -106,8 +106,11 @@ def get_replicated_module(
 
     The "centre" of the translated/rotated modules is at (0,0,0) (if arc=2pi)."""
     detector_module = construct_cuboid_module(
-        module_def.num_crystals_per_module, module_def.crystal_length,
-        module_def.average_DOI, module_def.material_id)
+        num_repetitions=module_def.num_crystals_per_module,
+        translations_in_mm=module_def.crystal_length,
+        sizes_in_mm=module_def.crystal_length,
+        average_DOI=module_def.average_DOI,
+        material_id=module_def.material_id)
     angles = [
         module_def.start_angle +
         module_def.arc * i / module_def.num_modules_along_ring

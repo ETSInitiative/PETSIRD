@@ -63,7 +63,8 @@ def transform_BoxShape(transform: petsird.RigidTransformation,
     ])
 
 
-def Coordinate(v: tuple[float, float, float]) -> petsird.Coordinate:
+def construct_coordinate(v: tuple[float, float, float]) -> petsird.Coordinate:
+    r"""return a petsird.Coordinate with values set from a tuple."""
     return petsird.Coordinate(c=numpy.array(v, dtype=numpy.float32))
 
 
@@ -74,6 +75,7 @@ def construct_cuboid_box(sizes_in_mm: tuple[float, float, float],
 
     The box will be centered around center_in_mm and align with the coordinate axes.
     """
+    assert all(s > 0 for s in sizes_in_mm)
     from numpy import array
 
     from petsird import Coordinate
@@ -100,14 +102,23 @@ def construct_cuboid_box(sizes_in_mm: tuple[float, float, float],
 
 
 def construct_cuboid_module(num_repetitions: tuple[int, int, int],
+                            translations_in_mm: tuple[float, float, float],
                             sizes_in_mm: tuple[float, float, float],
                             average_DOI: float,
                             material_id: int = 1) -> petsird.DetectorModule:
     r"""return a module of num_crystals_per_module cuboids
 
-    The average DOI for photons travelling along 1,0,0 of the first layer in the
-    module will be at 0,0,0.
+    Each detecting element will be a cuboid with the given sizes_in_mm.
+    The cuboids will be spaced according to translations_in_mm.
+    This allows having gaps between the cuboids.
+
+    The average DOI for photons travelling along 1,0,0 of the first layer in the module
+    will be at 0,0,0. This means that the module will be centered around y=0, z=0.
     """
+    assert all(s > 0 for s in num_repetitions)
+    assert translations_in_mm >= sizes_in_mm
+    assert average_DOI > 0
+
     # We need 0,0,0 of the box to correspond to the average_DOI position for
     # photons travelling along 1,0,0.
     # This gives the location of the "incoming" plane:
@@ -124,11 +135,11 @@ def construct_cuboid_module(num_repetitions: tuple[int, int, int],
             for rep2 in range(N2):
                 transform = petsird.RigidTransformation(matrix=numpy.array(
                     (
-                        (1.0, 0.0, 0.0, rep0 * sizes_in_mm[0]),
+                        (1.0, 0.0, 0.0, rep0 * translations_in_mm[0]),
                         (0.0, 1.0, 0.0,
-                         (rep1 - (N1 - 1) / 2) * sizes_in_mm[1]),
+                         (rep1 - (N1 - 1) / 2) * translations_in_mm[1]),
                         (0.0, 0.0, 1.0,
-                         (rep2 - (N2 - 1) / 2) * sizes_in_mm[2]),
+                         (rep2 - (N2 - 1) / 2) * translations_in_mm[2]),
                     ),
                     dtype="float32",
                 ))
