@@ -42,6 +42,27 @@ def get_num_detection_bins(scanner: petsird.ScannerInformation,
         rep_module.transforms) * energy_bin_edges.number_of_bins()
 
 
+def get_num_singles_units(scanner: petsird.ScannerInformation) -> int:
+    """Get the total number of singles units in the scanner
+
+   Will return 0 if `singles_histogram_level==none`, and throw an exception if
+    `singles_histogram_level==all`.
+   """
+    match scanner.singles_histogram_level:
+        case petsird.SinglesHistogramLevelType.NONE:
+            return 0
+        case petsird.SinglesHistogramLevelType.ALL:
+            raise RuntimeError(
+                "get_num_singles_units not supported for singlesHistogramLevel==all"
+            )
+        case petsird.SinglesHistogramLevelType.MODULE:
+            num = petsird.SinglesUnitIdx(-1)
+            for lut in scanner.module_singles_unit_idx_lu_ts:
+                if lut:
+                    num = max(num, max(lut))
+            return num + 1
+
+
 def expand_detection_bins(
     scanner: petsird.ScannerInformation, type_of_module: petsird.TypeOfModule,
     detection_bins: typing.Iterable[petsird.DetectionBin]
