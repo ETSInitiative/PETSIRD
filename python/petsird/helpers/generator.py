@@ -24,6 +24,7 @@ from petsird.helpers.create import (
     construct_lower_triangular_or_rectangular_matrix,
     construct_rectangular_matrix, construct_vector,
     initialize_scanner_information_dimensions)
+from petsird.helpers.geometry import construct_cuboid_module, mult_transforms
 
 
 @dataclass
@@ -35,8 +36,9 @@ class CylindricalBlocksInfo:
     Definitions here also include TOF, which is supposed for "this module-type"
     coincidences.
     """
-    crystal_length: tuple[float]
-    num_crystals_per_module: tuple[int]
+    crystal_length: tuple[float, float, float]
+    average_DOI: float
+    num_crystals_per_module: tuple[int, int, int]
     num_modules_along_ring: int
     num_modules_along_axis: int
     radius: float  # in mm
@@ -57,6 +59,7 @@ class CylindricalBlocksInfo:
 mtype0_def = CylindricalBlocksInfo(
     radius=400.,
     crystal_length=(20., 4., 4.),
+    average_DOI=9.,
     num_crystals_per_module=(2, 4, 7),
     num_modules_along_ring=20,
     num_modules_along_axis=2,
@@ -75,6 +78,7 @@ mtype0_def = CylindricalBlocksInfo(
 mtype1_def = CylindricalBlocksInfo(
     radius=150.,
     crystal_length=(10., 2., 2.),
+    average_DOI=9.,
     num_crystals_per_module=(1, 3, 30),
     num_modules_along_ring=15,
     num_modules_along_axis=1,
@@ -96,65 +100,17 @@ COUNT_RATE = 500.  # 1/ms
 EVENT_TIME_BLOCK_DURATION = 1  # ms
 
 
-def make_coordinate(v: tuple) -> petsird.Coordinate:
-    return petsird.Coordinate(c=numpy.array(v, dtype=numpy.float32))
-
-
-def get_crystal(crystal_length: tuple[float],
-                material_id: int = 1) -> petsird.SolidVolume:
-    """return a cuboid volume with first corner at 0,0,0"""
-    crystal_shape = petsird.BoxShape(corners=[
-        make_coordinate((0, 0, 0)),
-        make_coordinate((0, 0, crystal_length[2])),
-        make_coordinate((0, crystal_length[1], crystal_length[2])),
-        make_coordinate((0, crystal_length[1], 0)),
-        make_coordinate((crystal_length[0], 0, 0)),
-        make_coordinate((crystal_length[0], 0, crystal_length[2])),
-        make_coordinate((crystal_length[0], crystal_length[1],
-                         crystal_length[2])),
-        make_coordinate((crystal_length[0], crystal_length[1], 0)),
-    ])
-    return petsird.BoxSolidVolume(shape=crystal_shape, material_id=material_id)
-
-
-def get_detector_module(
-        module_def: CylindricalBlocksInfo) -> petsird.DetectorModule:
-    r"""return a module of num_crystals_per_module cuboids
-
-    Currently transform are such that the first axis is the "crystal length",
-    radius is the "inner radius", and the crystal is centered along
-    the other directions.
-    """
-    crystal = get_crystal(module_def.crystal_length, module_def.material_id)
-    rep_volume = petsird.ReplicatedBoxSolidVolume(object=crystal)
-    N0 = module_def.num_crystals_per_module[0]
-    N1 = module_def.num_crystals_per_module[1]
-    N2 = module_def.num_crystals_per_module[2]
-    for rep0 in range(N0):
-        for rep1 in range(N1):
-            for rep2 in range(N2):
-                transform = petsird.RigidTransformation(matrix=numpy.array(
-                    (
-                        (1.0, 0.0, 0.0, module_def.radius +
-                         rep0 * module_def.crystal_length[0]),
-                        (0.0, 1.0, 0.0,
-                         (rep1 - (N1 - 1) / 2) * module_def.crystal_length[1]),
-                        (0.0, 0.0, 1.0,
-                         (rep2 - (N2 - 1) / 2) * module_def.crystal_length[2]),
-                    ),
-                    dtype="float32",
-                ))
-                rep_volume.transforms.append(transform)
-
-    return petsird.DetectorModule(detecting_elements=rep_volume)
-
-
 def get_replicated_module(
         module_def: CylindricalBlocksInfo) -> petsird.ReplicatedDetectorModule:
     """rotating a module around, translating along the (0,0,1) axis
 
     The "centre" of the translated/rotated modules is at (0,0,0) (if arc=2pi)."""
-    detector_module = get_detector_module(module_def)
+    detector_module = construct_cuboid_module(
+        num_repetitions=module_def.num_crystals_per_module,
+        translations_in_mm=module_def.crystal_length,
+        sizes_in_mm=module_def.crystal_length,
+        average_DOI=module_def.average_DOI,
+        material_id=module_def.material_id)
     angles = [
         module_def.start_angle +
         module_def.arc * i / module_def.num_modules_along_ring
@@ -165,16 +121,24 @@ def get_replicated_module(
     rep_module = petsird.ReplicatedDetectorModule(object=detector_module)
     for angle in angles:
         for ax_mod in range(N2):
-            transform = petsird.RigidTransformation(matrix=numpy.array(
-                (
-                    (math.cos(angle), math.sin(angle), 0.0, 0.0),
-                    (-math.sin(angle), math.cos(angle), 0.0, 0.0),
-                    (0.0, 0.0, 1.0, module_def.module_spacing_along_axis *
-                     (ax_mod - (N2 - 1) / 2)),
-                ),
+            rotation = petsird.RigidTransformation(matrix=numpy.array(
+                ((math.cos(angle), math.sin(angle), 0.0, 0.0),
+                 (-math.sin(angle), math.cos(angle), 0.0, 0.0),
+                 (0.0, 0.0, 1.0, 0.0)),
                 dtype="float32",
             ))
-            rep_module.transforms.append(transform)
+            translation = petsird.RigidTransformation(matrix=numpy.array(
+                ((1.0, 0.0, 0.0, module_def.radius + module_def.average_DOI),
+                 (0.0, 1.0, 0.0, 0.0),
+                 (0.0, 0.0, 1.0, module_def.module_spacing_along_axis *
+                  (ax_mod - (N2 - 1) / 2))),
+                dtype="float32",
+            ))
+            translate_then_rotate = [rotation, translation]
+            #print(mult_transforms(translate_then_rotate), file=sys.stderr)
+            rep_module.transforms.append(
+                mult_transforms(translate_then_rotate))
+
     return rep_module
 
 

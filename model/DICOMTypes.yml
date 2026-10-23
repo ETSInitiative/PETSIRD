@@ -42,7 +42,7 @@ DICOMPatientOrientationInformation: !record
     patientOrientationCodeSequence: DICOMBasicCodeSequence
 
     # Patient orientation modifier.
-    # Required if needed to fully specify the orientation of the Patient with respect to gravity.
+    # Used to modify or enhance the orientation specified by Patient Orientation Code Sequence (0054,0410).
     # (0054,0412).
     # Refers to Table https://dicom.nema.org/medical/dicom/current/output/html/part16.html#sect_CID_20
     patientOrientationModifierCodeSequence: DICOMBasicCodeSequence

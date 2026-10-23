@@ -2,7 +2,7 @@
 Preliminary helpers for geometric calculations for PETSIRD data
 """
 
-#  Copyright (C) 2024 - 2025 University College London
+#  Copyright (C) 2024 - 2026 University College London
 #
 #  SPDX-License-Identifier: Apache-2.0
 
@@ -17,9 +17,8 @@ def transform_to_mat44(
     return numpy.vstack([transform.matrix, [0, 0, 0, 1]])
 
 
-def mat44_to_transform(
-        mat: npt.NDArray[numpy.float32]) -> petsird.RigidTransformation:
-    return petsird.RigidTransformation(matrix=mat[0:3, :])
+def mat44_to_transform(mat: npt.NDArray) -> petsird.RigidTransformation:
+    return petsird.RigidTransformation(matrix=mat[0:3, :].astype("float32"))
 
 
 def coordinate_to_homogeneous(
@@ -27,9 +26,8 @@ def coordinate_to_homogeneous(
     return numpy.hstack([coord.c, 1])
 
 
-def homogeneous_to_coordinate(
-    hom_coord: npt.NDArray[numpy.float32], ) -> petsird.Coordinate:
-    return petsird.Coordinate(c=hom_coord[0:3])
+def homogeneous_to_coordinate(hom_coord: npt.NDArray) -> petsird.Coordinate:
+    return petsird.Coordinate(c=hom_coord[0:3].astype("float32"))
 
 
 def mult_transforms(
@@ -38,7 +36,7 @@ def mult_transforms(
     """multiply rigid transformations"""
     mat = numpy.array(
         ((1, 0, 0, 0), (0, 1, 0, 0), (0, 0, 1, 0), (0, 0, 0, 1)),
-        dtype="float32",
+        dtype="float64",
     )
 
     for t in reversed(transforms):
@@ -63,6 +61,93 @@ def transform_BoxShape(transform: petsird.RigidTransformation,
     return petsird.BoxShape(corners=[
         mult_transforms_coord([transform], c) for c in box_shape.corners
     ])
+
+
+def construct_coordinate(v: tuple[float, float, float]) -> petsird.Coordinate:
+    r"""return a petsird.Coordinate with values set from a tuple."""
+    return petsird.Coordinate(c=numpy.array(v, dtype=numpy.float32))
+
+
+def construct_cuboid_box(sizes_in_mm: tuple[float, float, float],
+                         center_in_mm: tuple[float, float, float],
+                         material_id: int) -> petsird.SolidVolume:
+    r"""return a cuboid volume
+
+    The box will be centered around center_in_mm and align with the coordinate axes.
+    """
+
+    shift = numpy.array(
+        (center_in_mm[0] - sizes_in_mm[0] / 2., center_in_mm[1] -
+         sizes_in_mm[1] / 2., center_in_mm[2] - sizes_in_mm[2] / 2.),
+        dtype="float32")
+
+    crystal_shape = petsird.BoxShape(corners=[
+        petsird.Coordinate(c=shift + numpy.array((0, 0, 0), dtype="float32")),
+        petsird.Coordinate(
+            c=shift + numpy.array((0, 0, sizes_in_mm[2]), dtype="float32")),
+        petsird.Coordinate(
+            c=shift +
+            numpy.array((0, sizes_in_mm[1], sizes_in_mm[2]), dtype="float32")),
+        petsird.Coordinate(
+            c=shift + numpy.array((0, sizes_in_mm[1], 0), dtype="float32")),
+        petsird.Coordinate(
+            c=shift + numpy.array((sizes_in_mm[0], 0, 0), dtype="float32")),
+        petsird.Coordinate(
+            c=shift +
+            numpy.array((sizes_in_mm[0], 0, sizes_in_mm[2]), dtype="float32")),
+        petsird.Coordinate(c=shift + numpy.array(
+            (sizes_in_mm[0], sizes_in_mm[1],
+             sizes_in_mm[2]), dtype="float32")),
+        petsird.Coordinate(
+            c=shift +
+            numpy.array((sizes_in_mm[0], sizes_in_mm[1], 0), dtype="float32")),
+    ])
+    return petsird.BoxSolidVolume(shape=crystal_shape, material_id=material_id)
+
+
+def construct_cuboid_module(num_repetitions: tuple[int, int, int],
+                            translations_in_mm: tuple[float, float, float],
+                            sizes_in_mm: tuple[float, float, float],
+                            average_DOI: float,
+                            material_id: int = 1) -> petsird.DetectorModule:
+    r"""return a module of num_crystals_per_module cuboids
+
+    Each detecting element will be a cuboid with the given sizes_in_mm.
+    The cuboids will be spaced according to translations_in_mm.
+    This allows having gaps between the cuboids.
+
+    The average DOI for photons travelling along 1,0,0 of the first layer in the module
+    will be at 0,0,0. This means that the module will be centered around y=0, z=0.
+    """
+    assert translations_in_mm >= sizes_in_mm
+
+    # We need 0,0,0 of the box to correspond to the average_DOI position for
+    # photons travelling along 1,0,0.
+    # This gives the location of the "incoming" plane:
+    # -sizes_in_mm[0]/2 + center_in_mm[0] == -average_DOI
+    crystal = construct_cuboid_box(sizes_in_mm,
+                                   (sizes_in_mm[0] / 2 - average_DOI, 0., 0.),
+                                   material_id)
+    rep_volume = petsird.ReplicatedBoxSolidVolume(object=crystal)
+    N0 = num_repetitions[0]
+    N1 = num_repetitions[1]
+    N2 = num_repetitions[2]
+    for rep0 in range(N0):
+        for rep1 in range(N1):
+            for rep2 in range(N2):
+                transform = petsird.RigidTransformation(matrix=numpy.array(
+                    (
+                        (1.0, 0.0, 0.0, rep0 * translations_in_mm[0]),
+                        (0.0, 1.0, 0.0,
+                         (rep1 - (N1 - 1) / 2) * translations_in_mm[1]),
+                        (0.0, 0.0, 1.0,
+                         (rep2 - (N2 - 1) / 2) * translations_in_mm[2]),
+                    ),
+                    dtype="float32",
+                ))
+                rep_volume.transforms.append(transform)
+
+    return petsird.DetectorModule(detecting_elements=rep_volume)
 
 
 def get_detecting_box(
