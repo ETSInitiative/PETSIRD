@@ -1,6 +1,24 @@
 # Type definitions related to geometry and coordinates
 
 # 3D coordinates (in mm)
+# coordinates are given in the order (x, y, z). PETSIRD follows the
+# NEMA Standard 10-16-1985, section 5.2.5 Coordinate Systems with the
+# added restriction that it is a right-handed coordinate system.
+#
+# 5.2.5.1 INTRODUCTION
+# Image locations and orientations are specified with respect to equipment
+# based coordinate systems. [...]
+#
+# The definitions of coordinate frames should be based on CT and MR modalities.
+#
+# 5.2.5.2 AXIS DEFINITION
+#
+# An imaging device shall have a manufacturer-defined front and back identified
+# for its gantry. When facing the front of the gantry, and with the gantry in a
+# neutral (untilted) position, the x-axis shall be increasing to the right;
+# the y-axis shall be increasing down (defined by gravitational attraction);
+# and the z-axis shall be defined as the line orthogonal to x and y, with
+# increasing values from the front to the back of the gantry.
 Coordinate: !record
   fields:
     c: float[3]
@@ -28,17 +46,20 @@ ReplicatedObject<T>: !record
   fields:
     object: T
     # list of transforms
-    # constraint: length >= 1
+    # Constraint: length >= 1
     transforms: RigidTransformation*
   computedFields:
     numberOfObjects: size(transforms)
 
 # A box-shape specified by 8 corners (e.g. cuboid, wedge, etc.)
-# TODO need to think about a clear definition of planes
-# We do not want to have to check about intersection planes
-# Potential mechanisms:
-# - lexicographical ordering of corner coordinates?
-# - first 4 coordinates give first plane, 5th and 6th need to define plane with first 2, etc.
+# The actual shape should be considered to be the convex hull of the 8 vertices.
+# Constraints:
+# - First 4 vertices specify the front face (i.e. closest to the scanner axis/centre).
+# - Last 4 vertices specify the back face (i.e. furthest to the scanner axis/centre).
+# - The first vertex of the front/back face has to be "smaller" than the other vertices
+#   of that face (i.e. its coordinates have to be less in lexicographical order).
+# - The box "direction" is inferred from "centre of front face" to "centre of back face"
+# - Order of vertices within the front/back face: clock-wise (around direction axis).
 BoxShape: !record
   fields:
     corners: Coordinate*8
