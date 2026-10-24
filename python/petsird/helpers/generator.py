@@ -25,6 +25,7 @@ from petsird.helpers.create import (
     construct_rectangular_matrix, construct_vector,
     initialize_scanner_information_dimensions)
 from petsird.helpers.geometry import construct_cuboid_module, mult_transforms
+from petsird.validate.geometry import validate_detecting_element
 
 
 @dataclass
@@ -111,6 +112,9 @@ def get_replicated_module(
         sizes_in_mm=module_def.crystal_length,
         average_DOI=module_def.average_DOI,
         material_id=module_def.material_id)
+
+    validate_detecting_element(detector_module.detecting_elements.object.shape)
+
     angles = [
         module_def.start_angle +
         module_def.arc * i / module_def.num_modules_along_ring
@@ -135,7 +139,6 @@ def get_replicated_module(
                 dtype="float32",
             ))
             translate_then_rotate = [rotation, translation]
-            #print(mult_transforms(translate_then_rotate), file=sys.stderr)
             rep_module.transforms.append(
                 mult_transforms(translate_then_rotate))
 
