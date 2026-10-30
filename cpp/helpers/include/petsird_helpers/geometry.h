@@ -140,18 +140,6 @@ transform_BoxShape(const petsird::RigidTransformation& transform, const petsird:
   return new_box;
 }
 
-//! find the BoxShape corresponding to a ExpandedDetectionBin
-inline petsird::BoxShape
-get_detecting_box(const petsird::ScannerInformation& scanner, const petsird::TypeOfModule& type_of_module,
-                  const petsird::ExpandedDetectionBin& expanded_detection_bin)
-{
-  const auto& rep_module = scanner.scanner_geometry.replicated_modules[type_of_module];
-  const auto& det_els = rep_module.object.detecting_elements;
-  const auto& mod_transform = rep_module.transforms[expanded_detection_bin.module_index];
-  const auto& transform = det_els.transforms[expanded_detection_bin.element_index];
-  return transform_BoxShape(mult_transforms({ mod_transform, transform }), det_els.object.shape);
-}
-
 //! return a cuboid volume
 /*! The box will be centred around \a center_in_mm and align with the coordinate axes.
  */
@@ -182,10 +170,12 @@ construct_cuboid_box(std::array<float, 3> sizes_in_mm, std::array<float, 3> cent
  The cuboids will be spaced according to \a translations_in_mm.
  This allows having gaps between the cuboids.
 
- The average DOI for photons travelling along 1,0,0 of the first layer in the module
- will be at 0,0,0. This means that the module will be centered around y=0, z=0.
+  The average DOI for photons travelling along 1,0,0 (i.e. the x-axis) of
+  the first layer in the module will be at 0,0,0. This means that the module
+  will be centered around y=0, z=0.
 
- Constraint: \a translations_in_mm >= sizes_in_mm.
+ Constraint: all parameters need to be (element-wise) positive
+    Constraint: \a translations_in_mm >= \a sizes_in_mm.
 */
 inline petsird::DetectorModule
 construct_cuboid_module(std::array<float, 3> num_repetitions, std::array<float, 3> translations_in_mm,
@@ -222,12 +212,48 @@ construct_cuboid_module(std::array<float, 3> num_repetitions, std::array<float, 
   return detector_module;
 }
 
-//! find the BoxShape corresponding to a DetectionBin
+//! find the (transformed) BoxShape corresponding to a ExpandedDetectionBin
+inline petsird::BoxShape
+get_detecting_box(const petsird::ScannerInformation& scanner, const petsird::TypeOfModule& type_of_module,
+                  const petsird::ExpandedDetectionBin& expanded_detection_bin)
+{
+  const auto& rep_module = scanner.scanner_geometry.replicated_modules[type_of_module];
+  const auto& det_els = rep_module.object.detecting_elements;
+  const auto& mod_transform = rep_module.transforms[expanded_detection_bin.module_index];
+  const auto& transform = det_els.transforms[expanded_detection_bin.element_index];
+  return transform_BoxShape(mult_transforms({ mod_transform, transform }), det_els.object.shape);
+}
+
+//! find the (transformed) BoxShape corresponding to a DetectionBin
 inline petsird::BoxShape
 get_detecting_box(const petsird::ScannerInformation& scanner, const petsird::TypeOfModule& type_of_module,
                   const petsird::DetectionBin& detection_bin)
 {
   return get_detecting_box(scanner, type_of_module, expand_detection_bin(scanner, type_of_module, detection_bin));
+}
+
+//! find the (transformed) average detection point (ADP) corresponding to a ExpandedDetectionBin
+/*! This function finds the ADP for 511 keV gammas arriving along the axis of the detecting elements. */
+inline petsird::Coordinate
+get_ADP(const petsird::ScannerInformation& scanner, const petsird::TypeOfModule& type_of_module,
+        const petsird::ExpandedDetectionBin& expanded_detection_bin)
+{
+  const auto& rep_module = scanner.scanner_geometry.replicated_modules[type_of_module];
+  const auto& det_els = rep_module.object.detecting_elements;
+  const auto& mod_transform = rep_module.transforms[expanded_detection_bin.module_index];
+  const auto& transform = det_els.transforms[expanded_detection_bin.element_index];
+  // the ADP before transformation is at (0,0,0) (per definition).
+  // could be optimised to do the multiplication with 0,0,0 analytically of course
+  return mult_transforms_coord({ mod_transform, transform }, petsird::Coordinate{ { 0.F, 0.F, 0.F } });
+}
+
+//! find the (transformed) average detection position (ADP) corresponding to a DetectionBin
+/*! Calls get_ADP(const petsird::ScannerInformation&, const petsird::TypeOfModule&, const petsird::ExpandedDetectionBin&). */
+inline petsird::Coordinate
+get_ADP(const petsird::ScannerInformation& scanner, const petsird::TypeOfModule& type_of_module,
+        const petsird::DetectionBin& detection_bin)
+{
+  return get_ADP(scanner, type_of_module, expand_detection_bin(scanner, type_of_module, detection_bin));
 }
 
 } // namespace geometry

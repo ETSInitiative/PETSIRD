@@ -112,8 +112,12 @@ def construct_cuboid_module(num_repetitions: tuple[int, int, int],
     The cuboids will be spaced according to translations_in_mm.
     This allows having gaps between the cuboids.
 
-    The average DOI for photons travelling along 1,0,0 of the first layer in the module
-    will be at 0,0,0. This means that the module will be centered around y=0, z=0.
+    The average DOI for photons travelling along 1,0,0 (i.e. the x-axis) of
+    the first layer in the module will be at 0,0,0. This means that the module
+    will be centered around y=0, z=0.
+
+    Constraint: all parameters need to be (element-wise) positive
+    Constraint: translations_in_mm >= sizes_in_mm
     """
     assert all(s > 0 for s in num_repetitions)
     assert translations_in_mm >= sizes_in_mm
@@ -153,7 +157,7 @@ def get_detecting_box(
         type_of_module: petsird.TypeOfModule,
         expanded_detection_bin: petsird.ExpandedDetectionBin
 ) -> petsird.BoxShape:
-    """Find BoxShape corresponding to the expanded bin."""
+    """Find the (transformed) BoxShape corresponding to the expanded bin."""
     rep_module = scanner.scanner_geometry.replicated_modules[type_of_module]
     det_els = rep_module.object.detecting_elements
     mod_transform = rep_module.transforms[expanded_detection_bin.module_index]
@@ -162,3 +166,24 @@ def get_detecting_box(
         mult_transforms([mod_transform, transform]),
         det_els.object.shape,
     )
+
+
+def get_ADP(
+    scanner: petsird.ScannerInformation, type_of_module: petsird.TypeOfModule,
+    expanded_detection_bin: petsird.ExpandedDetectionBin
+) -> petsird.Coordinate:
+    """
+    Find the (transformed) average detection point (ADP) corresponding to a
+    ExpandedDetectionBin
+
+    This function finds the ADP for 511 keV gammas arriving along the axis
+    of the detecting elements.
+    """
+    rep_module = scanner.scanner_geometry.replicated_modules[type_of_module]
+    det_els = rep_module.object.detecting_elements
+    mod_transform = rep_module.transforms[expanded_detection_bin.module_index]
+    transform = det_els.transforms[expanded_detection_bin.element_index]
+    # the ADP before transformation is at (0,0,0) (per definition).
+    # could be optimised to do the multiplication with 0,0,0 analytically of course
+    return mult_transforms_coord([mod_transform, transform],
+                                 construct_coordinate((0., 0., 0.)))

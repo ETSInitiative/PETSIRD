@@ -1,5 +1,5 @@
 #  Copyright (C) 2022-2023 Microsoft Corporation
-#  Copyright (C) 2023-2025 University College London
+#  Copyright (C) 2023-2026 University College London
 #
 #  SPDX-License-Identifier: Apache-2.0
 
@@ -54,16 +54,29 @@ if __name__ == "__main__":
         print("Types of modules: ", num_module_types)
         for type_of_module in range(num_module_types):
             print("------ Module type ", type_of_module)
+            num_modules = len(scanner.scanner_geometry.
+                              replicated_modules[type_of_module].transforms)
+            num_els_per_module = len(
+                scanner.scanner_geometry.replicated_modules[type_of_module].
+                object.detecting_elements.transforms)
+            print("Number of modules of this type: ", num_modules)
+            print("Number of detecting elements in modules of this type: ",
+                  num_els_per_module)
             print(
-                "Number of modules of this type: ",
-                len(scanner.scanner_geometry.
-                    replicated_modules[type_of_module].transforms))
+                "Total number of detecting elements in modules of this type: ",
+                get_num_det_els(scanner, type_of_module))
+
             print(
-                "Number of elements in modules of this type: ",
-                len(scanner.scanner_geometry.replicated_modules[type_of_module]
-                    .object.detecting_elements.transforms))
-            print("Total number of 'crystals': ",
-                  get_num_det_els(scanner, type_of_module))
+                "Average Detection Position (ADP) of (module, detecting element):"
+            )
+            for (m, e) in ((0, 0), (0, 1), (0, 5), (0, num_els_per_module - 1),
+                           (1, 0), (2, 0)):
+                ADP = petsird.helpers.geometry.get_ADP(
+                    scanner, type_of_module,
+                    petsird.ExpandedDetectionBin(module_index=m,
+                                                 element_index=e,
+                                                 energy_index=0))
+                print(f"\t({m},{e}): {ADP}")
 
             tof_bin_edges = scanner.tof_bin_edges[type_of_module][
                 type_of_module]
