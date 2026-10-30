@@ -21,6 +21,12 @@ ReplicatedGenericSolidVolume: ReplicatedObject< GenericSolidVolume >
 # different DetectorModules have to be used (see ScannerGeometry).
 DetectorModule: !record
   fields:
+    # Repetition of a box-shape
+    # For the underlying box-shape, (0,0,0) is at the average detection position (ADP) for 511 keV gammas
+    # coming along the "axis" of the shape (see BoxShape).
+    # This allows finding the ADP for each repeated detecting-element by simply transforming (0,0,0).
+    # Constraint: the box-shape should be aligned with the x-axis (see documentation for Coordinate for
+    # definition of the axes).
     detectingElements: ReplicatedBoxSolidVolume
     # optional list describing shielding/optical reflectors etc
     nonDetectingElements: ReplicatedGenericSolidVolume*

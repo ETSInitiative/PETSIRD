@@ -22,6 +22,7 @@
 
 #include "petsird_helpers.h"
 #include "petsird_helpers/create.h"
+#include "petsird_helpers/geometry.h"
 
 // these are constants for now
 constexpr uint32_t NUMBER_OF_EVENT_ENERGY_BINS = 3;
@@ -29,6 +30,8 @@ constexpr uint32_t NUMBER_OF_TOF_BINS = 300;
 constexpr float RADIUS = 400.F;
 constexpr std::array<float, 3> CRYSTAL_LENGTH{ 20.F, 4.F, 4.F };
 constexpr std::array<float, 3> NUM_CRYSTALS_PER_MODULE{ 2, 4, 7 };
+constexpr float AVERAGE_DOI{ 9.F };
+constexpr unsigned MATERIAL_ID{ 1U };
 constexpr uint32_t NUM_MODULES_ALONG_RING{ 20 };
 constexpr uint32_t NUM_MODULES_ALONG_AXIS{ 2 };
 constexpr float MODULE_AXIS_SPACING{ (NUM_CRYSTALS_PER_MODULE[2] + 4) * CRYSTAL_LENGTH[2] };
@@ -37,58 +40,15 @@ constexpr uint32_t NUMBER_OF_TIME_BLOCKS = 6;
 constexpr float COUNT_RATE = 500.F;
 constexpr float EVENT_TIME_BLOCK_DURATION = 1.F;
 
-//! return a cuboid volume
-petsird::BoxSolidVolume
-get_crystal()
-{
-  using petsird::Coordinate;
-  petsird::BoxShape crystal_shape{ Coordinate{ { 0, 0, 0 } },
-                                   Coordinate{ { 0, 0, CRYSTAL_LENGTH[2] } },
-                                   Coordinate{ { 0, CRYSTAL_LENGTH[1], CRYSTAL_LENGTH[2] } },
-                                   Coordinate{ { 0, CRYSTAL_LENGTH[1], 0 } },
-                                   Coordinate{ { CRYSTAL_LENGTH[0], 0, 0 } },
-                                   Coordinate{ { CRYSTAL_LENGTH[0], 0, CRYSTAL_LENGTH[2] } },
-                                   Coordinate{ { CRYSTAL_LENGTH[0], CRYSTAL_LENGTH[1], CRYSTAL_LENGTH[2] } },
-                                   Coordinate{ { CRYSTAL_LENGTH[0], CRYSTAL_LENGTH[1], 0 } } };
-
-  petsird::BoxSolidVolume crystal{ crystal_shape, /* material_id */ 1 };
-  return crystal;
-}
-
-//! return a module of NUM_CRYSTALS_PER_MODULE cuboids
-petsird::DetectorModule
-get_detector_module()
-{
-  petsird::ReplicatedBoxSolidVolume rep_volume;
-  {
-    rep_volume.object = get_crystal();
-    constexpr auto N0 = NUM_CRYSTALS_PER_MODULE[0];
-    constexpr auto N1 = NUM_CRYSTALS_PER_MODULE[1];
-    constexpr auto N2 = NUM_CRYSTALS_PER_MODULE[2];
-    for (int rep0 = 0; rep0 < N0; ++rep0)
-      for (int rep1 = 0; rep1 < N1; ++rep1)
-        for (int rep2 = 0; rep2 < N2; ++rep2)
-          {
-            petsird::RigidTransformation transform{ { { 1.0, 0.0, 0.0, RADIUS + rep0 * CRYSTAL_LENGTH[0] },
-                                                      { 0.0, 1.0, 0.0, (rep1 - N1 / 2) * CRYSTAL_LENGTH[1] },
-                                                      { 0.0, 0.0, 1.0, (rep2 - N2 / 2) * CRYSTAL_LENGTH[2] } } };
-            rep_volume.transforms.push_back(transform);
-          }
-  }
-
-  petsird::DetectorModule detector_module;
-  detector_module.detecting_elements = rep_volume;
-
-  return detector_module;
-}
-
 //! return scanner build by rotating a module around the (0,0,1) axis
 petsird::ScannerGeometry
 get_scanner_geometry()
 {
   petsird::ReplicatedDetectorModule rep_module;
   {
-    rep_module.object = get_detector_module();
+    rep_module.object
+        = petsird_helpers::geometry::construct_cuboid_module(NUM_CRYSTALS_PER_MODULE, /* translations=*/CRYSTAL_LENGTH,
+                                                             /*sizes=*/CRYSTAL_LENGTH, AVERAGE_DOI, MATERIAL_ID);
     std::vector<float> angles;
     for (unsigned int i = 0; i < NUM_MODULES_ALONG_RING; ++i)
       {
@@ -97,10 +57,14 @@ get_scanner_geometry()
     for (auto angle : angles)
       for (unsigned ax_mod = 0; ax_mod < NUM_MODULES_ALONG_AXIS; ++ax_mod)
         {
-          petsird::RigidTransformation transform{ { { std::cos(angle), std::sin(angle), 0.F, 0.F },
-                                                    { -std::sin(angle), std::cos(angle), 0.F, 0.F },
-                                                    { 0.F, 0.F, 1.F, MODULE_AXIS_SPACING * ax_mod } } };
-          rep_module.transforms.push_back(transform);
+          petsird::RigidTransformation rotation{ { { std::cos(angle), std::sin(angle), 0.F, 0.F },
+                                                   { -std::sin(angle), std::cos(angle), 0.F, 0.F },
+                                                   { 0.F, 0.F, 1.F, 0.F } } };
+          petsird::RigidTransformation translation{
+            { { 1.F, 0.F, 0.F, RADIUS + AVERAGE_DOI }, { 0.F, 1.F, 0.F, 0.F }, { 0.F, 0.F, 1.F, MODULE_AXIS_SPACING * ax_mod } }
+          };
+          std::vector<petsird::RigidTransformation> translate_then_rotate{ rotation, translation };
+          rep_module.transforms.push_back(petsird_helpers::geometry::mult_transforms(translate_then_rotate));
         }
   }
   petsird::ScannerGeometry scanner_geometry;
