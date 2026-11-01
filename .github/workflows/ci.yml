@@ -37,23 +37,7 @@ jobs:
     - id: yardl
       name: Install yardl
       run: |
-        rm temp-ci-environment.yml # cleanup temporary file from previous step
-        if test ${{ matrix.os }} = windows; then
-          DL_SUFFIX=_windows_x86_64.zip
-        elif test ${{ matrix.os }} = macos; then
-          DL_SUFFIX=_darwin_arm64.tar.gz
-        else
-          DL_SUFFIX=_linux_x86_64.tar.gz
-        fi
-        echo "suffix=$DL_SUFFIX" >> $GITHUB_OUTPUT
-        gh release download -R microsoft/yardl -p "*$DL_SUFFIX" v$YARDL_VERSION
-        mkdir yardl
-        if test ${{ matrix.os }} = windows; then
-          unzip "yardl_${YARDL_VERSION}${DL_SUFFIX}" -d yardl
-        else
-          tar -xzf "yardl_${YARDL_VERSION}${DL_SUFFIX}" -C yardl
-        fi
-        rm "yardl_${YARDL_VERSION}${DL_SUFFIX}"
+        DEST=$PWD/yardl ./install_yardl.sh
         echo "$PWD/yardl" >> "$GITHUB_PATH"
       env:
         GH_TOKEN: ${{ github.token }}

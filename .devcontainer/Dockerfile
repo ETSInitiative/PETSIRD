@@ -9,9 +9,10 @@ ARG DEVCONTAINER_BASE=mcr.microsoft.com/devcontainers/base:1.0.9-ubuntu-22.04
 # subsequent stage and normalize the permissions.
 #########################################################
 
-FROM --platform=linux/amd64 ${DEVCONTAINER_BASE} as file-normalizer
+FROM --platform=linux/amd64 ${DEVCONTAINER_BASE} AS file-normalizer
 
 COPY environment.yml \
+     install_yardl.sh \
      .devcontainer/devcontainer.bashrc  \
      /data/
 
@@ -87,8 +88,7 @@ RUN mkdir -p /home/vscode/.local/share/CMakeTools \
     && chown vscode:conda /home/vscode/.local/share/CMakeTools/cmake-tools-kits.json
 
 # Install the yardl tool
-ARG YARDL_VERSION=0.6.7
-RUN wget --quiet "https://github.com/microsoft/yardl/releases/download/v${YARDL_VERSION}/yardl_${YARDL_VERSION}_linux_x86_64.tar.gz" \
-    && tar -xzf "yardl_${YARDL_VERSION}_linux_x86_64.tar.gz" \
-    && mv yardl "/opt/conda/envs/${CONDA_ENVIRONMENT_NAME}/bin/" \
-    && rm "yardl_${YARDL_VERSION}_linux_x86_64.tar.gz"
+COPY --from=file-normalizer --chown=$USER_UID:conda /data/install_yardl.sh /tmp/build/
+RUN /usr/bin/env DEST=yardl /tmp/build/install_yardl.sh \
+    && mv yardl/yardl "/opt/conda/envs/${CONDA_ENVIRONMENT_NAME}/bin/" \
+    && rm -rf yardl
