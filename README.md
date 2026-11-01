@@ -18,6 +18,10 @@ generate an SDK for both C++ and Python to read/write PETSIRD data.
 
 If you don't want to modify the yardl model, just `pip install petsird`. More detail is in the [`python/README.md`](python/README.md).
 
+## To get started as a C++ user:
+
+You can use `conda install conda-forge::libpetsird`.
+
 ## To get started quickly as a developer:
 
 1. Open this repo in [GitHub Codespaces](https://code.visualstudio.com/docs/remote/codespaces) or
