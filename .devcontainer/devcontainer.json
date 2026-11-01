@@ -123,8 +123,7 @@
             "ms-python.python",
             "ms-vscode.cmake-tools",
             "ms-vscode.cpptools",
-            "timonwong.shellcheck",
-            "twxs.cmake"
+            "timonwong.shellcheck"
           ]
         }
       },
