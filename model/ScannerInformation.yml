@@ -127,9 +127,11 @@ ScannerInformation: !record
     # Constraint: size(tofResolution[typeOfModule1]) == typeOfModule1 + 1
     tofResolution: LowerTriangularMatrix<float>
 
-    # Edge information (in keV) for energy windows used for coincidences, triples etc
+    # Edge information (in keV) for energy windows used for coincidences, triples, single events etc
     #
     # This is a list of values for every module type.
+    # Note that energy windows for singles histograms are given in singlesHistogramEnergyBinEdges.
+    #
     # Constraint: size(eventEnergyBinEdges) == size(ScannerGeometry.replicatedModules)
     eventEnergyBinEdges: BinEdges*
 
