@@ -139,14 +139,24 @@ main(int argc, char const* argv[])
   std::vector<yardl::NDArray<float, 1>> all_energy_mid_points;
   for (petsird::TypeOfModule type_of_module = 0; type_of_module < num_module_types; ++type_of_module)
     {
+      const auto num_els_per_module = static_cast<uint32_t>(
+          scanner.scanner_geometry.replicated_modules[type_of_module].object.detecting_elements.transforms.size());
       std::cout << "------ Module type " << type_of_module << std::endl;
       std::cout << "Number of modules of this type: "
                 << scanner.scanner_geometry.replicated_modules[type_of_module].transforms.size() << std::endl;
-      std::cout << "Number of elements in modules of this type: "
-                << scanner.scanner_geometry.replicated_modules[type_of_module].object.detecting_elements.transforms.size()
-                << std::endl;
-      std::cout << "Total number of 'crystals' in modules of this type : "
+      std::cout << "Number of detecting elements in modules of this type: " << num_els_per_module << std::endl;
+      std::cout << "Total number of detecting elements in modules of this type: "
                 << petsird_helpers::get_num_det_els(scanner, type_of_module) << std::endl;
+
+      using petsird_helpers::geometry::get_ADP;
+      using petsird::ExpandedDetectionBin;
+      std::cout << "Average Detection Position (ADP) of (module, detecting element):\n"
+                << "\t(0,0): " << get_ADP(scanner, type_of_module, ExpandedDetectionBin({ 0, 0, 0 })) << '\n'
+                << "\t(0,1): " << get_ADP(scanner, type_of_module, ExpandedDetectionBin({ 0, 1, 0 })) << '\n'
+                << "\t(0," << num_els_per_module - 1
+                << "): " << get_ADP(scanner, type_of_module, ExpandedDetectionBin({ 0, num_els_per_module - 1, 0 })) << '\n'
+                << "\t(1,0): " << get_ADP(scanner, type_of_module, ExpandedDetectionBin({ 1, 0, 0 })) << '\n'
+                << "\t(2,0): " << get_ADP(scanner, type_of_module, ExpandedDetectionBin({ 2, 0, 0 })) << '\n';
 
       const auto& tof_bin_edges = scanner.tof_bin_edges[type_of_module][type_of_module];
       const auto num_tof_bins = tof_bin_edges.NumberOfBins();
@@ -243,30 +253,15 @@ main(int argc, char const* argv[])
 
                       if (print_events)
                         {
-                          std::cout << "CoincidenceEvent(detectionBins=[" << event.detection_bins[0] << ", "
-                                    << event.detection_bins[1] << "], tofIdx=" << event.tof_idx << "])\n";
-                          std::cout << "    "
-                                    << "[ExpandedDetectionBin(module=" << expanded_det_bin0.module_index << ", "
-                                    << "el=" << expanded_det_bin0.element_index << ", "
-                                    << "energy_index=" << expanded_det_bin0.energy_index
-                                    << "), ExpandedDetectionBin(module=" << expanded_det_bin1.module_index << ", "
-                                    << "el=" << expanded_det_bin1.element_index << ", "
-                                    << "energy_index=" << expanded_det_bin1.energy_index << ")]\n";
+                          std::cout << event << '\n';
+                          std::cout << "    " << expanded_det_bin0 << ", " << expanded_det_bin1 << '\n';
 
                           const auto eff = petsird_helpers::get_detection_efficiency(scanner, mtype_pair, event);
-                          std::cout << "    efficiency: " << eff << std::endl;
+                          std::cout << "    efficiency: " << eff << '\n';
 
-                          const auto box_shape0
-                              = petsird_helpers::geometry::get_detecting_box(scanner, mtype0, expanded_det_bin0);
-                          const auto box_shape1
-                              = petsird_helpers::geometry::get_detecting_box(scanner, mtype0, expanded_det_bin1);
-                          const auto mean0 = mean_position(box_shape0);
-                          const auto mean1 = mean_position(box_shape1);
-
-                          std::cout << "    mean of detection box 0: [" << mean0.c[0] << ", " << mean0.c[1] << ", " << mean0.c[2]
-                                    << "]\n";
-                          std::cout << "    mean of detection box 1: [" << mean1.c[0] << ", " << mean1.c[1] << ", " << mean1.c[2]
-                                    << "]\n";
+                          using petsird_helpers::geometry::get_ADP;
+                          std::cout << "    ADPs: " << get_ADP(scanner, mtype0, expanded_det_bin0) << ", "
+                                    << get_ADP(scanner, mtype0, expanded_det_bin1) << '\n';
                         }
                     }
                 }

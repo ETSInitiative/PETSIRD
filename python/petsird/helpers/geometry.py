@@ -2,7 +2,7 @@
 Preliminary helpers for geometric calculations for PETSIRD data
 """
 
-#  Copyright (C) 2024 - 2025 University College London
+#  Copyright (C) 2024 - 2026 University College London
 #
 #  SPDX-License-Identifier: Apache-2.0
 
@@ -17,9 +17,8 @@ def transform_to_mat44(
     return numpy.vstack([transform.matrix, [0, 0, 0, 1]])
 
 
-def mat44_to_transform(
-        mat: npt.NDArray[numpy.float32]) -> petsird.RigidTransformation:
-    return petsird.RigidTransformation(matrix=mat[0:3, :])
+def mat44_to_transform(mat: npt.NDArray) -> petsird.RigidTransformation:
+    return petsird.RigidTransformation(matrix=mat[0:3, :].astype("float32"))
 
 
 def coordinate_to_homogeneous(
@@ -27,9 +26,8 @@ def coordinate_to_homogeneous(
     return numpy.hstack([coord.c, 1])
 
 
-def homogeneous_to_coordinate(
-    hom_coord: npt.NDArray[numpy.float32], ) -> petsird.Coordinate:
-    return petsird.Coordinate(c=hom_coord[0:3])
+def homogeneous_to_coordinate(hom_coord: npt.NDArray) -> petsird.Coordinate:
+    return petsird.Coordinate(c=hom_coord[0:3].astype("float32"))
 
 
 def mult_transforms(
@@ -38,7 +36,7 @@ def mult_transforms(
     """multiply rigid transformations"""
     mat = numpy.array(
         ((1, 0, 0, 0), (0, 1, 0, 0), (0, 0, 1, 0), (0, 0, 0, 1)),
-        dtype="float32",
+        dtype="float64",
     )
 
     for t in reversed(transforms):
@@ -65,12 +63,101 @@ def transform_BoxShape(transform: petsird.RigidTransformation,
     ])
 
 
+def construct_coordinate(v: tuple[float, float, float]) -> petsird.Coordinate:
+    r"""return a petsird.Coordinate with values set from a tuple."""
+    return petsird.Coordinate(c=numpy.array(v, dtype=numpy.float32))
+
+
+def construct_cuboid_box(sizes_in_mm: tuple[float, float, float],
+                         center_in_mm: tuple[float, float, float],
+                         material_id: int) -> petsird.SolidVolume:
+    r"""return a cuboid volume
+
+    The box will be centered around center_in_mm and align with the coordinate axes.
+    """
+    assert all(s > 0 for s in sizes_in_mm)
+    from numpy import array
+
+    from petsird import Coordinate
+
+    # shorter names
+    L = sizes_in_mm
+    C = center_in_mm
+
+    shift = numpy.array(
+        (C[0] - L[0] / 2, C[1] - L[1] / 2, C[2] - L[2] / 2 - 100),
+        dtype="float32")
+
+    crystal_shape = petsird.BoxShape(corners=[
+        Coordinate(c=shift + array((0, 0, 0), dtype="float32")),
+        Coordinate(c=shift + array((0, 0, L[2]), dtype="float32")),
+        Coordinate(c=shift + array((0, L[1], L[2]), dtype="float32")),
+        Coordinate(c=shift + array((0, L[1], 0), dtype="float32")),
+        Coordinate(c=shift + array((L[0], 0, 0), dtype="float32")),
+        Coordinate(c=shift + array((L[0], 0, L[2]), dtype="float32")),
+        Coordinate(c=shift + array((L[0], L[1], L[2]), dtype="float32")),
+        Coordinate(c=shift + array((L[0], L[1], 0), dtype="float32")),
+    ])
+    return petsird.BoxSolidVolume(shape=crystal_shape, material_id=material_id)
+
+
+def construct_cuboid_module(num_repetitions: tuple[int, int, int],
+                            translations_in_mm: tuple[float, float, float],
+                            sizes_in_mm: tuple[float, float, float],
+                            average_DOI: float,
+                            material_id: int = 1) -> petsird.DetectorModule:
+    r"""return a module of num_crystals_per_module cuboids
+
+    Each detecting element will be a cuboid with the given sizes_in_mm.
+    The cuboids will be spaced according to translations_in_mm.
+    This allows having gaps between the cuboids.
+
+    The average DOI for photons travelling along 1,0,0 (i.e. the x-axis) of
+    the first layer in the module will be at 0,0,0. This means that the module
+    will be centered around y=0, z=0.
+
+    Constraint: all parameters need to be (element-wise) positive
+    Constraint: translations_in_mm >= sizes_in_mm
+    """
+    assert all(s > 0 for s in num_repetitions)
+    assert translations_in_mm >= sizes_in_mm
+    assert average_DOI > 0
+
+    # We need 0,0,0 of the box to correspond to the average_DOI position for
+    # photons travelling along 1,0,0.
+    # This gives the location of the "incoming" plane:
+    # -sizes_in_mm[0]/2 + center_in_mm[0] == -average_DOI
+    crystal = construct_cuboid_box(sizes_in_mm,
+                                   (sizes_in_mm[0] / 2 - average_DOI, 0., 0.),
+                                   material_id)
+    rep_volume = petsird.ReplicatedBoxSolidVolume(object=crystal)
+    N0 = num_repetitions[0]
+    N1 = num_repetitions[1]
+    N2 = num_repetitions[2]
+    for rep0 in range(N0):
+        for rep1 in range(N1):
+            for rep2 in range(N2):
+                transform = petsird.RigidTransformation(matrix=numpy.array(
+                    (
+                        (1.0, 0.0, 0.0, rep0 * translations_in_mm[0]),
+                        (0.0, 1.0, 0.0,
+                         (rep1 - (N1 - 1) / 2) * translations_in_mm[1]),
+                        (0.0, 0.0, 1.0,
+                         (rep2 - (N2 - 1) / 2) * translations_in_mm[2]),
+                    ),
+                    dtype="float32",
+                ))
+                rep_volume.transforms.append(transform)
+
+    return petsird.DetectorModule(detecting_elements=rep_volume)
+
+
 def get_detecting_box(
         scanner: petsird.ScannerInformation,
         type_of_module: petsird.TypeOfModule,
         expanded_detection_bin: petsird.ExpandedDetectionBin
 ) -> petsird.BoxShape:
-    """Find BoxShape corresponding to the expanded bin."""
+    """Find the (transformed) BoxShape corresponding to the expanded bin."""
     rep_module = scanner.scanner_geometry.replicated_modules[type_of_module]
     det_els = rep_module.object.detecting_elements
     mod_transform = rep_module.transforms[expanded_detection_bin.module_index]
@@ -79,3 +166,24 @@ def get_detecting_box(
         mult_transforms([mod_transform, transform]),
         det_els.object.shape,
     )
+
+
+def get_ADP(
+    scanner: petsird.ScannerInformation, type_of_module: petsird.TypeOfModule,
+    expanded_detection_bin: petsird.ExpandedDetectionBin
+) -> petsird.Coordinate:
+    """
+    Find the (transformed) average detection point (ADP) corresponding to a
+    ExpandedDetectionBin
+
+    This function finds the ADP for 511 keV gammas arriving along the axis
+    of the detecting elements.
+    """
+    rep_module = scanner.scanner_geometry.replicated_modules[type_of_module]
+    det_els = rep_module.object.detecting_elements
+    mod_transform = rep_module.transforms[expanded_detection_bin.module_index]
+    transform = det_els.transforms[expanded_detection_bin.element_index]
+    # the ADP before transformation is at (0,0,0) (per definition).
+    # could be optimised to do the multiplication with 0,0,0 analytically of course
+    return mult_transforms_coord([mod_transform, transform],
+                                 construct_coordinate((0., 0., 0.)))
