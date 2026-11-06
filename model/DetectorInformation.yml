@@ -36,10 +36,14 @@ ReplicatedDetectorModule: ReplicatedObject< DetectorModule >
 
 # Full definition of the geometry of the scanner.
 # A PETSIRD scanner is built hierarchically. It consists of
-# one or more ReplicatedDetectorModules, each of which is potentially moving independently
-# (see GantryMovementTimeBlock), and (optional) other structures (e.g. side-shielding).
+# one or more ReplicatedDetectorModules, each of which is potentially moving independently,
+# and (optional) other structures (e.g. side-shielding).
 # While most clinical scanners have only one type of DetectorModule, some
-# would have different types, e.g. for scanners with phoswich detectors, high resolution inserts, etc.
+# would have different types, e.g. for scanners with phoswich detectors,
+# high resolution inserts, etc.
+#
+# Note: the geometry is specified in gantry-coordinates (in the reference position). See
+# GantryMovementTimeBlock or BedMovementTimeBlock in the stream.
 ScannerGeometry: !record
   fields:
     # list of different types of (replicated) modules

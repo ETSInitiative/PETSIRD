@@ -54,6 +54,15 @@ ExamInformation: !record
     # A list with information for each radiopharmaceutical
     radiopharmaceuticals: DICOMRadiopharmaceuticalInformation*
 
+    # Expected Field of View shape (including bed position movements)
+    # The "axis" of the shape is defined as the "axis" of the scanner.
+    expected_FOV_shape: GeometricShape
+
+    # Expected Field of View transform (including bed position movements)
+    # After applying the transform, the shape coordinates are
+    # specified w.r.t. the CT/MR gantry, not the PET gantry.
+    expected_FOV_transform: RigidTransformation
+
     # A list of all possible signals that are recorded in the stream.
     # Actual values will be in recorded as ExternalSignalTimeBlock
     externalSignals: ExternalSignal*
