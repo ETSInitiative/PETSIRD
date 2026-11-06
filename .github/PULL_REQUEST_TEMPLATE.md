@@ -16,8 +16,10 @@
 
 ## Contribution Notes
 
-Please read and adhere to the [contribution guidelines](https://github.com/ETSInitiative/PRDdefinition/blob/master/CONTRIBUTING.md).
+<!--
+Please read and adhere to the [contribution guidelines](https://github.com/ETSInitiative/PETSIRD/blob/master/CONTRIBUTING.md).
 
 Please tick the following:
+-->
 
  - [ ] The content of this Pull Request (the Contribution) is intentionally submitted for inclusion in the ETSI software (the Work) under the terms and conditions of the [Apache-2.0](https://www.apache.org/licenses/LICENSE-2.0) License.
