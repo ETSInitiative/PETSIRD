@@ -57,7 +57,8 @@ ReplicatedObject<T>: !record
 # - First 4 vertices specify the front face (i.e. closest to the scanner axis/center).
 # - Last 4 vertices specify the back face (i.e. furthest to the scanner axis/center).
 # - The first vertex of the front/back face has to be "smaller" than the other vertices
-#   of that face (i.e. its coordinates have to be less in lexicographical order).
+#   of that face (i.e. its coordinates have to be less in lexicographical order,
+#   in order z,y,x).
 # - The "box axis" is from the "center of front face" to "center of back face".
 # - Order of vertices within the front/back face: clock-wise (around the "box axis").
 BoxShape: !record

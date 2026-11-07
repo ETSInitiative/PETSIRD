@@ -1,6 +1,10 @@
 """
 Validation functions and helpers related to scanner geometry.
 """
+#  Copyright (C) 2026 University College London
+#
+#  SPDX-License-Identifier: Apache-2.0
+
 from collections.abc import Sequence
 
 import numpy as np
@@ -9,7 +13,8 @@ import numpy.typing as npt
 import petsird
 
 
-def is_clockwise_2D(points: Sequence[tuple[float, float]]) -> bool:
+def is_clockwise_2D(
+        points: Sequence[tuple[float, float] | npt.NDArray]) -> bool:
     """
     Determine if a polygon's vertices are ordered clockwise.
 
@@ -43,15 +48,24 @@ def is_clockwise_3D(points: Sequence[npt.NDArray], direction1: npt.NDArray,
                     direction2: npt.NDArray) -> bool:
     """check if projections of points on plane are in clockwise order
 
-    The place is specified by 2 direction vectors.
+    The plane is specified by 2 direction vectors.
     """
     return is_clockwise_2D([(np.dot(p, direction1), np.dot(p, direction2))
                             for p in points])
 
 
 def is_lex_less(a: npt.NDArray, b: npt.NDArray) -> bool:
-    """check if a <= b using lexicographic order """
-    return np.all(a <= b)
+    """check if a < b using lexicographic order (last dimension first)"""
+    for x, y in zip(a[::-1], b[::-1]):
+        print(x, y)
+        if x > y:
+            return False
+    return True
+    for v in (a > b)[::-1]:
+        print(v)
+        if v:
+            return False
+    return True
 
 
 def validate_detecting_element(box: petsird.BoxShape) -> None:
