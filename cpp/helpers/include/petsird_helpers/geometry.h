@@ -166,16 +166,16 @@ construct_cuboid_box(std::array<float, 3> sizes_in_mm, std::array<float, 3> cent
 
 //! return a module of num_repetitions cuboids.
 /*!
- Each detecting element will be a cuboid with the given \a sizes_in_mm.
- The cuboids will be spaced according to \a translations_in_mm.
- This allows having gaps between the cuboids.
+  Each detecting element will be a cuboid with the given \a sizes_in_mm.
+  The cuboids will be spaced according to \a translations_in_mm.
+  This allows having gaps between the cuboids.
 
   The average DOI for photons travelling along 1,0,0 (i.e. the x-axis) of
   the first layer in the module will be at 0,0,0. This means that the module
   will be centered around y=0, z=0.
 
- Constraint: all parameters need to be (element-wise) positive
-    Constraint: \a translations_in_mm >= \a sizes_in_mm.
+  Constraint: all parameters need to be (element-wise) positive
+  Constraint: \a translations_in_mm >= \a sizes_in_mm.
 */
 inline petsird::DetectorModule
 construct_cuboid_module(std::array<float, 3> num_repetitions, std::array<float, 3> translations_in_mm,
@@ -248,7 +248,9 @@ get_ADP(const petsird::ScannerInformation& scanner, const petsird::TypeOfModule&
 }
 
 //! find the (transformed) average detection position (ADP) corresponding to a DetectionBin
-/*! Calls get_ADP(const petsird::ScannerInformation&, const petsird::TypeOfModule&, const petsird::ExpandedDetectionBin&). */
+/*!
+  Calls get_ADP(const petsird::ScannerInformation&, const petsird::TypeOfModule&, const petsird::ExpandedDetectionBin&).
+*/
 inline petsird::Coordinate
 get_ADP(const petsird::ScannerInformation& scanner, const petsird::TypeOfModule& type_of_module,
         const petsird::DetectionBin& detection_bin)
