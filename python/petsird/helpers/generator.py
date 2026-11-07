@@ -447,6 +447,7 @@ def get_header() -> petsird.Header:
     return petsird.Header(
         exam=exam,
         scanner=get_scanner_info([mtype0_def, mtype1_def]),
+        contains_weighted_event_time_blocks=False,
     )
 
 

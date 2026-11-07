@@ -41,6 +41,8 @@ if __name__ == "__main__":
 
     with petsird.BinaryPETSIRDReader(file) as reader:
         header = reader.read_header()
+        if header.contains_weighted_event_time_blocks:
+            print("WARNING: this program ignores WeightedEventTimeBlocks.")
         scanner = header.scanner
         if header.exam is not None:
             print("Patient ID:", header.exam.patient.patient_id)
