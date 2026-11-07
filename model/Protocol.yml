@@ -11,9 +11,12 @@ Header: !record
   fields:
     scanner: ScannerInformation
     exam: ExamInformation?
+    # boolean value to specify if either weighted or (default) unweighted EventTimeBlock will be present.
+    # See WeightedEventTimeBlock
+    containsWeightedEventTimeBlocks: bool
 
 # types of timeBlocks
-TimeBlock: [EventTimeBlock, ExternalSignalTimeBlock, BedMovementTimeBlock, GantryMovementTimeBlock, DeadTimeTimeBlock, SinglesHistogramTimeBlock]
+TimeBlock: [EventTimeBlock, WeightedEventTimeBlock, ExternalSignalTimeBlock, BedMovementTimeBlock, GantryMovementTimeBlock, DeadTimeTimeBlock, SinglesHistogramTimeBlock]
 
 # Type definition for a list of single events (for a module of a specific type)
 ListOfSingleEvents: SingleEvent*
@@ -108,6 +111,50 @@ EventTimeBlock: !record
    # Constraint: (size(quadrupleEvents) == 0) || (size(quadrupleEvents[type1][type2]) == type2 + 1)
    # Constraint: (size(quadrupleEvents) == 0) || (size(quadrupleEvents[type1][type2][type3]) == type3 + 1)
    quadrupleEvents: ListOfQuadrupleEvents****
+
+# time-block that stores the detected (gamma photon) events as lists with weights.
+# This is an exact copy of EventTimeBlock, but with additional weights per event.
+# These weights could be used for output of Monte Carlo simulators that use
+# importance sampling and other variance reduction techniques.
+# An alternative use of the weights could be if the list-mode data
+# has undergone some pre-corrections.
+#
+# Constraint: a PETSIRD file can only contain WeightedEventTimeBlocks or EventTimeBlocks
+# Constraint: sizes of the lists of weights have to be identical to the event lists
+WeightedEventTimeBlock: !record
+  fields:
+   # time interval for this time block
+   timeInterval: TimeInterval
+
+   # nested vector with lists of singles
+   singleEvents: ListOfSingleEvents*
+
+   # nested vector with the weights for the singles
+   singleEventsWeights: float**
+
+   # nested vector with lists of prompts in this time block
+   promptEvents: LowerTriangularMatrix<ListOfCoincidenceEvents>
+
+   # nested vector with lists of prompts in this time block
+   promptEventsWeights: LowerTriangularMatrix<float*>
+
+   # nested vector with lists of delayed coincidences in this time block
+   delayedEvents: LowerTriangularMatrix<float*>
+
+   # nested vector with lists of delayed coincidences in this time block
+   delayedEventsWeights: LowerTriangularMatrix<float*>
+
+   # nested vector with lists of triple coincidences in this time block
+   tripleEvents: ListOfTripleEvents***
+
+   # nested vector with lists of triple coincidences in this time block
+   tripleEventsWeights: float****
+
+   # nested vector with lists of quadruple coincidences in this time block
+   quadrupleEvents: ListOfQuadrupleEvents****
+
+   # nested vector with lists of quadruple coincidences in this time block
+   quadrupleEventsWeights: float*****
 
 ExternalSignalTypeEnum: !enum
   values:

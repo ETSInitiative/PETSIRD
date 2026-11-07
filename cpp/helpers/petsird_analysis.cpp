@@ -125,6 +125,9 @@ main(int argc, char const* argv[])
   auto reader_uptr = petsird_reader(filename);
   petsird::Header header;
   reader_uptr->ReadHeader(header);
+  if (header.contains_weighted_event_time_blocks)
+    std::cout << "WARNING: this program ignores WeightedEventTimeBlocks.\n";
+
   const auto& scanner = header.scanner;
 
   std::cout << "Processing file: " << filename << std::endl;

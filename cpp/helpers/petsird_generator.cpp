@@ -234,6 +234,7 @@ petsird::Header
 get_header()
 {
   petsird::Header header;
+  header.contains_weighted_event_time_blocks = false;
   header.exam = petsird::ExamInformation();
   auto& exam = *header.exam;
   exam.modality = "PT";
