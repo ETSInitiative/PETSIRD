@@ -49,6 +49,8 @@ jobs:
       run: just generate
     - name: Run Python
       run: just run-python
+    - name: pytest
+      run: pytest python
     - name: Build cpp
       run: |
         export HDF5_ROOT="$CONDA_PREFIX"
