@@ -67,7 +67,17 @@ jobs:
         cp LICENSE.txt python/LICENSE
         cp LICENSE.txt cpp/install/LICENSE
         [[ "${GITHUB_REF}" == refs/tags/* ]] && tag="${GITHUB_REF#refs/tags/}" || tag=$(python -c 'import importlib.metadata as m; print(m.version("petsird"))')
-        tgz="petsird_${tag}${{ steps.yardl.outputs.suffix }}"
+        if test ${{ matrix.os }} = windows; then
+          DL_SUFFIX=_windows_x86_64.zip
+        elif test ${{ matrix.os }} = macos; then
+          DL_SUFFIX=_darwin_arm64.tar.gz
+        elif test ${{ matrix.os }} = ubuntu; then
+          DL_SUFFIX=_linux_x86_64.tar.gz
+        else
+          echo "ci.yml needs to be adapted for the OS!"
+          exit 1
+        fi
+        tgz="petsird_${tag}${DL_SUFFIX}"
         if test ${{ matrix.os }} = windows; then
           cd cpp/install
           zip -r "../../$tgz" .
