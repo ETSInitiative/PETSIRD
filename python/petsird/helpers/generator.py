@@ -96,7 +96,6 @@ mtype1_def = CylindricalBlocksInfo(
 )
 # Some constants related to how many events we will generate etc
 NUMBER_OF_TIME_BLOCKS = 6
-NUMBER_OF_EVENTS = 1000
 COUNT_RATE = 500.  # 1/ms
 EVENT_TIME_BLOCK_DURATION = 1  # ms
 
