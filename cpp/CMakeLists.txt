@@ -15,6 +15,9 @@ include(CMakePackageConfigHelpers)
 # set(CMAKE_CXX_STANDARD 17)
 # set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# make sure that shared libraries can link against this static one
+set(CMAKE_POSITION_INDEPENDENT_CODE True)
+
 if(WIN32)
   add_compile_options(/W3 /WX)
 else()
