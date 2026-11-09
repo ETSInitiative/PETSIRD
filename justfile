@@ -42,7 +42,7 @@ cmake_build_dir := "cpp/build"
 
 @build: build-cpp build-python
 
-@run: run-cpp run-python
+@run: run-cpp-python
 
 @run-cpp: build-cpp
     cd {{cmake_build_dir}}/helpers && \
@@ -50,9 +50,17 @@ cmake_build_dir := "cpp/build"
     ./petsird_generator --hdf5 testdata.petsirdhdf5 && \
     ./petsird_analysis testdata.petsirdhdf5 && \
     echo ""================= Running with binary output "=================" && \
-    ./petsird_generator --hdf5 testdata.petsirdbin && \
+    ./petsird_generator --binary testdata.petsirdbin && \
     ./petsird_analysis testdata.petsirdbin
 
 @run-python: build-python
     echo ""================= Running Python with binary output "=================" && \
     python -m petsird.helpers.generator | python -m petsird.helpers.analysis
+
+@run-cpp-python: run-python run-cpp
+    cd {{cmake_build_dir}}/helpers && \
+    echo ""================= Running Python analysis with C++ binary output "=================" && \
+    python -m petsird.helpers.analysis -i testdata.petsirdbin && \
+    echo ""================= Running C++ analysis with Python binary output "=================" && \
+    python -m petsird.helpers.generator > testdata_python.petsirdbin && \
+    ./petsird_analysis testdata_python.petsirdbin
