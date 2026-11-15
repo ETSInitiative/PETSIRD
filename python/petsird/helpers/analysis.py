@@ -98,7 +98,7 @@ if __name__ == "__main__":
 
         print("Calibration factor: ",
               scanner.detection_efficiencies.calibration_factor)
-        if scanner.detection_efficiencies.module_pair_sgidlut is not None:
+        if scanner.detection_efficiencies.module_pair_sgidlut:
             for type_of_module0 in range(num_module_types):
                 for type_of_module1 in range(type_of_module0 + 1):
                     print("------ Module type pair ", type_of_module0,
