@@ -48,10 +48,10 @@ ReplicatedDetectorModule: ReplicatedObject< DetectorModule >
 # GantryMovementTimeBlock or BedMovementTimeBlock in the stream.
 ScannerGeometry: !record
   fields:
-    # List of different types of (replicated) modules.
+    # List  of (replicated) modules of different types (indexed by type_of_module).
     # It is strongly advised to order transforms "consecutively" in some sense, but this
     # order is left to the writer of the PETSIRD file.
-    # Constraint: numberOfModuleTypes > 0
+    # Constraint: size(replicatedModules) > 0
     replicatedModules: ReplicatedDetectorModule*
     # shielding etc
     # These nonDetectingVolumes cannot move w.r.t. the reference position.
