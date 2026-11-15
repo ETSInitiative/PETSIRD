@@ -153,10 +153,6 @@ def get_detection_efficiency(
         detection_bin_1, detection_bin_2 = event_or_detection_bin_1.detection_bins[:
                                                                                    2]
 
-    if scanner.detection_efficiencies is None:
-        # should never happen really, but this way, we don't crash.
-        return 1.
-
     assert are_detections_ordered(type_of_module_pair, detection_bin_1,
                                   detection_bin_2)
 
@@ -165,7 +161,7 @@ def get_detection_efficiency(
 
     # per detection_bin efficiencies
     detection_bin_efficiencies = scanner.detection_efficiencies.detection_bin_efficiencies
-    if detection_bin_efficiencies is not None:
+    if detection_bin_efficiencies:
         detection_bin_efficiencies0 = (
             detection_bin_efficiencies[type_of_module_pair[0]])
         detection_bin_efficiencies1 = (
@@ -178,10 +174,10 @@ def get_detection_efficiency(
     # per module-pair efficiencies
     module_pair_efficiencies_vectors = (
         scanner.detection_efficiencies.module_pair_efficiencies_vectors)
-    if module_pair_efficiencies_vectors is not None:
+    if module_pair_efficiencies_vectors:
         module_pair_SGID_LUT = scanner.detection_efficiencies.module_pair_sgidlut[
             type_of_module_pair[0]][type_of_module_pair[1]]
-        assert module_pair_SGID_LUT is not None
+        assert module_pair_SGID_LUT  # test it is not empty
         expanded_det_bin0 = expand_detection_bin(scanner,
                                                  type_of_module_pair[0],
                                                  detection_bin_1)

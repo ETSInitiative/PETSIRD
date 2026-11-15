@@ -68,18 +68,6 @@ if __name__ == "__main__":
                 "Total number of detecting elements in modules of this type: ",
                 get_num_det_els(scanner, type_of_module))
 
-            print(
-                "Average Detection Position (ADP) of (module, detecting element):"
-            )
-            for (m, e) in ((0, 0), (0, 1), (0, 5), (0, num_els_per_module - 1),
-                           (1, 0), (2, 0)):
-                ADP = petsird.helpers.geometry.get_ADP(
-                    scanner, type_of_module,
-                    petsird.ExpandedDetectionBin(module_index=m,
-                                                 element_index=e,
-                                                 energy_index=0))
-                print(f"\t({m},{e}): {ADP}")
-
             tof_bin_edges = scanner.tof_bin_edges[type_of_module][
                 type_of_module]
             num_tof_bins = tof_bin_edges.number_of_bins()
@@ -98,7 +86,7 @@ if __name__ == "__main__":
 
         print("Calibration factor: ",
               scanner.detection_efficiencies.calibration_factor)
-        if scanner.detection_efficiencies.module_pair_sgidlut is not None:
+        if scanner.detection_efficiencies.module_pair_sgidlut:
             for type_of_module0 in range(num_module_types):
                 for type_of_module1 in range(type_of_module0 + 1):
                     print("------ Module type pair ", type_of_module0,
@@ -173,26 +161,20 @@ if __name__ == "__main__":
                                     scanner, mtype_pair, event)
                                 print("    efficiency:", eff)
 
-                                # get detector-element coordinates (relative to gantry)
-                                box_shape0 = petsird.helpers.geometry.get_detecting_box(
-                                    scanner, mtype0, expanded_det_bin0)
-                                box_shape1 = petsird.helpers.geometry.get_detecting_box(
-                                    scanner, mtype0, expanded_det_bin1)
+                                # get detector-element coordinates (relative to gantry).
+                                # Commented as not used currently
+                                # box_shape0 = petsird.helpers.geometry.get_detecting_box(
+                                #     scanner, mtype0, expanded_det_bin0)
+                                # box_shape1 = petsird.helpers.geometry.get_detecting_box(
+                                #     scanner, mtype0, expanded_det_bin1)
 
                                 # print some info
                                 # (but not complete box, as it's a bit overwhelming)
-                                print(
-                                    "    mean of detection box 0:",
-                                    sum([
-                                        corner.c
-                                        for corner in box_shape0.corners
-                                    ]) / len(box_shape0.corners))
-                                print(
-                                    "    mean of detection box 1:",
-                                    sum([
-                                        corner.c
-                                        for corner in box_shape1.corners
-                                    ]) / len(box_shape1.corners))
+                                ADP0 = petsird.helpers.geometry.get_ADP(
+                                    scanner, mtype0, expanded_det_bin0)
+                                ADP1 = petsird.helpers.geometry.get_ADP(
+                                    scanner, mtype0, expanded_det_bin1)
+                                print(f"    ADP0: {ADP0}, ADP1: {ADP1}")
 
         print(f"Last time block at {last_time} ms")
         print(f"Number of prompt events: {num_prompts}")
