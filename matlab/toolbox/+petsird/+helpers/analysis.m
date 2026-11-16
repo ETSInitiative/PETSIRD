@@ -36,7 +36,7 @@ fprintf("Energy bin edges: " + join(repelem("%f", length(event_energy_bin_edges)
 energy_mid_points = (event_energy_bin_edges(1:end-1) + event_energy_bin_edges(2:end)) / 2;
 fprintf("Event energy mid points: " + join(repelem("%f", length(energy_mid_points))) + "\n", energy_mid_points);
 
-sgidlut = header.scanner.detection_efficiencies.module_pair_sgidlut;
+sgidlut = header.scanner.detection_efficiencies.module_pair_sgidluts;
 fprintf("SGID LUT:\n");
 disp(sgidlut);
 

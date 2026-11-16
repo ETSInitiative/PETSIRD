@@ -43,13 +43,13 @@ ModulePairEfficienciesVector: ModulePairEfficiencies*
 # (a list of ModulePairEfficiencies, each entry corresponding to a module pair).
 #
 # To save memory, the modulePairEfficienciesVector contains only one element for each SGID.
-# The SGID for a module-pair can be found in modulePairSGIDLUT.
+# The SGID for a module-pair can be found in modulePairSGIDLUTs.
 #
 # Finding the total detection efficiency therefore follows these steps in pseudo-code
 # 0. obtain module-types
 # 1. find module_index for each detection_bin
 # 2. find detection_bin "inside" each module
-# 3. SGID = modulePairSGIDLUT[type_of_module1][type_of_module2][module_index1][module_index2]
+# 3. SGID = modulePairSGIDLUTs[type_of_module1][type_of_module2][module_index1][module_index2]
 # 4. if (SGID < 0) return 0
 # 5. module_pair_efficiencies = modulePairEfficienciesVector[type_of_module1][type_of_module2][SGID]
 # 6. return
@@ -83,9 +83,9 @@ DetectionEfficiencies: !record
     detectionBinEfficiencies: DetectionBinEfficiencies*
     # Nested list of lookup tables for SGIDs, one for each module-type pair (type_of_module2<=type_of_module1).
     # Also indicates if coincidences between a module-pair are recorded.
-    modulePairSGIDLUT: LowerTriangularMatrix<ModulePairSGIDLUT>
+    modulePairSGIDLUTs: LowerTriangularMatrix<ModulePairSGIDLUT>
     # Nested list of all modulePairEfficienciesVectors (one for each module-type pair with type_of_module2<=type_of_module1)
-    # Constraint: size(modulePairEfficienciesVectors[type_of_module1][type_of_module2]) == max(modulePairSGIDLUT[type_of_module1][type_of_module2]) + 1
+    # Constraint: size(modulePairEfficienciesVectors[type_of_module1][type_of_module2]) == max(modulePairSGIDLUTs[type_of_module1][type_of_module2]) + 1
     modulePairEfficienciesVectors: LowerTriangularMatrix<ModulePairEfficienciesVector>
 
 # Type for alive-time fractions for singles
