@@ -85,7 +85,7 @@ def construct_cuboid_box(sizes_in_mm: tuple[float, float, float],
     C = center_in_mm
 
     shift = numpy.array(
-        (C[0] - L[0] / 2, C[1] - L[1] / 2, C[2] - L[2] / 2 - 100),
+        (C[0] - L[0] / 2, C[1] - L[1] / 2, C[2] - L[2] / 2),
         dtype="float32")
 
     crystal_shape = petsird.BoxShape(corners=[
