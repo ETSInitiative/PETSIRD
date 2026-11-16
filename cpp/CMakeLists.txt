@@ -5,9 +5,9 @@
 cmake_minimum_required(VERSION 3.12.0)
 cmake_policy(SET CMP0074 NEW) # find_package() uses <PackageName>_ROOT variables
 
-project(PETSIRD VERSION 0.13.2 LANGUAGES CXX)
+project(PETSIRD VERSION 0.13.3 LANGUAGES CXX)
 include(GNUInstallDirs)
-set(PETSIRD_CMAKE_DIR "${CMAKE_INSTALL_LIBDIR}/cmake/PETSIRD-0.13")
+set(PETSIRD_CMAKE_DIR "${CMAKE_INSTALL_LIBDIR}/cmake/PETSIRD-${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}")
 
 include(CMakePackageConfigHelpers)
 
