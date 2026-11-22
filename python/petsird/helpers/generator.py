@@ -25,6 +25,7 @@ from petsird.helpers.create import (
     construct_rectangular_matrix, construct_vector,
     initialize_scanner_information_dimensions)
 from petsird.helpers.geometry import construct_cuboid_module, mult_transforms
+from petsird.validate.detection_efficiencies import validate_module_pair_LUTs
 from petsird.validate.geometry import validate_detecting_element
 
 
@@ -41,6 +42,9 @@ class CylindricalBlocksInfo:
     average_DOI: float
     num_crystals_per_module: tuple[int, int, int]
     num_modules_along_ring: int
+    # minimum distance between the modules along the ring to record coincidences
+    # (has to be >= 1)
+    min_distance_along_ring: int
     num_modules_along_axis: int
     radius: float  # in mm
     arc: float  # in radians
@@ -63,6 +67,7 @@ mtype0_def = CylindricalBlocksInfo(
     average_DOI=9.,
     num_crystals_per_module=(2, 4, 7),
     num_modules_along_ring=20,
+    min_distance_along_ring=2,
     num_modules_along_axis=2,
     arc=2 * math.pi,
     start_angle=0.,
@@ -82,6 +87,7 @@ mtype1_def = CylindricalBlocksInfo(
     average_DOI=9.,
     num_crystals_per_module=(1, 3, 30),
     num_modules_along_ring=15,
+    min_distance_along_ring=4,
     num_modules_along_axis=1,
     arc=math.pi,
     start_angle=0.,
@@ -188,7 +194,7 @@ def create_empty_module_pair_efficiencies(scanner: petsird.ScannerInformation,
                                           type_of_module0: int,
                                           type_of_module1: int,
                                           value: float) -> list[list]:
-    """return a 2d array (filled with 1) of the appropriate size"""
+    """return a 2d array (filled with `value`) of the appropriate size"""
     rep_module = scanner.scanner_geometry.replicated_modules[type_of_module0]
     detecting_elements0 = rep_module.object.detecting_elements
     num_det_els_in_module0 = len(detecting_elements0.transforms)
@@ -224,53 +230,66 @@ def get_module_pair_efficiencies_one_module_type(
     rep_module = scanner.scanner_geometry.replicated_modules[type_of_module]
     num_modules = len(rep_module.transforms)
 
-    # Ideally we would get the following from the transforms, but we need to
+    # Ideally we would get the symmetries from the transforms, but we need to
     # know the scanner geometry anyway for the symmetries, so we get it from module_def
-    num_modules_along_axis = module_def.num_modules_along_axis
-    num_modules_along_ring = module_def.num_modules_along_ring
-    # We will (only) use rotational symmetries translation along the axis
+    # We will (only) use rotational symmetries and translation along the axis.
     # We assume all module-pairs are in coincidence, except those
     # with the same angle.
-    # Writing a module number as (z-position, angle):
-    #   eff((z1,a1), (z2, a2)) == eff((z1,0), (z2, abs(a2-a1)))
-    # or in linear indices
-    #   eff(z1 + NZ * a1, z2 + NZ * a2) == eff(z1, z2 + NZ * abs(a2 - a1))
-    # (coincident) SGIDs need to start from 0, so ignoring self-coincident
-    # angles we get
-    #   SGID = z1 + NZ * (z2 + NZ * abs(a2 - a1) - 1)
-    num_SGIDs = num_modules_along_axis * num_modules_along_axis * (
-        num_modules_along_ring - 1)
-    NZ = num_modules_along_axis
     module_pair_SGID_LUT = create_empty_module_pair_SGID_LUT(
         scanner, type_of_module, type_of_module)
+
+    NZ = module_def.num_modules_along_axis
+    # attempt to find number of modules along the ring if a full arc would be used
+    NA = round(module_def.num_modules_along_ring * 2 * math.pi /
+               module_def.arc)
+    modN = module_def.min_distance_along_ring  # limit of modules in coincidence
+    assert modN > 0
+    SGID = 0
     for mod1 in range(num_modules):
         for mod2 in range(mod1 + 1):
-            z1 = mod1 % NZ
-            a1 = mod1 // NZ
-            z2 = mod2 % NZ
-            a2 = mod2 // NZ
-            if a1 == a2:
+            a1, z1 = mod1 // NZ, mod1 % NZ
+            a2, z2 = mod2 // NZ, mod2 % NZ
+            if (a1 - a2) < (modN) or (a1 - a2) > (NA - modN):
+                # modules not in coincidence
                 module_pair_SGID_LUT[mod1][mod2] = -1
             else:
-                module_pair_SGID_LUT[mod1][mod2] = z1 + NZ * (
-                    z2 + NZ * (abs(a2 - a1) - 1))
+                # find reference modules by applying rotational and translational symmetry
+                ref_a1, ref_a2 = (a1 - a2, 0) if a1 >= a2 else (0, a2 - a1)
+                # WARNING: this assumes equidistant z-spacing between modules.
+                # If that is not the case, the following line needs to be adapted.
+                ref_z1, ref_z2 = (z1 - z2, 0) if z1 >= z2 else (0, z2 - z1)
+                ref_mod1 = ref_z1 + NZ * ref_a1
+                ref_mod2 = ref_z2 + NZ * ref_a2
+                assert ref_mod1 >= ref_mod2
 
-    # print("SGID LUT:\n", module_pair_SGID_LUT, file=sys.stderr)
-    assert max(map(max, module_pair_SGID_LUT)) == num_SGIDs - 1
+                ref_SGID = module_pair_SGID_LUT[ref_mod1][ref_mod2]
+                if ref_SGID == -1:
+                    # we haven't seen this reference module-pair yet, so assign a new SGID
+                    ref_SGID = SGID
+                    module_pair_SGID_LUT[ref_mod1][ref_mod2] = ref_SGID
+                    SGID += 1
+                module_pair_SGID_LUT[mod1][mod2] = ref_SGID
+    num_SGIDs = SGID
+
+    # print("num module pairs: ",
+    #       num_modules * (num_modules - 1) // 2,
+    #       "num SGIDs: ",
+    #       num_SGIDs,
+    #       file=sys.stderr)
+    #
+    # for SGID in range(num_SGIDs):
+    #     mod_pairs = indices_in_2D_LUT(SGID, module_pair_SGID_LUT)
+    #     print(f"pairs for SGID={SGID}", [*mod_pairs], file=sys.stderr)
+
     module_pair_efficiencies_vector = []
 
     for SGID in range(num_SGIDs):
-        # Extract first module_pair for this SGID. However, as this is
-        # currently unused, it is commented out
-        # module_pair = numpy.argwhere(module_pair_SGID_LUT == SGID)[0]
-        # print(module_pair, file=sys.stderr)
         # give some (non-physical) value
         module_pair_efficiencies = create_empty_module_pair_efficiencies(
             scanner, type_of_module, type_of_module, value=float(SGID + 1))
         module_pair_efficiencies_vector.append(
             petsird.ModulePairEfficiencies(values=module_pair_efficiencies,
                                            sgid=SGID))
-        assert len(module_pair_efficiencies_vector) == SGID + 1
 
     return (module_pair_SGID_LUT, module_pair_efficiencies_vector)
 
@@ -344,6 +363,7 @@ def fill_detection_efficiencies(
                 mtype0][mtype1] = module_pair_efficiencies_vector
     # print(scanner.detection_efficiencies.module_pair_sgidlut, file=stderr)
     # print(scanner.detection_efficiencies.module_pair_efficiencies_vectors, file=stderr)
+    validate_module_pair_LUTs(scanner)
 
 
 def get_scanner_info(

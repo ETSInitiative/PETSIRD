@@ -6,10 +6,22 @@ Preliminary helpers for geometric calculations for PETSIRD data
 #
 #  SPDX-License-Identifier: Apache-2.0
 
+from collections.abc import Iterable, Iterator
+from math import ceil
+
 import numpy
+import numpy.linalg
 import numpy.typing as npt
 
 import petsird
+
+
+def distance_squared(c1: petsird.Coordinate, c2: petsird.Coordinate) -> float:
+    return numpy.linalg.norm(c1.c - c2.c)**2
+
+
+def distance(c1: petsird.Coordinate, c2: petsird.Coordinate) -> float:
+    return numpy.linalg.norm(c1.c - c2.c)
 
 
 def transform_to_mat44(
@@ -186,3 +198,87 @@ def get_ADP(
     # could be optimised to do the multiplication with 0,0,0 analytically of course
     return mult_transforms_coord([mod_transform, transform],
                                  construct_coordinate((0., 0., 0.)))
+
+
+def are_possibly_symmetric_with_first(
+    scanner: petsird.ScannerInformation,
+    type_of_module0: petsird.TypeOfModule,
+    type_of_module1: petsird.TypeOfModule,
+    module_pairs: Iterable[tuple[int, int]],
+    num_det_el_test_pairs: tuple[int, int] = (-1, -1)
+) -> Iterator[bool]:
+    """generator testing if module_pairs are possibly geometrically related
+
+    Checks distances between ADPs to see if a sequence of module pairs all have
+    the same distances as the first module pair. If they do, this could mean
+    their geometric efficiency factors can be the same (but it is not guaranteed).
+
+    To save time, you can test only some detecting elements in each module-pair.
+
+    Args:
+        module_pairs:
+            pairs to test
+        num_det_el_test_pairs:
+            tuple with number of detecting elements in each module that will be selected
+            to test.
+            Set to (-1, 2) to test all det_els in the first module, and 2 in the
+            second module.
+    Returns:
+        generates True or False for every element in module_pairs.
+        The first value will always be True.
+    """
+    try:
+        ref_mod_pair = next(module_pairs)
+        # first item is identical to itself, so yield True
+        yield True
+    except StopIteration:
+        # no items in module_pairs
+        return
+
+    rep_module0 = scanner.scanner_geometry.replicated_modules[type_of_module0]
+    rep_module1 = scanner.scanner_geometry.replicated_modules[type_of_module1]
+    num_det_els0 = rep_module0.number_of_objects()
+    num_det_els1 = rep_module1.number_of_objects()
+    num0 = num_det_el_test_pairs[0]
+    if num0 < 1:
+        num0 = num_det_els0
+    num1 = num_det_el_test_pairs[1]
+    if num1 < 1:
+        num1 = num_det_els1
+    el_indices0 = range(0, num_det_els0, ceil(num_det_els0 / num0))
+    el_indices1 = range(0, num_det_els1, ceil(num_det_els1 / num1))
+    ref_ADPs0 = [
+        get_ADP(
+            scanner, type_of_module0,
+            petsird.ExpandedDetectionBin(module_index=ref_mod_pair[0],
+                                         element_index=el_idx))
+        for el_idx in el_indices0
+    ]
+    ref_ADPs1 = [
+        get_ADP(
+            scanner, type_of_module1,
+            petsird.ExpandedDetectionBin(module_index=ref_mod_pair[1],
+                                         element_index=el_idx))
+        for el_idx in el_indices1
+    ]
+    for mod_pair in module_pairs:
+        ADPs0 = [
+            get_ADP(
+                scanner, type_of_module0,
+                petsird.ExpandedDetectionBin(module_index=mod_pair[0],
+                                             element_index=el_idx))
+            for el_idx in el_indices0
+        ]
+        ADPs1 = [
+            get_ADP(
+                scanner, type_of_module1,
+                petsird.ExpandedDetectionBin(module_index=mod_pair[1],
+                                             element_index=el_idx))
+            for el_idx in el_indices1
+        ]
+
+        # check distance
+        yield all(
+            abs(distance(ADP0, ADP1) - distance(ref_ADP0, ref_ADP1) < 1e-1)
+            for ADP0, ref_ADP0 in zip(ADPs0, ref_ADPs0)
+            for ADP1, ref_ADP1 in zip(ADPs1, ref_ADPs1))
