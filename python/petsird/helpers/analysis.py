@@ -11,7 +11,7 @@ import numpy as np
 import petsird
 import petsird.helpers.geometry
 from petsird.helpers import (expand_detection_bin, get_detection_efficiency,
-                             get_num_det_els)
+                             get_num_det_els, indices_in_2D_LUT)
 
 
 def parserCreator():
@@ -87,15 +87,19 @@ if __name__ == "__main__":
         print("Calibration factor: ",
               scanner.detection_efficiencies.calibration_factor)
         if scanner.detection_efficiencies.module_pair_sgidlut:
-            for type_of_module0 in range(num_module_types):
-                for type_of_module1 in range(type_of_module0 + 1):
-                    print("------ Module type pair ", type_of_module0,
-                          type_of_module1)
-                    with np.printoptions(threshold=2000, linewidth=140):
-                        print(
-                            "SGID LUT:\n",
-                            scanner.detection_efficiencies.module_pair_sgidlut[
-                                type_of_module0][type_of_module1])
+            for mtype0 in range(num_module_types):
+                for mtype1 in range(mtype0 + 1):
+                    print("------ Module type pair ", mtype0, mtype1)
+                    LUT = scanner.detection_efficiencies.module_pair_sgidlut[
+                        mtype0][mtype1]
+                    for SGID in range(
+                            len(scanner.detection_efficiencies.
+                                module_pair_efficiencies_vectors[mtype0]
+                                [mtype1])):
+                        mod_pairs = [*indices_in_2D_LUT(SGID, LUT)]
+                        with np.printoptions(threshold=2000, linewidth=140):
+                            print(f"pairs for SGID={SGID}", mod_pairs)
+
         print("Singles histogram level: ", scanner.singles_histogram_level)
         if scanner.singles_histogram_level != petsird.SinglesHistogramLevelType.NONE:
             print(
