@@ -2,7 +2,7 @@
 Preliminary helpers for PETSIRD data
 """
 
-#  Copyright (C) 2024 - 2025 University College London
+#  Copyright (C) 2024 - 2026 University College London
 #
 #  SPDX-License-Identifier: Apache-2.0
 
@@ -208,3 +208,11 @@ def get_detection_efficiency(
                                             expanded_det_bin1.energy_index]
 
     return eff
+
+
+def indices_in_2D_LUT(entry: int, LUT: list[list[int]]) -> tuple[int, int]:
+    """A generator that yields (row,col) tuples for entries in the LUT matching entry"""
+    for row, LUT_row in enumerate(LUT):
+        for col, value in enumerate(LUT_row):
+            if value == entry:
+                yield row, col
