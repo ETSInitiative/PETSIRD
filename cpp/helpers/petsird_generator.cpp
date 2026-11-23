@@ -12,9 +12,6 @@
 #include <memory>
 #include <string>
 
-// comment if you don't want HDF5 capability
-#define USE_HDF5
-
 #ifdef USE_HDF5
 #  include "petsird/hdf5/protocols.h"
 #endif
@@ -327,21 +324,25 @@ main(int argc, char* argv[])
   bool hdf5 = true;
 #else
   constexpr auto usage = "petsird_generator [--binary] filename\n"
-                         "\tdefault is to use binary output (hdf5 support is not enabled)\n";
-  bool hdf5 = true;
+                         "\tdefault is to use binary output (note: hdf5 support is not enabled)\n";
+  bool hdf5 = false;
 #endif
   if (argc == 3)
     {
-#ifdef USE_HDF5
       if (std::string(argv[1]) == "--hdf5")
-        hdf5 = true;
-      else
+        {
+#ifdef USE_HDF5
+          hdf5 = true;
+#else
+          std::cerr << usage;
+          return 1;
 #endif
-          if (std::string(argv[1]) == "--binary")
+        }
+      else if (std::string(argv[1]) == "--binary")
         hdf5 = false;
       else
         {
-          std::cerr << "HIER" << usage;
+          std::cerr << usage;
           return 1;
         }
       --argc;

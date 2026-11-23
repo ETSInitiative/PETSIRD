@@ -20,6 +20,13 @@ target_link_libraries(petsird_helpers
 
 add_executable(petsird_generator petsird_generator.cpp)
 target_link_libraries(petsird_generator PRIVATE petsird_generated petsird_helpers)
+if (USE_HDF5)
+  target_compile_definitions(petsird_generator PRIVATE USE_HDF5)
+endif()
+
 
 add_executable(petsird_analysis petsird_analysis.cpp)
 target_link_libraries(petsird_analysis PRIVATE petsird_generated petsird_helpers)
+if (USE_HDF5)
+  target_compile_definitions(petsird_analysis PRIVATE USE_HDF5)
+endif()

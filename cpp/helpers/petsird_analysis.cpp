@@ -5,9 +5,6 @@
   SPDX-License-Identifier: Apache-2.0
 */
 
-// comment if you don't want HDF5
-#define USE_HDF5
-
 #ifdef USE_HDF5
 #  include "petsird/hdf5/protocols.h"
 #endif

@@ -19,7 +19,7 @@ include(CMakePackageConfigHelpers)
 set(CMAKE_POSITION_INDEPENDENT_CODE True)
 
 if(WIN32)
-  add_compile_options(/W3 /WX)
+  add_compile_options(/W2)
 else()
   add_compile_options(-Wall -Wextra -pedantic)
 endif()
@@ -30,10 +30,21 @@ if(CCACHE_PROGRAM)
   message(STATUS "ccache found, so we will use it.")
 endif()
 
+option(USE_HDF5 "Enable PETSIRD HDF5 support" ON)
+# set internal option in the generated CMakeLists.txt from our own
+# (as we can't get access to the value of the internal one)
+if (CMAKE_VERSION VERSION_LESS 4.2)
+  set(PETSIRD_GENERATED_USE_HDF5  ${USE_HDF5} CACHE BOOL "Use HDF5")
+else()
+  set(CACHE{PETSIRD_GENERATED_USE_HDF5} TYPE BOOL HELP "Use HDF5" VALUE ${USE_HDF5})
+endif()
+
 # assume that yardl was run with the following in the _package.yml
 #   sourcesOutputDir: ../cpp/generated/petsird
-
 add_subdirectory(generated/petsird)
+
+mark_as_advanced(PETSIRD_GENERATED_USE_HDF5)
+
 target_include_directories(petsird_generated
   PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/generated>
