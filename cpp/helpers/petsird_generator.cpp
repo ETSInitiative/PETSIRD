@@ -138,8 +138,8 @@ set_detection_efficiencies(petsird::ScannerInformation& scanner)
           else
             {
               module_pair_SGID_LUT[mod1][mod2] = z1 + NZ * (z2 + NZ * (std::abs(int(a2) - int(a1)) - 1));
+              assert(module_pair_SGID_LUT[mod1][mod2] < num_SGIDs);
             }
-          assert(module_pair_SGID_LUT[mod1][mod2] < num_SGIDs);
         }
     }
 
