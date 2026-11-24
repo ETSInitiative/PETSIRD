@@ -80,7 +80,7 @@ inline xt::xarray<float>
 transform_to_mat44(const petsird::RigidTransformation& transform)
 {
   xt::xarray<float> bottom_row = { { 0.0f, 0.0f, 0.0f, 1.0f } };
-  return xt::concatenate(xt::xtuple(transform.matrix, bottom_row), 0);
+  return xt::concatenate(xt::xtuple(transform.matrix, bottom_row), static_cast<size_t>(0));
 }
 
 //! Convert 4x4 matrix to RigidTransformation

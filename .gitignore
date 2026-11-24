@@ -1,5 +1,7 @@
 /cpp/generated/
-/cpp/build/
+/cpp/build*/
+/cpp/install*/
+/cpp/vcpkg_installed/
 /python/petsird/
 __pycache__/
 /python/build/

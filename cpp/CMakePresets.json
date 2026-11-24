@@ -1,0 +1,35 @@
+{
+  "version": 3,
+  "configurePresets": [
+    {
+      "name": "conda",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build",
+      "cacheVariables": {
+        "CMAKE_PREFIX_PATH": "$env{CONDA_PREFIX}",
+        "HDF5_ROOT": "$env{CONDA_PREFIX}",
+        "CMAKE_INSTALL_PREFIX": "${sourceDir}/install",
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+    {
+      "name": "conda-Debug",
+      "inherits": "conda",
+      "binaryDir": "${sourceDir}/build-Debug",
+      "cacheVariables": {
+        "CMAKE_INSTALL_PREFIX": "${sourceDir}/install-Debug",
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "vcpkg",
+      "binaryDir": "${sourceDir}/build-vcpkg",
+      "cacheVariables": {
+        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+        "CMAKE_INSTALL_PREFIX": "${sourceDir}/install-vcpkg",
+        "CMAKE_BUILD_TYPE": "Release",
+        "USE_HDF5": "OFF"
+      }
+    }
+  ]
+}

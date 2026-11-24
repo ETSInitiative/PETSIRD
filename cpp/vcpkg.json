@@ -1,0 +1,12 @@
+{
+  "name": "petsird",
+  "dependencies": [
+    "nlohmann-json",
+    "xtensor",
+    "xtensor-blas",
+    "blas",
+    "lapack",
+    "date"
+  ],
+  "builtin-baseline": "0d3eb06860fa161e505fe66f39611f85749f6e66"
+}

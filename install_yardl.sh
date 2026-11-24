@@ -9,8 +9,7 @@
 : "${DEST:=yardl}"
 
 set -e
-
-# TODO will fail on Windows as no uname there
+# TODO will fail on Windows as no uname there, but works on Git bash for Windows
 OS="$(uname -s)"
 ARCH="$(uname -m)"
 echo $OS
@@ -24,13 +23,14 @@ case "$OS" in
     YARDL_OS="darwin"
     SUFFIX=".tar.gz"
     ;;
-  Windows)
+  Windows|MINGW64_NT*)
     YARDL_OS="windows"
     SUFFIX=".zip"
     ;;
 esac
 DL_SUFFIX="_${YARDL_OS}_${ARCH}${SUFFIX}"
 FNAME="yardl_${YARDL_VERSION}${DL_SUFFIX}"
+echo "Will try to download $FNAME"
 
 if command -v gh > /dev/null
 then

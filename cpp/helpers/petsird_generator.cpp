@@ -12,8 +12,9 @@
 #include <memory>
 #include <string>
 
-// comment if you don't want HDF5 capability
-#define USE_HDF5
+#ifndef M_PI
+#  define M_PI 3.14159265358979323846
+#endif
 
 #ifdef USE_HDF5
 #  include "petsird/hdf5/protocols.h"
@@ -38,7 +39,7 @@ constexpr float MODULE_AXIS_SPACING{ (NUM_CRYSTALS_PER_MODULE[2] + 4) * CRYSTAL_
 
 constexpr uint32_t NUMBER_OF_TIME_BLOCKS = 6;
 constexpr float COUNT_RATE = 500.F;
-constexpr float EVENT_TIME_BLOCK_DURATION = 1.F;
+constexpr uint32_t EVENT_TIME_BLOCK_DURATION = 1; // in millisecond
 
 //! return scanner build by rotating a module around the (0,0,1) axis
 petsird::ScannerGeometry
@@ -137,8 +138,8 @@ set_detection_efficiencies(petsird::ScannerInformation& scanner)
           else
             {
               module_pair_SGID_LUT[mod1][mod2] = z1 + NZ * (z2 + NZ * (std::abs(int(a2) - int(a1)) - 1));
+              assert(module_pair_SGID_LUT[mod1][mod2] < num_SGIDs);
             }
-          assert(module_pair_SGID_LUT[mod1][mod2] < num_SGIDs);
         }
     }
 
@@ -164,7 +165,7 @@ set_detection_efficiencies(petsird::ScannerInformation& scanner)
       for (auto& effs_for_mod1 : module_pair_efficiencies.values)
         for (auto& eff : effs_for_mod1)
           {
-            eff = SGID;
+            eff = static_cast<float>(SGID);
           }
       module_pair_efficiencies.sgid = SGID;
       module_pair_efficiencies_vector.emplace_back(module_pair_efficiencies);
@@ -240,8 +241,8 @@ get_header()
   exam.modality = "PT";
   exam.patient.patient_id = "someID";
   exam.patient.patients_sex = "F";
-  exam.patient.patients_size = 1.6;
-  exam.patient.patients_weight = 65.;
+  exam.patient.patients_size = 1.6f;
+  exam.patient.patients_weight = 65.f;
   // patient orientation w.r.t.gravity
   // https: // dicom.nema.org/medical/dicom/current/output/html/part16.html#sect_CID_19
   exam.patient_orientation.patient_orientation_code_sequence.coding_scheme_designator = "SCT";
@@ -327,21 +328,25 @@ main(int argc, char* argv[])
   bool hdf5 = true;
 #else
   constexpr auto usage = "petsird_generator [--binary] filename\n"
-                         "\tdefault is to use binary output (hdf5 support is not enabled)\n";
-  bool hdf5 = true;
+                         "\tdefault is to use binary output (note: hdf5 support is not enabled)\n";
+  bool hdf5 = false;
 #endif
   if (argc == 3)
     {
-#ifdef USE_HDF5
       if (std::string(argv[1]) == "--hdf5")
-        hdf5 = true;
-      else
+        {
+#ifdef USE_HDF5
+          hdf5 = true;
+#else
+          std::cerr << usage;
+          return 1;
 #endif
-          if (std::string(argv[1]) == "--binary")
+        }
+      else if (std::string(argv[1]) == "--binary")
         hdf5 = false;
       else
         {
-          std::cerr << "HIER" << usage;
+          std::cerr << usage;
           return 1;
         }
       --argc;

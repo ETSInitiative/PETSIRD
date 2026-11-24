@@ -5,9 +5,6 @@
   SPDX-License-Identifier: Apache-2.0
 */
 
-// comment if you don't want HDF5
-#define USE_HDF5
-
 #ifdef USE_HDF5
 #  include "petsird/hdf5/protocols.h"
 #endif
@@ -206,7 +203,7 @@ main(int argc, char const* argv[])
   float energy_1 = 0, energy_2 = 0;
   std::size_t num_prompts = 0;
   std::size_t num_delayeds = 0;
-  float last_time = 0.F;
+  uint32_t last_time = 0U;
   while (reader_uptr->ReadTimeBlocks(time_block))
     {
       if (std::holds_alternative<petsird::EventTimeBlock>(time_block))

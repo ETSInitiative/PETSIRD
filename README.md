@@ -14,32 +14,59 @@ The specification uses the [yardl](https://aka.ms/yardl) tool to define the mode
 `yardl` can be used to read the specification (in the `model` directory) and
 generate an SDK for both C++ and Python to read/write PETSIRD data.
 
-## To get started as a Python user:
+Browse the [`model`](./model/README.md) directory to get an idea of the content of a PETSIRD file (or stream).
 
-If you don't want to modify the yardl model, just `pip install petsird` or use conda-forge. More detail is in the [`python/README.md`](python/README.md).
+## To get started as a PETSIRD user
 
-## To get started as a C++ user:
+If you don't want to modify the yardl model, or modify the PETSIRD code, you probably don't need
+this repository at all.
 
-You can use `conda install conda-forge::libpetsird`.
+### Python-only users
 
-## To get started quickly as a developer:
+Just `pip install petsird` or `conda install conda-forge::petsird`. More detail is in the [`python/README.md`](python/README.md).
 
-1. Open this repo in [GitHub Codespaces](https://code.visualstudio.com/docs/remote/codespaces) or
+## C++ users:
+
+You can use `conda install conda-forge::libpetsird` and copy some example code from this repo. More detail is in the [`cpp/README.md`](cpp/README.md).
+Alternatively, use https://github.com/ETSInitiative/PETSIRDUseCaseTemplate.
+
+## To get started as a developer
+
+### Quick start
+
+Open this repo in [GitHub Codespaces](https://code.visualstudio.com/docs/remote/codespaces) or
 in a [VS Code devcontainer](https://code.visualstudio.com/docs/devcontainers/containers).
 This codespace/container will contain all necessary tools, including `yardl` itself, as well as the current repository.
-Alternatively, you can also create a conda environment, run the `install_yardl.sh` script,
-and add `$PWD/yardl` to your `PATH`.
-2. Browse the [`model`](./model/README.md) directory.
-3. Use `yardl` to generate C++ and Python code for the model and compile/install:
 
+### Do it yourself
+
+Note: these instructions should also work on Windows when you installed Git for Windows with Git Bash and are using a Powershell prompt.
+
+1. create a conda environment with almost all you need and install yardl
    ```sh
    cd /wherever/PETSIRD
-   just build
+   conda env create
+   conda activate petsird
+   ./install_yardl.sh`
    ```
 
-4. Have a look at (and try!) the examples in the [`cpp`](cpp/README.md) and/or
-[`python`](python/README.md) directories.
+2. Use `just` to build everything for you
+   ```sh
+   PATH=$PWD/yardl:$PATH # or in PS $Env:Path = $PWD.Path + "\yardl;" + $Env:Path + $Env:Path
+   just build
+   ```
+   If you cannot use `just` and/or `conda`, you can generate the model yourself.
+   ```sh
+   cd model
+   ../yardl/yardl generate
+   cd ..
+   ```
 
+3. Have a look at (and try!) the examples in the [`cpp`](cpp/README.md) and/or
+[`python`](python/README.md) directories. These README files also contain instructions
+for building without `just` and/or `conda`.
+
+Good luck!
 
 ## PETSIRD maintainer notes
 
